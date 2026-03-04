@@ -1,0 +1,450 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id            String   @id @default(cuid())
+  email         String   @unique
+  name          String
+  emailVerified Boolean  @default(false)
+  phone         String?
+  image         String?
+  role          UserRole @default(CUSTOMER)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  sessions Session[]
+  accounts Account[]
+  bookings Booking[]
+  reviews  Review[]
+  payments Payment[]
+
+  @@index([email])
+  @@map("user")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime
+  updatedAt             DateTime
+
+  @@map("account")
+}
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String
+  createdAt DateTime
+  updatedAt DateTime
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([token])
+  @@map("session")
+}
+
+model Verification {
+  id         String    @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime?
+  updatedAt  DateTime?
+
+  @@map("verification")
+}
+
+model Country {
+  id   String @id @default(cuid())
+  name String @unique
+
+  cities City[]
+
+  @@map("country")
+}
+
+model City {
+  id        String @id @default(cuid())
+  name      String
+  countryId String
+
+  country   Country   @relation(fields: [countryId], references: [id])
+  addresses Address[]
+
+  @@unique([name, countryId])
+  @@index([countryId])
+  @@map("city")
+}
+
+model Address {
+  id         String  @id @default(cuid())
+  cityId     String
+  street     String
+  state      String?
+  postalCode String?
+  latitude   Float?
+  longitude  Float?
+
+  city  City   @relation(fields: [cityId], references: [id])
+  hotel Hotel?
+
+  @@index([cityId])
+  @@map("address")
+}
+
+model HotelPolicy {
+  id           String @id @default(cuid())
+  hotelId      String @unique
+  checkInTime  String @default("14:00")
+  checkOutTime String @default("12:00")
+
+  hotel Hotel @relation(fields: [hotelId], references: [id], onDelete: Cascade)
+
+  @@map("hotel_policy")
+}
+
+model Hotel {
+  id          String      @id @default(cuid())
+  name        String
+  slug        String      @unique
+  description String      @db.Text
+  starRating  Int         @default(3)
+  status      HotelStatus @default(ACTIVE)
+  phone       String?
+  email       String?
+  addressId   String      @unique
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  address   Address        @relation(fields: [addressId], references: [id])
+  policy    HotelPolicy?
+  rooms     Room[]
+  images    HotelImage[]
+  amenities HotelAmenity[]
+  bookings  Booking[]
+  reviews   Review[]
+
+  @@index([status])
+  @@index([addressId])
+  @@map("hotel")
+}
+
+model HotelImage {
+  id        String   @id @default(cuid())
+  hotelId   String
+  url       String
+  alt       String?
+  isPrimary Boolean  @default(false)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+
+  hotel Hotel @relation(fields: [hotelId], references: [id], onDelete: Cascade)
+
+  @@index([hotelId])
+  @@map("hotel_image")
+}
+
+model Amenity {
+  id   String  @id @default(cuid())
+  name String  @unique
+  icon String?
+
+  hotels HotelAmenity[]
+  rooms  RoomAmenity[]
+
+  @@map("amenity")
+}
+
+model HotelAmenity {
+  hotelId   String
+  amenityId String
+
+  hotel   Hotel   @relation(fields: [hotelId], references: [id], onDelete: Cascade)
+  amenity Amenity @relation(fields: [amenityId], references: [id], onDelete: Cascade)
+
+  @@id([hotelId, amenityId])
+  @@map("hotel_amenity")
+}
+
+model RoomType {
+  id   String @id @default(cuid())
+  name String @unique
+
+  rooms Room[]
+
+  @@map("room_type")
+}
+
+model Room {
+  id          String   @id @default(cuid())
+  hotelId     String
+  name        String
+  slug        String
+  roomTypeId  String
+  description String   @db.Text
+  capacity    Int
+  sizeM2      Float?
+  floor       Int?
+  basePrice   Decimal  @db.Decimal(10, 2)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  hotel        Hotel              @relation(fields: [hotelId], references: [id], onDelete: Cascade)
+  roomType     RoomType           @relation(fields: [roomTypeId], references: [id])
+  images       RoomImage[]
+  beds         RoomBed[]
+  amenities    RoomAmenity[]
+  bookingItems BookingItem[]
+  availability RoomAvailability[]
+
+  @@unique([hotelId, slug])
+  @@index([hotelId, isActive])
+  @@index([roomTypeId])
+  @@map("room")
+}
+
+model RoomImage {
+  id        String   @id @default(cuid())
+  roomId    String
+  url       String
+  alt       String?
+  isPrimary Boolean  @default(false)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+
+  room Room @relation(fields: [roomId], references: [id], onDelete: Cascade)
+
+  @@index([roomId])
+  @@map("room_image")
+}
+
+model BedType {
+  id   String @id @default(cuid())
+  name String @unique
+
+  roomBeds RoomBed[]
+
+  @@map("bed_type")
+}
+
+model RoomBed {
+  id         String  @id @default(cuid())
+  roomId     String
+  bedTypeId  String
+  quantity   Int     @default(1)
+
+  room    Room    @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  bedType BedType @relation(fields: [bedTypeId], references: [id])
+
+  @@unique([roomId, bedTypeId])
+  @@index([bedTypeId])
+  @@map("room_bed")
+}
+
+model RoomAmenity {
+  roomId    String
+  amenityId String
+
+  room    Room    @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  amenity Amenity @relation(fields: [amenityId], references: [id], onDelete: Cascade)
+
+  @@id([roomId, amenityId])
+  @@map("room_amenity")
+}
+
+model RoomAvailability {
+  id            String             @id @default(cuid())
+  roomId        String
+  date          DateTime           @db.Date
+  status        AvailabilityStatus @default(AVAILABLE)
+  bookingItemId String?
+  lockToken     String?
+  lockExpiresAt DateTime?
+
+  room        Room         @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  bookingItem BookingItem? @relation(fields: [bookingItemId], references: [id], onDelete: SetNull)
+
+  @@unique([roomId, date])
+  @@index([roomId, date, status])
+  @@index([lockExpiresAt])
+  @@map("room_availability")
+}
+
+model Booking {
+  id              String        @id @default(cuid())
+  userId          String
+  hotelId         String
+  bookingRef      String        @unique @default(cuid())
+  status          BookingStatus @default(PENDING)
+  paymentStatus   PaymentStatus @default(UNPAID)
+  guestName       String
+  guestEmail      String
+  guestPhone      String?
+  specialRequests String?       @db.Text
+  checkIn         DateTime      @db.Date
+  checkOut        DateTime      @db.Date
+  totalAmount     Decimal       @db.Decimal(10, 2)
+  currency        String        @default("USD")
+  expiresAt       DateTime?
+  cancelledAt     DateTime?
+  cancelReason    String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  user     User          @relation(fields: [userId], references: [id])
+  hotel    Hotel         @relation(fields: [hotelId], references: [id])
+  items    BookingItem[]
+  payments Payment[]
+  review   Review?
+
+  @@index([userId])
+  @@index([hotelId])
+  @@index([status])
+  @@index([bookingRef])
+  @@index([expiresAt])
+  @@map("booking")
+}
+
+model BookingItem {
+  id        String            @id @default(cuid())
+  bookingId String
+  roomId    String
+  checkIn   DateTime          @db.Date
+  checkOut  DateTime          @db.Date
+  nights    Int
+  adults    Int
+  children  Int               @default(0)
+  unitPrice Decimal           @db.Decimal(10, 2)
+  total     Decimal           @db.Decimal(10, 2)
+  currency  String            @default("USD")
+  status    BookingItemStatus @default(PENDING)
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+
+  booking      Booking            @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  room         Room               @relation(fields: [roomId], references: [id])
+  availability RoomAvailability[]
+
+  @@index([bookingId])
+  @@index([roomId])
+  @@map("booking_item")
+}
+
+model Payment {
+  id                    String        @id @default(cuid())
+  bookingId             String
+  userId                String
+  type                  PaymentType   @default(CHARGE)
+  status                PaymentStatus @default(PENDING)
+  amount                Decimal       @db.Decimal(10, 2)
+  currency              String        @default("USD")
+  stripePaymentIntentId String?       @unique
+  stripeRefundId        String?       @unique
+  failureMessage        String?
+  paidAt                DateTime?
+  refundedAt            DateTime?
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
+
+  booking Booking @relation(fields: [bookingId], references: [id])
+  user    User    @relation(fields: [userId], references: [id])
+
+  @@index([bookingId])
+  @@index([userId])
+  @@map("payment")
+}
+
+model Review {
+  id            String       @id @default(cuid())
+  bookingId     String       @unique
+  hotelId       String
+  userId        String
+  overallRating Int
+  title         String?
+  comment       String       @db.Text
+  status        ReviewStatus @default(PENDING)
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  booking Booking @relation(fields: [bookingId], references: [id])
+  hotel   Hotel   @relation(fields: [hotelId], references: [id])
+  user    User    @relation(fields: [userId], references: [id])
+
+  @@index([hotelId, status])
+  @@index([userId])
+  @@map("review")
+}
+
+enum UserRole {
+  ADMIN
+  CUSTOMER
+}
+
+enum HotelStatus {
+  ACTIVE
+  INACTIVE
+  MAINTENANCE
+}
+
+enum AvailabilityStatus {
+  AVAILABLE
+  LOCKED
+  BOOKED
+  MAINTENANCE
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CHECKED_IN
+  CHECKED_OUT
+  CANCELLED
+  NO_SHOW
+}
+
+enum BookingItemStatus {
+  PENDING
+  CONFIRMED
+  CHECKED_IN
+  CHECKED_OUT
+  CANCELLED
+}
+
+enum PaymentStatus {
+  UNPAID
+  PENDING
+  PAID
+  REFUNDED
+  FAILED
+}
+
+enum PaymentType {
+  CHARGE
+  REFUND
+}
+
+enum ReviewStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}

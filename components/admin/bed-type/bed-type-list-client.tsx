@@ -1,0 +1,111 @@
+"use client";
+
+import { Card } from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { useConfirmDialogStore } from "@/store/confirm-dialog-store";
+import { useModalDialogStore } from "@/store/modal-dialog-store";
+import { RouterOutput } from "@/trpc/client";
+import { CreateBedTypeForm, EditBedTypeForm } from "./bed-type-form-modal";
+import {
+  useBedTypeList,
+  useDeleteBedType,
+} from "@/hooks/admin/use-admin-bed-types";
+import { ListHeader } from "@/components/shared/list-header";
+import { TableSkeleton } from "@/components/shared/table-skeleton";
+import { RowActions } from "@/components/shared/row-actions";
+
+type BedType = RouterOutput["admin"]["bedType"]["list"][number];
+
+export const BedTypeListClient = () => {
+  const { data, isLoading } = useBedTypeList();
+  const { openModal } = useModalDialogStore();
+  const { openConfirm } = useConfirmDialogStore();
+  const deleteBedType = useDeleteBedType();
+
+  const openCreate = () =>
+    openModal({
+      title: "Thêm loại giường",
+      description: "Tạo mới loại giường",
+      content: <CreateBedTypeForm />,
+    });
+
+  const openEdit = (bedType: BedType) =>
+    openModal({
+      title: "Chỉnh sửa loại giường",
+      description: `Cập nhật thông tin cho "${bedType.name}"`,
+      content: <EditBedTypeForm bedType={bedType} />,
+    });
+
+  const handleDelete = (bedType: BedType) =>
+    openConfirm({
+      title: "Xóa loại giường?",
+      description: `Xóa "${bedType.name}"? Hành động này không thể hoàn tác.`,
+      variant: "destructive",
+      onConfirm: () => void deleteBedType.mutateAsync({ id: bedType.id }),
+    });
+
+  return (
+    <div className="space-y-4">
+      <ListHeader
+        title="Loại giường"
+        count={data?.length}
+        countLabel="loại giường"
+        addLabel="Thêm loại giường"
+        onAdd={openCreate}
+      />
+      <Card>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Tên</TableHead>
+              <TableHead className="text-center">Phòng dùng</TableHead>
+              <TableHead />
+            </TableRow>
+          </TableHeader>
+          {isLoading ? (
+            <TableSkeleton cols={3} />
+          ) : (
+            <TableBody>
+              {data?.map((bedType) => (
+                <BedTypeRow
+                  key={bedType.id}
+                  bedType={bedType}
+                  onEdit={openEdit}
+                  onDelete={handleDelete}
+                />
+              ))}
+            </TableBody>
+          )}
+        </Table>
+      </Card>
+    </div>
+  );
+};
+
+interface BedTypeRowProps {
+  bedType: BedType;
+  onEdit: (bedType: BedType) => void;
+  onDelete: (bedType: BedType) => void;
+}
+
+const BedTypeRow = ({ bedType, onEdit, onDelete }: BedTypeRowProps) => (
+  <TableRow>
+    <TableCell className="font-medium">{bedType.name}</TableCell>
+    <TableCell className="text-center text-sm">
+      {bedType._count.roomBeds}
+    </TableCell>
+    <TableCell>
+      <RowActions
+        onEdit={() => onEdit(bedType)}
+        onDelete={() => onDelete(bedType)}
+      />
+    </TableCell>
+  </TableRow>
+);
