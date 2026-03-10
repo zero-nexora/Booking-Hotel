@@ -39,7 +39,23 @@ type Values = z.infer<typeof schema>;
 
 type PageState = "idle" | "invalid" | "success";
 
-function ResetPasswordContent() {
+const ResetPasswordPage = () => {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      }
+    >
+      <ResetPasswordContent />
+    </Suspense>
+  );
+};
+
+export default ResetPasswordPage;
+
+const ResetPasswordContent = () => {
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
   const [state, setState] = useState<PageState>(token ? "idle" : "invalid");
@@ -52,7 +68,7 @@ function ResetPasswordContent() {
   const isLoading = form.formState.isSubmitting;
   const watchedPassword = form.watch("password");
 
-  async function onSubmit(values: Values) {
+  const onSubmit = async (values: Values) => {
     if (!token) return;
     try {
       await authClient.resetPassword({ newPassword: values.password, token });
@@ -67,7 +83,7 @@ function ResetPasswordContent() {
         toast.error("Đặt lại mật khẩu thất bại. Vui lòng thử lại.");
       }
     }
-  }
+  };
 
   if (state === "invalid") {
     return (
@@ -115,8 +131,8 @@ function ResetPasswordContent() {
 
   return (
     <div className="space-y-6">
-      <div className="space-y-1.5">
-        <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+      <div className="space-y-1.5 text-center">
+        <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4 m-auto">
           <KeyRound className="h-6 w-6 text-primary" />
         </div>
         <h1 className="text-2xl font-bold tracking-tight">Đặt mật khẩu mới</h1>
@@ -185,18 +201,4 @@ function ResetPasswordContent() {
       </p>
     </div>
   );
-}
-
-export default function ResetPasswordPage() {
-  return (
-    <Suspense
-      fallback={
-        <div className="flex justify-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-        </div>
-      }
-    >
-      <ResetPasswordContent />
-    </Suspense>
-  );
-}
+};

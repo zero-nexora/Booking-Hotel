@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { createTRPCRouter, baseProcedure } from "@/trpc/init";
 import { TRPCError } from "@trpc/server";
+import { Prisma } from "@/generated/prisma/client";
 
 const HotelSearchInput = z.object({
   city: z.string().optional(),
@@ -118,12 +119,12 @@ export const hotelRouter = createTRPCRouter({
         limit,
       } = input;
 
-      const roomWhere: Record<string, unknown> = { isActive: true };
-      if (minPrice !== undefined) roomWhere.basePrice = { gte: minPrice };
-      if (maxPrice !== undefined) {
+      const roomWhere: Prisma.RoomWhereInput = { isActive: true };
+
+      if (minPrice !== undefined || maxPrice !== undefined) {
         roomWhere.basePrice = {
-          ...((roomWhere.basePrice as object) ?? {}),
-          lte: maxPrice,
+          ...(minPrice !== undefined && { gte: minPrice }),
+          ...(maxPrice !== undefined && { lte: maxPrice }),
         };
       }
       if (bedTypes?.length) {
@@ -140,57 +141,49 @@ export const hotelRouter = createTRPCRouter({
           cur.setDate(cur.getDate() + 1);
         }
         roomWhere.availability = {
-          every: { date: { in: dates }, status: "AVAILABLE" },
+          some: { date: { in: dates }, status: "AVAILABLE" },
         };
       }
 
-      const hotelWhere: Record<string, unknown> = { status: "ACTIVE" };
+      const hotelWhere: Prisma.HotelWhereInput = {
+        status: "ACTIVE",
+        rooms: { some: roomWhere },
+      };
+
       if (stars?.length) hotelWhere.starRating = { in: stars };
       if (amenities?.length) {
         hotelWhere.amenities = {
           some: { amenity: { name: { in: amenities } } },
         };
       }
-      if (city) {
+      if (city || country) {
         hotelWhere.address = {
-          city: { name: { contains: city, mode: "insensitive" } },
-        };
-      }
-      if (country) {
-        hotelWhere.address = {
-          ...((hotelWhere.address as object) ?? {}),
           city: {
-            country: { name: { contains: country, mode: "insensitive" } },
+            ...(city && { name: { contains: city, mode: "insensitive" } }),
+            ...(country && {
+              country: { name: { contains: country, mode: "insensitive" } },
+            }),
           },
         };
       }
       if (cursor) {
         hotelWhere.OR = [
           { updatedAt: { lt: cursor.updatedAt } },
-          { updatedAt: cursor.updatedAt, id: { lt: cursor.id } },
+          { updatedAt: { equals: cursor.updatedAt }, id: { lt: cursor.id } },
         ];
       }
 
-      const orderBy =
-        sort === "price_asc" || sort === "price_desc"
-          ? [
-              {
-                rooms: {
-                  _min: { basePrice: sort === "price_asc" ? "asc" : "desc" },
-                },
-              },
-            ]
-          : sort === "stars"
-            ? [{ starRating: "desc" }]
-            : [{ updatedAt: "desc" }];
+      const isPriceSort = sort === "price_asc" || sort === "price_desc";
 
-      const hotels = await ctx.db.hotel.findMany({
-        where: {
-          ...hotelWhere,
-          rooms: { some: roomWhere },
-        },
-        take: limit + 1,
-        orderBy: orderBy as never,
+      const orderBy: Prisma.HotelOrderByWithRelationInput[] =
+        sort === "stars"
+          ? [{ starRating: "desc" }, { updatedAt: "desc" }]
+          : [{ updatedAt: "desc" }];
+
+      const rows = await ctx.db.hotel.findMany({
+        where: hotelWhere,
+        take: isPriceSort ? 500 : limit + 1,
+        orderBy,
         include: {
           images: { where: { isPrimary: true }, take: 1 },
           address: { include: { city: { include: { country: true } } } },
@@ -208,32 +201,35 @@ export const hotelRouter = createTRPCRouter({
         },
       });
 
-      let nextCursor: { id: string; updatedAt: Date } | null = null;
-      if (hotels.length > limit) {
-        hotels.pop();
-        const last = hotels[hotels.length - 1];
-        nextCursor = { id: last.id, updatedAt: last.updatedAt };
-      }
-
-      const results = hotels.map((h) => {
-        const reviews = h.reviews;
-        const avgRating =
-          reviews.length > 0
-            ? reviews.reduce((s, r) => s + r.overallRating, 0) / reviews.length
-            : null;
-        return {
-          ...h,
-          avgRating,
-          reviewCount: reviews.length,
-          minPrice: h.rooms[0]?.basePrice ?? null,
-        };
-      });
+      let results = rows.map((h) => ({
+        ...h,
+        avgRating:
+          h.reviews.length > 0
+            ? h.reviews.reduce((s, r) => s + r.overallRating, 0) /
+              h.reviews.length
+            : null,
+        reviewCount: h.reviews.length,
+        minPrice: h.rooms[0]?.basePrice ?? null,
+      }));
 
       if (minRating !== undefined) {
-        return {
-          items: results.filter((h) => (h.avgRating ?? 0) >= minRating),
-          nextCursor,
-        };
+        results = results.filter((h) => (h.avgRating ?? 0) >= minRating);
+      }
+
+      if (isPriceSort) {
+        results.sort((a, b) => {
+          const pa = Number(a.minPrice ?? Infinity);
+          const pb = Number(b.minPrice ?? Infinity);
+          return sort === "price_asc" ? pa - pb : pb - pa;
+        });
+      }
+
+      let nextCursor: { id: string; updatedAt: Date } | null = null;
+
+      if (results.length > limit) {
+        results = results.slice(0, limit);
+        const last = results[results.length - 1];
+        if (last) nextCursor = { id: last.id, updatedAt: last.updatedAt };
       }
 
       return { items: results, nextCursor };

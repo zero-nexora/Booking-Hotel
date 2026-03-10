@@ -7,7 +7,7 @@ import {
   parseAsFloat,
   parseAsStringEnum,
 } from "nuqs/server";
-import { DEFAULT_PAGE, DEFAULT_PAGE_SIZE } from "../constants";
+import { DEFAULT_PAGE_SIZE } from "../constants";
 
 export const hotelSearchParsers = {
   city: parseAsString.withDefault(""),
@@ -16,7 +16,6 @@ export const hotelSearchParsers = {
   checkOut: parseAsIsoDate,
   adults: parseAsInteger.withDefault(1),
   children: parseAsInteger.withDefault(0),
-  page: parseAsInteger.withDefault(DEFAULT_PAGE),
   limit: parseAsInteger.withDefault(DEFAULT_PAGE_SIZE),
   minPrice: parseAsFloat,
   maxPrice: parseAsFloat,

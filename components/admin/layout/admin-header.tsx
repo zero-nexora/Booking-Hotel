@@ -1,6 +1,11 @@
 "use client";
 
-import { Menu, PanelLeftClose, PanelLeft, Bell } from "lucide-react";
+import {
+  Menu,
+  Bell,
+  ChevronRight,
+  ChevronLeft,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AdminBreadcrumb } from "./admin-breadcrumb";
 import { useAdminUI } from "@/store/admin-ui";
@@ -18,9 +23,9 @@ export const AdminHeader = () => {
         onClick={toggleCollapsed}
       >
         {collapsed ? (
-          <PanelLeft className="w-4 h-4" />
+          <ChevronRight className="w-4 h-4" />
         ) : (
-          <PanelLeftClose className="w-4 h-4" />
+          <ChevronLeft className="w-4 h-4" />
         )}
       </Button>
       <Button

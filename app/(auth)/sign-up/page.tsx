@@ -22,6 +22,7 @@ import { PasswordInput } from "@/components/common/password-input";
 import { PasswordStrengthBar } from "@/components/common/password-strength-bar";
 import { authClient } from "@/lib/auth-client";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 const schema = z
   .object({
@@ -48,7 +49,8 @@ const schema = z
   });
 type Values = z.infer<typeof schema>;
 
-export default function SignUpPage() {
+const SignUpPage = () => {
+  const router = useRouter();
   const form = useForm<Values>({
     resolver: zodResolver(schema),
     defaultValues: {
@@ -63,18 +65,28 @@ export default function SignUpPage() {
   const isLoading = form.formState.isSubmitting;
   const watchedPassword = form.watch("password");
 
-  async function onSubmit(values: Values) {
+  const onSubmit = async (values: Values) => {
     try {
-      await authClient.signUp.email({
-        name: values.fullName,
-        email: values.email,
-        password: values.password,
-        callbackURL: "/verify-email",
-      });
+      await authClient.signUp.email(
+        {
+          name: values.fullName,
+          email: values.email,
+          password: values.password,
+          callbackURL: "/verify-email",
+        },
+        {
+          onSuccess: () => {
+            router.push("/verify-email");
+          },
+          onError: () => {
+            toast.error("Đăng ký thất bại. Email có thể đã được sử dụng.");
+          },
+        },
+      );
     } catch {
       toast.error("Đăng ký thất bại. Email có thể đã được sử dụng.");
     }
-  }
+  };
 
   return (
     <div className="space-y-6">
@@ -86,6 +98,7 @@ export default function SignUpPage() {
       </div>
 
       <GoogleButton label="Đăng ký với Google" disabled={isLoading} />
+
       <AuthDivider label="hoặc đăng ký bằng email" />
 
       <Form {...form}>
@@ -232,4 +245,6 @@ export default function SignUpPage() {
       </p>
     </div>
   );
-}
+};
+
+export default SignUpPage;

@@ -39,7 +39,7 @@ export function HowItWorks() {
                   0{i + 1}
                 </span>
                 {i < steps.length - 1 && (
-                  <div className="hidden lg:block flex-1 h-px border-t border-dashed border-border" />
+                  <div className="box-hidden flex-1 h-px border-t border-dashed border-border" />
                 )}
               </div>
             </div>

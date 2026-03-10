@@ -27,7 +27,7 @@ interface HotelCardProps {
   nights?: number;
 }
 
-export function HotelCard({ hotel, view, nights = 1 }: HotelCardProps) {
+export const HotelCard = ({ hotel, view, nights = 1 }: HotelCardProps) => {
   const href = `/hotels/${hotel.slug}`;
   const price = hotel.minPrice ? Number(hotel.minPrice.toString()) : null;
 
@@ -201,4 +201,4 @@ export function HotelCard({ hotel, view, nights = 1 }: HotelCardProps) {
       </div>
     </div>
   );
-}
+};

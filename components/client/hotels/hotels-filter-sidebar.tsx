@@ -31,7 +31,7 @@ export function HotelsFilterSidebar() {
     const next = exists
       ? current.filter((v) => v !== value)
       : [...current, value];
-    setParams({ [key]: next.length ? next : null, page: DEFAULT_PAGE });
+    setParams({ [key]: next.length ? next : null });
   };
 
   const hasFilters =
@@ -52,7 +52,6 @@ export function HotelsFilterSidebar() {
       minPrice: null,
       maxPrice: null,
       minRating: null,
-      page: DEFAULT_PAGE,
     });
 
   return (
@@ -87,7 +86,6 @@ export function HotelsFilterSidebar() {
               setParams({
                 minPrice: min > 0 ? min : null,
                 maxPrice: max < 2000 ? max : null,
-                page: DEFAULT_PAGE,
               })
             }
           />
@@ -149,7 +147,6 @@ export function HotelsFilterSidebar() {
                 onCheckedChange={() =>
                   setParams({
                     minRating: params.minRating === r.value ? null : r.value,
-                    page: DEFAULT_PAGE,
                   })
                 }
               />

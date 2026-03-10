@@ -30,7 +30,7 @@ const schema = z.object({
 });
 type Values = z.infer<typeof schema>;
 
-export default function SignInPage() {
+const SignInPage = () => {
   const router = useRouter();
 
   const form = useForm<Values>({
@@ -40,7 +40,7 @@ export default function SignInPage() {
 
   const isLoading = form.formState.isSubmitting;
 
-  async function onSubmit(values: Values) {
+  const onSubmit = async (values: Values) => {
     try {
       await authClient.signIn.email({
         email: values.email,
@@ -53,7 +53,7 @@ export default function SignInPage() {
     } catch {
       toast.error("Email hoặc mật khẩu không đúng. Vui lòng thử lại.");
     }
-  }
+  };
 
   return (
     <div className="space-y-6">
@@ -65,6 +65,7 @@ export default function SignInPage() {
       </div>
 
       <GoogleButton label="Đăng nhập với Google" disabled={isLoading} />
+      
       <AuthDivider />
 
       <Form {...form}>
@@ -153,4 +154,6 @@ export default function SignInPage() {
       </p>
     </div>
   );
-}
+};
+
+export default SignInPage;

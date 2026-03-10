@@ -3,9 +3,8 @@
 import { Star, Quote } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { format } from "date-fns";
-import { vi } from "date-fns/locale";
 import { useHighlightedReviews } from "@/hooks/client/use-home";
+import { formatDateDisplay } from "@/lib/utils";
 
 export function ReviewsHighlight() {
   const { data: reviews, isLoading } = useHighlightedReviews();
@@ -56,7 +55,7 @@ export function ReviewsHighlight() {
               </p>
             </div>
             <p className="text-xs text-muted-foreground shrink-0">
-              {format(new Date(review.createdAt), "MM/yyyy", { locale: vi })}
+              {formatDateDisplay(review.createdAt)}
             </p>
           </div>
         </div>

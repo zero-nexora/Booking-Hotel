@@ -8,7 +8,7 @@ interface AuthLayoutProps {
   children: ReactNode;
 }
 
-export default function AuthLayout({ children }: AuthLayoutProps) {
+const AuthLayout = ({ children }: AuthLayoutProps) => {
   return (
     <div className="min-h-screen grid lg:grid-cols-2">
       <AuthPanel />
@@ -24,9 +24,11 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
       </div>
     </div>
   );
-}
+};
 
-function AuthPanel() {
+export default AuthLayout;
+
+const AuthPanel = () => {
   return (
     <aside className="flex flex-col relative bg-slate-950 overflow-hidden box-hidden">
       <div className="absolute inset-0">
@@ -61,7 +63,7 @@ function AuthPanel() {
           style={{ background: "rgba(201,168,76,0.75)" }}
         />
         <blockquote className="space-y-3">
-          <p className="text-[1.65rem] font-semibold leading-[1.3] text-white tracking-tight">
+          <p className="text-3xl font-semibold leading-[1.3] text-white tracking-tight">
             Nơi mỗi kỳ nghỉ trở thành{" "}
             <em
               className="not-italic"
@@ -102,4 +104,4 @@ function AuthPanel() {
       </div>
     </aside>
   );
-}
+};

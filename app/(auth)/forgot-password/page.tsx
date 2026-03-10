@@ -17,11 +17,13 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { authClient } from "@/lib/auth-client";
+import { useRouter } from "next/navigation";
 
 const schema = z.object({ email: z.string().email("Email không hợp lệ") });
 type Values = z.infer<typeof schema>;
 
-export default function ForgotPasswordPage() {
+const ForgotPasswordPage = () => {
+  const router = useRouter();
   const [isSuccess, setIsSuccess] = useState(false);
   const [submittedEmail, setSubmittedEmail] = useState("");
 
@@ -32,7 +34,7 @@ export default function ForgotPasswordPage() {
 
   const isLoading = form.formState.isSubmitting;
 
-  async function onSubmit(values: Values) {
+  const onSubmit = async (values: Values) => {
     try {
       await authClient.requestPasswordReset({
         email: values.email,
@@ -43,7 +45,7 @@ export default function ForgotPasswordPage() {
       setSubmittedEmail(values.email);
       setIsSuccess(true);
     }
-  }
+  };
 
   if (isSuccess) {
     return (
@@ -98,8 +100,8 @@ export default function ForgotPasswordPage() {
 
   return (
     <div className="space-y-6">
-      <div className="space-y-1.5">
-        <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+      <div className="space-y-1.5 text-center">
+        <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4 m-auto">
           <Mail className="h-6 w-6 text-primary" />
         </div>
         <h1 className="text-2xl font-bold tracking-tight">Quên mật khẩu?</h1>
@@ -145,4 +147,6 @@ export default function ForgotPasswordPage() {
       </Button>
     </div>
   );
-}
+};
+
+export default ForgotPasswordPage;

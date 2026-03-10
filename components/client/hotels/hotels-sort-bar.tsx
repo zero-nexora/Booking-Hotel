@@ -11,7 +11,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { LayoutGrid, List } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { DEFAULT_PAGE } from "@/lib/constants";
 import { hotelSearchParsers } from "@/lib/search-params/hotel-search";
 
 const sortOptions = [
@@ -42,7 +41,7 @@ export function HotelsSortBar({ total }: HotelsSortBarProps) {
       <div className="flex items-center gap-2">
         <Select
           value={params.sort}
-          onValueChange={(v) => setParams({ sort: v as any, page: DEFAULT_PAGE })}
+          onValueChange={(v) => setParams({ sort: v as any })}
         >
           <SelectTrigger className="h-8 text-xs w-44">
             <SelectValue />

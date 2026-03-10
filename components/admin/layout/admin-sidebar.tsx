@@ -11,7 +11,6 @@ import {
   Users,
   ChevronRight,
   LogOut,
-  Hotel,
   Globe,
   MapPin,
   Home,
@@ -28,6 +27,9 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { signOut } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
+import { Logo } from "@/components/common/logo";
+import Image from "next/image";
+import hotelIcon from "../../../public/images/hotel-icon.png";
 
 const navItems = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
@@ -94,17 +96,14 @@ export const AdminSidebar = ({
       >
         <div
           className={cn(
-            "flex items-center h-16 px-4 border-b gap-3",
-            collapsed && "justify-center px-0",
+            "flex items-center justify-center h-16 px-4 border-b gap-3",
+            collapsed && " px-0",
           )}
         >
-          <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary text-primary-foreground shrink-0">
-            <Hotel className="w-4 h-4" />
-          </div>
-          {!collapsed && (
-            <span className="font-semibold text-sm tracking-tight">
-              HotelAdmin
-            </span>
+          {collapsed ? (
+            <Image alt="logo" src={hotelIcon} width={36} height={36} />
+          ) : (
+            <Logo />
           )}
         </div>
 

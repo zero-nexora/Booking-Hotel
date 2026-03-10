@@ -7,7 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { useFeaturedHotels } from "@/hooks/client/use-home";
 
-export function FeaturedHotels() {
+export const FeaturedHotels = () => {
   const { data: hotels, isLoading } = useFeaturedHotels();
 
   if (isLoading) {
@@ -45,7 +45,7 @@ export function FeaturedHotels() {
               <div className="absolute top-3 left-3">
                 <Badge
                   variant="secondary"
-                  className="backdrop-blur-sm bg-background/80 text-xs font-medium gap-0.5"
+                  className="backdrop-blur-sm bg-background/70 text-xs font-medium gap-0.5"
                 >
                   {Array.from({ length: hotel.starRating }).map((_, i) => (
                     <Star
@@ -91,4 +91,4 @@ export function FeaturedHotels() {
       ))}
     </div>
   );
-}
+};

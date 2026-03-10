@@ -26,13 +26,14 @@ import { cn } from "@/lib/utils";
 import { useMe } from "@/hooks/client/use-user";
 import { authClient } from "@/lib/auth-client";
 import { ThemeToggle } from "@/components/common/theme-toggle";
+import { Logo } from "@/components/common/logo";
 
 const navLinks = [
   { label: "Khách sạn", href: "/hotels" },
   { label: "Điểm đến", href: "/hotels?view=map" },
 ];
 
-export function ClientHeader() {
+export const ClientHeader = () => {
   const pathname = usePathname();
   const router = useRouter();
   const { data: user } = useMe();
@@ -48,12 +49,7 @@ export function ClientHeader() {
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur-sm">
       <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between gap-4">
         <Link href="/" className="flex items-center gap-2 shrink-0">
-          <div className="w-7 h-7 rounded-lg bg-primary flex items-center justify-center">
-            <Hotel className="w-4 h-4 text-primary-foreground" />
-          </div>
-          <span className="font-semibold text-sm tracking-tight box-hidden">
-            StayBook
-          </span>
+          <Logo />
         </Link>
 
         <nav className="box-hidden flex items-center gap-1">
@@ -197,4 +193,4 @@ export function ClientHeader() {
       </div>
     </header>
   );
-}
+};
