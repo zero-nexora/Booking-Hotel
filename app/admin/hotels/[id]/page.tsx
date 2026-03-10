@@ -10,7 +10,7 @@ const AdminHotelDetailPage = async ({ params }: AdminHotelDetailPageProps) => {
   const queryClient = getQueryClient();
   const { id } = await params;
 
-  void queryClient.prefetchQuery(trpc.admin.hotel.detail.queryOptions({ id }));
+  await queryClient.prefetchQuery(trpc.admin.hotel.detail.queryOptions({ id }));
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>

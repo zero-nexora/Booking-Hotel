@@ -1,328 +1,371 @@
 import { z } from "zod";
-import { searchRateLimit } from "@/lib/rate-limit";
+import { createTRPCRouter, baseProcedure } from "@/trpc/init";
 import { TRPCError } from "@trpc/server";
-import { headers } from "next/headers";
-import { baseProcedure, createTRPCRouter } from "@/trpc/init";
-import { getOrSet, TTL } from "@/lib/redis";
 
-const cursor = z
-  .object({ id: z.string(), updatedAt: z.coerce.date() })
-  .nullish();
+const HotelSearchInput = z.object({
+  city: z.string().optional(),
+  country: z.string().optional(),
+  checkIn: z.date().optional(),
+  checkOut: z.date().optional(),
+  adults: z.number().int().min(1).default(1),
+  children: z.number().int().min(0).default(0),
+  minPrice: z.number().optional(),
+  maxPrice: z.number().optional(),
+  stars: z.array(z.number().int().min(1).max(5)).optional(),
+  amenities: z.array(z.string()).optional(),
+  bedTypes: z.array(z.string()).optional(),
+  roomTypes: z.array(z.string()).optional(),
+  minRating: z.number().optional(),
+  sort: z
+    .enum(["price_asc", "price_desc", "rating", "stars"])
+    .default("price_asc"),
+  cursor: z.object({ id: z.string(), updatedAt: z.date() }).optional(),
+  limit: z.number().int().min(1).max(50).default(12),
+});
 
-export const clientHotelRouter = createTRPCRouter({
-  /* ── Khách sạn nổi bật trang chủ ── */
-  featured: baseProcedure.query(({ ctx }) =>
-    getOrSet(
-      "hotels:featured",
-      () =>
-        ctx.db.hotel.findMany({
-          where: { status: "ACTIVE" },
-          orderBy: { createdAt: "desc" },
-          take: 6,
-          select: {
-            id: true,
-            name: true,
-            slug: true,
-            starRating: true,
-            address: {
-              select: {
-                city: {
-                  select: { name: true, country: { select: { name: true } } },
-                },
-              },
-            },
-            images: {
-              where: { isPrimary: true },
-              take: 1,
-              select: { url: true, alt: true },
-            },
-            rooms: {
-              where: { isActive: true },
-              orderBy: { basePrice: "asc" },
-              take: 1,
-              select: { basePrice: true },
-            },
-            _count: { select: { reviews: { where: { status: "APPROVED" } } } },
+export const hotelRouter = createTRPCRouter({
+  featured: baseProcedure.query(async ({ ctx }) => {
+    const hotels = await ctx.db.hotel.findMany({
+      where: { status: "ACTIVE" },
+      take: 6,
+      orderBy: { createdAt: "desc" },
+      include: {
+        images: { where: { isPrimary: true }, take: 1 },
+        address: { include: { city: { include: { country: true } } } },
+        reviews: {
+          where: { status: "APPROVED" },
+          select: { overallRating: true },
+        },
+      },
+    });
+
+    return hotels.map((h) => ({
+      ...h,
+      avgRating:
+        h.reviews.length > 0
+          ? h.reviews.reduce((s, r) => s + r.overallRating, 0) /
+            h.reviews.length
+          : null,
+      reviewCount: h.reviews.length,
+    }));
+  }),
+
+  popularDestinations: baseProcedure.query(async ({ ctx }) => {
+    const cities = await ctx.db.city.findMany({
+      include: {
+        country: true,
+        addresses: {
+          include: {
+            hotel: { where: { status: "ACTIVE" }, select: { id: true } },
           },
-        }),
-      TTL.MEDIUM,
-    ),
-  ),
+        },
+      },
+    });
 
-  /* ── Danh sách infinite scroll ── */
-  list: baseProcedure
-    .input(
-      z.object({
-        cursor,
-        limit: z.number().min(1).max(50).default(12),
-        cityId: z.string().optional(),
-        countryId: z.string().optional(),
-        cityName: z.string().optional(),
-        checkIn: z.coerce.date().optional(),
-        checkOut: z.coerce.date().optional(),
-        guests: z.number().min(1).optional(),
-        minPrice: z.number().optional(),
-        maxPrice: z.number().optional(),
-        amenityIds: z.array(z.string()).optional(),
-        starRating: z.number().min(1).max(5).optional(),
-      }),
-    )
+    return cities
+      .map((c) => ({
+        id: c.id,
+        name: c.name,
+        country: c.country.name,
+        hotelCount: c.addresses.filter((a) => a.hotel).length,
+      }))
+      .filter((c) => c.hotelCount > 0)
+      .sort((a, b) => b.hotelCount - a.hotelCount)
+      .slice(0, 8);
+  }),
+
+  topAmenities: baseProcedure.query(async ({ ctx }) => {
+    const amenities = await ctx.db.amenity.findMany({
+      include: { hotels: { select: { hotelId: true } } },
+    });
+    return amenities
+      .map((a) => ({ ...a, usageCount: a.hotels.length }))
+      .sort((a, b) => b.usageCount - a.usageCount)
+      .slice(0, 12);
+  }),
+
+  highlightedReviews: baseProcedure.query(async ({ ctx }) => {
+    return ctx.db.review.findMany({
+      where: { status: "APPROVED", overallRating: { gte: 4 } },
+      take: 6,
+      orderBy: { overallRating: "desc" },
+      include: {
+        user: { select: { name: true, image: true } },
+        hotel: {
+          include: { images: { where: { isPrimary: true }, take: 1 } },
+        },
+      },
+    });
+  }),
+
+  search: baseProcedure
+    .input(HotelSearchInput)
     .query(async ({ ctx, input }) => {
-      const ip = (await headers()).get("x-forwarded-for") ?? "127.0.0.1";
-      const { success } = await searchRateLimit.limit(ip);
-      if (!success) throw new TRPCError({ code: "TOO_MANY_REQUESTS" });
-
       const {
-        cursor: cur,
-        limit,
-        cityId,
-        countryId,
-        cityName,
+        city,
+        country,
         checkIn,
         checkOut,
-        guests,
         minPrice,
         maxPrice,
-        amenityIds,
-        starRating,
+        stars,
+        amenities,
+        bedTypes,
+        roomTypes,
+        minRating,
+        sort,
+        cursor,
+        limit,
       } = input;
 
-      // Tìm phòng không khả dụng
-      let unavailableRoomIds: string[] = [];
+      const roomWhere: Record<string, unknown> = { isActive: true };
+      if (minPrice !== undefined) roomWhere.basePrice = { gte: minPrice };
+      if (maxPrice !== undefined) {
+        roomWhere.basePrice = {
+          ...((roomWhere.basePrice as object) ?? {}),
+          lte: maxPrice,
+        };
+      }
+      if (bedTypes?.length) {
+        roomWhere.beds = { some: { bedType: { name: { in: bedTypes } } } };
+      }
+      if (roomTypes?.length) {
+        roomWhere.roomType = { name: { in: roomTypes } };
+      }
       if (checkIn && checkOut) {
-        const locked = await ctx.db.roomAvailability.findMany({
-          where: {
-            date: { gte: checkIn, lt: checkOut },
-            status: { in: ["LOCKED", "BOOKED", "MAINTENANCE"] },
-            OR: [
-              { lockExpiresAt: null },
-              { lockExpiresAt: { gt: new Date() } },
-            ],
-          },
-          select: { roomId: true },
-          distinct: ["roomId"],
-        });
-        unavailableRoomIds = locked.map((r) => r.roomId);
+        const dates: Date[] = [];
+        const cur = new Date(checkIn);
+        while (cur < checkOut) {
+          dates.push(new Date(cur));
+          cur.setDate(cur.getDate() + 1);
+        }
+        roomWhere.availability = {
+          every: { date: { in: dates }, status: "AVAILABLE" },
+        };
       }
 
-      let availableHotelIds: string[] | undefined;
-      if (checkIn && checkOut) {
-        const rooms = await ctx.db.room.findMany({
-          where: {
-            isActive: true,
-            id: { notIn: unavailableRoomIds },
-            ...(guests ? { capacity: { gte: guests } } : {}),
+      const hotelWhere: Record<string, unknown> = { status: "ACTIVE" };
+      if (stars?.length) hotelWhere.starRating = { in: stars };
+      if (amenities?.length) {
+        hotelWhere.amenities = {
+          some: { amenity: { name: { in: amenities } } },
+        };
+      }
+      if (city) {
+        hotelWhere.address = {
+          city: { name: { contains: city, mode: "insensitive" } },
+        };
+      }
+      if (country) {
+        hotelWhere.address = {
+          ...((hotelWhere.address as object) ?? {}),
+          city: {
+            country: { name: { contains: country, mode: "insensitive" } },
           },
-          select: { hotelId: true },
-          distinct: ["hotelId"],
-        });
-        availableHotelIds = rooms.map((r) => r.hotelId);
+        };
+      }
+      if (cursor) {
+        hotelWhere.OR = [
+          { updatedAt: { lt: cursor.updatedAt } },
+          { updatedAt: cursor.updatedAt, id: { lt: cursor.id } },
+        ];
       }
 
-      const where = {
-        status: "ACTIVE" as const,
-        ...(starRating ? { starRating } : {}),
-        ...(availableHotelIds ? { id: { in: availableHotelIds } } : {}),
-        ...(amenityIds?.length
-          ? { amenities: { some: { amenityId: { in: amenityIds } } } }
-          : {}),
-        ...(minPrice || maxPrice
-          ? {
-              rooms: {
-                some: {
-                  isActive: true,
-                  basePrice: {
-                    ...(minPrice ? { gte: minPrice } : {}),
-                    ...(maxPrice ? { lte: maxPrice } : {}),
-                  },
+      const orderBy =
+        sort === "price_asc" || sort === "price_desc"
+          ? [
+              {
+                rooms: {
+                  _min: { basePrice: sort === "price_asc" ? "asc" : "desc" },
                 },
               },
-            }
-          : {}),
-        ...(cityId || countryId || cityName
-          ? {
-              address: {
-                city: {
-                  ...(cityId ? { id: cityId } : {}),
-                  ...(cityName
-                    ? {
-                        name: {
-                          contains: cityName,
-                          mode: "insensitive" as const,
-                        },
-                      }
-                    : {}),
-                  ...(countryId ? { countryId } : {}),
-                },
-              },
-            }
-          : {}),
-        ...(cur
-          ? {
-              OR: [
-                { updatedAt: { lt: cur.updatedAt } },
-                { AND: [{ updatedAt: cur.updatedAt }, { id: { lt: cur.id } }] },
-              ],
-            }
-          : {}),
-      };
+            ]
+          : sort === "stars"
+            ? [{ starRating: "desc" }]
+            : [{ updatedAt: "desc" }];
 
-      const items = await ctx.db.hotel.findMany({
-        where,
-        orderBy: [{ updatedAt: "desc" }, { id: "desc" }],
+      const hotels = await ctx.db.hotel.findMany({
+        where: {
+          ...hotelWhere,
+          rooms: { some: roomWhere },
+        },
         take: limit + 1,
-        select: {
-          id: true,
-          name: true,
-          slug: true,
-          starRating: true,
-          updatedAt: true,
-          address: {
-            select: {
-              street: true,
-              city: {
-                select: { name: true, country: { select: { name: true } } },
-              },
-            },
-          },
-          images: {
-            where: { isPrimary: true },
-            take: 1,
-            select: { url: true, alt: true },
-          },
-          amenities: {
-            take: 5,
-            select: {
-              amenity: { select: { id: true, name: true, icon: true } },
-            },
+        orderBy: orderBy as never,
+        include: {
+          images: { where: { isPrimary: true }, take: 1 },
+          address: { include: { city: { include: { country: true } } } },
+          amenities: { include: { amenity: true }, take: 5 },
+          reviews: {
+            where: { status: "APPROVED" },
+            select: { overallRating: true },
           },
           rooms: {
-            where: { isActive: true },
+            where: roomWhere,
             orderBy: { basePrice: "asc" },
             take: 1,
             select: { basePrice: true },
+          },
+        },
+      });
+
+      let nextCursor: { id: string; updatedAt: Date } | null = null;
+      if (hotels.length > limit) {
+        hotels.pop();
+        const last = hotels[hotels.length - 1];
+        nextCursor = { id: last.id, updatedAt: last.updatedAt };
+      }
+
+      const results = hotels.map((h) => {
+        const reviews = h.reviews;
+        const avgRating =
+          reviews.length > 0
+            ? reviews.reduce((s, r) => s + r.overallRating, 0) / reviews.length
+            : null;
+        return {
+          ...h,
+          avgRating,
+          reviewCount: reviews.length,
+          minPrice: h.rooms[0]?.basePrice ?? null,
+        };
+      });
+
+      if (minRating !== undefined) {
+        return {
+          items: results.filter((h) => (h.avgRating ?? 0) >= minRating),
+          nextCursor,
+        };
+      }
+
+      return { items: results, nextCursor };
+    }),
+
+  detail: baseProcedure
+    .input(
+      z.object({
+        slug: z.string(),
+        checkIn: z.date().optional(),
+        checkOut: z.date().optional(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const hotel = await ctx.db.hotel.findUnique({
+        where: { slug: input.slug, status: "ACTIVE" },
+        include: {
+          images: { orderBy: [{ isPrimary: "desc" }, { sortOrder: "asc" }] },
+          address: { include: { city: { include: { country: true } } } },
+          policy: true,
+          amenities: { include: { amenity: true } },
+          rooms: {
+            where: { isActive: true },
+            include: {
+              roomType: true,
+              images: { where: { isPrimary: true }, take: 1 },
+              beds: { include: { bedType: true } },
+              amenities: { include: { amenity: true } },
+              availability:
+                input.checkIn && input.checkOut
+                  ? {
+                      where: {
+                        date: { gte: input.checkIn, lt: input.checkOut },
+                      },
+                    }
+                  : undefined,
+            },
+          },
+          reviews: {
+            where: { status: "APPROVED" },
+            take: 5,
+            orderBy: { createdAt: "desc" },
+            include: {
+              user: { select: { name: true, image: true } },
+            },
           },
           _count: { select: { reviews: { where: { status: "APPROVED" } } } },
         },
       });
 
-      let nextCursor: typeof cur = null;
-      if (items.length > limit) {
-        const last = items.pop()!;
-        nextCursor = { id: last.id, updatedAt: last.updatedAt };
+      if (!hotel)
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Khách sạn không tồn tại",
+        });
+
+      const allApprovedReviews = await ctx.db.review.aggregate({
+        where: { hotelId: hotel.id, status: "APPROVED" },
+        _avg: { overallRating: true },
+        _count: true,
+      });
+
+      let availableRooms = hotel.rooms;
+      if (input.checkIn && input.checkOut) {
+        const nights = Math.round(
+          (input.checkOut.getTime() - input.checkIn.getTime()) /
+            (1000 * 60 * 60 * 24),
+        );
+        availableRooms = hotel.rooms.filter((r) => {
+          const available = r.availability?.every(
+            (a) => a.status === "AVAILABLE",
+          );
+          return available !== false;
+        });
+        availableRooms = availableRooms.map((r) => ({
+          ...r,
+          totalPrice: Number(r.basePrice) * nights,
+          nights,
+        })) as typeof availableRooms;
       }
-      return { items, nextCursor };
+
+      return {
+        ...hotel,
+        rooms: availableRooms,
+        avgRating: allApprovedReviews._avg.overallRating,
+        reviewCount: allApprovedReviews._count,
+      };
     }),
 
-  /* ── Chi tiết theo slug ── */
-  detail: baseProcedure
-    .input(z.object({ slug: z.string() }))
-    .query(({ ctx, input }) =>
-      getOrSet(
-        `hotel:${input.slug}`,
-        async () => {
-          const hotel = await ctx.db.hotel.findUnique({
-            where: { slug: input.slug, status: "ACTIVE" },
-            include: {
-              address: { include: { city: { include: { country: true } } } },
-              policy: true,
-              images: {
-                orderBy: [{ isPrimary: "desc" }, { sortOrder: "asc" }],
-              },
-              amenities: { include: { amenity: true } },
-              rooms: {
-                where: { isActive: true },
-                include: {
-                  images: {
-                    orderBy: [{ isPrimary: "desc" }, { sortOrder: "asc" }],
-                  },
-                  roomType: {
-                    select: {
-                      name: true,
-                    },
-                  },
-                  beds: {
-                    include: {
-                      bedType: {
-                        select: {
-                          name: true,
-                        },
-                      },
-                    },
-                  },
-                  amenities: { include: { amenity: true } },
-                },
-              },
-              _count: {
-                select: { reviews: { where: { status: "APPROVED" } } },
-              },
-            },
-          });
-          
-          if (!hotel) throw new TRPCError({ code: "NOT_FOUND" });
-          return hotel;
-        },
-        TTL.LONG,
-      ),
-    ),
-
-  /* ── Đánh giá infinite ── */
   reviews: baseProcedure
     .input(
       z.object({
         hotelId: z.string(),
-        cursor,
-        limit: z.number().min(1).max(20).default(10),
+        cursor: z.object({ id: z.string(), updatedAt: z.date() }).optional(),
+        limit: z.number().int().default(10),
       }),
     )
     .query(async ({ ctx, input }) => {
-      const { hotelId, cursor: cur, limit } = input;
-      const items = await ctx.db.review.findMany({
-        where: {
-          hotelId,
-          status: "APPROVED",
-          ...(cur
-            ? {
-                OR: [
-                  { updatedAt: { lt: cur.updatedAt } },
-                  {
-                    AND: [{ updatedAt: cur.updatedAt }, { id: { lt: cur.id } }],
-                  },
-                ],
-              }
-            : {}),
-        },
+      const where: Record<string, unknown> = {
+        hotelId: input.hotelId,
+        status: "APPROVED",
+      };
+      if (input.cursor) {
+        where.OR = [
+          { updatedAt: { lt: input.cursor.updatedAt } },
+          { updatedAt: input.cursor.updatedAt, id: { lt: input.cursor.id } },
+        ];
+      }
+
+      const reviews = await ctx.db.review.findMany({
+        where,
+        take: input.limit + 1,
         orderBy: [{ updatedAt: "desc" }, { id: "desc" }],
-        take: limit + 1,
-        select: {
-          id: true,
-          overallRating: true,
-          title: true,
-          comment: true,
-          createdAt: true,
-          updatedAt: true,
-          user: { select: { name: true, image: true } },
-        },
+        include: { user: { select: { name: true, image: true } } },
       });
 
-      let nextCursor: typeof cur = null;
-      if (items.length > limit) {
-        const last = items.pop()!;
+      let nextCursor: { id: string; updatedAt: Date } | null = null;
+      if (reviews.length > input.limit) {
+        reviews.pop();
+        const last = reviews[reviews.length - 1];
         nextCursor = { id: last.id, updatedAt: last.updatedAt };
       }
-      return { items, nextCursor };
+
+      return { items: reviews, nextCursor };
     }),
 
-  /* ── Danh sách địa điểm cho search ── */
-  locations: baseProcedure.query(({ ctx }) =>
-    getOrSet(
-      "locations:all",
-      () =>
-        ctx.db.country.findMany({
-          include: { cities: { orderBy: { name: "asc" } } },
-          orderBy: { name: "asc" },
-        }),
-      TTL.DAY,
-    ),
-  ),
+  filterOptions: baseProcedure.query(async ({ ctx }) => {
+    const [amenities, bedTypes, roomTypes] = await Promise.all([
+      ctx.db.amenity.findMany({ select: { id: true, name: true, icon: true } }),
+      ctx.db.bedType.findMany({ select: { id: true, name: true } }),
+      ctx.db.roomType.findMany({ select: { id: true, name: true } }),
+    ]);
+    return { amenities, bedTypes, roomTypes };
+  }),
 });

@@ -1,75 +1,58 @@
 "use client";
 
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
-import { useEffect, useRef } from "react";
-import type { HotelSearchParams } from "@/lib/search-params/hotel-search";
 import { useTRPC } from "@/trpc/client";
+import { HotelSearchParams } from "@/lib/search-params/hotel-search";
 
-export function useInfiniteScroll(
-  fetchNextPage: () => void,
-  hasNextPage: boolean,
-  isFetchingNextPage: boolean,
-) {
-  const ref = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const observer = new IntersectionObserver(([entry]) => {
-      if (entry.isIntersecting && hasNextPage && !isFetchingNextPage)
-        fetchNextPage();
-    });
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
-
-  return ref;
-}
-
-/* ── Featured hotels (trang chủ) ── */
-export function useFeaturedHotels() {
+export function useHotelSearch(params: HotelSearchParams) {
   const trpc = useTRPC();
-  return useQuery(trpc.client.hotel.featured.queryOptions());
-}
 
-/* ── Danh sách infinite scroll ── */
-export function useHotelList(params: Partial<HotelSearchParams> = {}) {
-  const trpc = useTRPC();
   return useInfiniteQuery(
-    trpc.client.hotel.list.infiniteQueryOptions(
+    trpc.client.hotel.search.infiniteQueryOptions(
       {
-        limit: 12,
-        cityId: params.cityId ?? undefined,
-        countryId: params.countryId ?? undefined,
-        cityName: params.cityName ?? undefined,
+        city: params.city || undefined,
+        country: params.country || undefined,
         checkIn: params.checkIn ?? undefined,
         checkOut: params.checkOut ?? undefined,
-        guests: params.guests ?? undefined,
+        adults: params.adults,
+        children: params.children,
         minPrice: params.minPrice ?? undefined,
         maxPrice: params.maxPrice ?? undefined,
-        amenityIds: params.amenityIds ?? undefined,
-        starRating: params.starRating ?? undefined,
+        stars: params.stars?.length ? params.stars : undefined,
+        amenities: params.amenities?.length ? params.amenities : undefined,
+        bedTypes: params.bedTypes?.length ? params.bedTypes : undefined,
+        roomTypes: params.roomTypes?.length ? params.roomTypes : undefined,
+        minRating: params.minRating ?? undefined,
+        sort:
+          (params.sort as "price_asc" | "price_desc" | "rating" | "stars") ??
+          "price_asc",
+        limit: params.limit,
       },
-      { getNextPageParam: (last) => last.nextCursor, initialCursor: null },
+      {
+        getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
+        initialCursor: undefined,
+      },
     ),
   );
 }
 
-/* ── Chi tiết khách sạn ── */
-export function useHotelDetail(slug: string) {
+export function useHotelDetail(slug: string, checkIn?: Date, checkOut?: Date) {
   const trpc = useTRPC();
   return useQuery(
-    trpc.client.hotel.detail.queryOptions({ slug }, { enabled: !!slug }),
+    trpc.client.hotel.detail.queryOptions(
+      { slug, checkIn, checkOut },
+      { enabled: !!slug },
+    ),
   );
 }
 
-/* ── Đánh giá infinite scroll ── */
 export function useHotelReviews(hotelId: string) {
   const trpc = useTRPC();
   return useInfiniteQuery(
     trpc.client.hotel.reviews.infiniteQueryOptions(
       { hotelId, limit: 10 },
       {
-        getNextPageParam: (last) => last.nextCursor,
+        getNextPageParam: (last) => last.nextCursor ?? null,
         initialCursor: null,
         enabled: !!hotelId,
       },
@@ -77,8 +60,7 @@ export function useHotelReviews(hotelId: string) {
   );
 }
 
-/* ── Địa điểm cho search bar ── */
-export function useLocations() {
+export function useHotelFilterOptions() {
   const trpc = useTRPC();
-  return useQuery(trpc.client.hotel.locations.queryOptions());
+  return useQuery(trpc.client.hotel.filterOptions.queryOptions());
 }

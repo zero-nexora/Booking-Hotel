@@ -1,12 +1,12 @@
-import { clientHotelRouter } from "./hotel";
-import { clientBookingRouter } from "./booking";
-import { clientReviewRouter } from "./review";
-import { clientUserRouter } from "./user";
 import { createTRPCRouter } from "@/trpc/init";
+import { hotelRouter } from "./hotel";
+import { bookingRouter } from "./booking";
+import { reviewRouter } from "./review";
+import { userRouter } from "./user";
 
 export const clientRouter = createTRPCRouter({
-  hotel: clientHotelRouter,
-  booking: clientBookingRouter,
-  review: clientReviewRouter,
-  user: clientUserRouter,
+  hotel: hotelRouter,
+  booking: bookingRouter,
+  review: reviewRouter,
+  user: userRouter,
 });

@@ -1,121 +1,81 @@
 import { z } from "zod";
-import { bookingRateLimit } from "@/lib/rate-limit";
-import { stripe } from "@/lib/stripe";
-import { TRPCError } from "@trpc/server";
-import { randomUUID } from "crypto";
 import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
+import { TRPCError } from "@trpc/server";
+import Stripe from "stripe";
+import { calcNights, calcTotal, getBookingExpiresAt } from "@/lib/utils";
 
-const CURRENCY = "usd";
-const LOCK_MINUTES = 15;
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
-function getDateRange(checkIn: Date, checkOut: Date): Date[] {
-  const dates: Date[] = [];
-  const cur = new Date(checkIn);
-  while (cur < checkOut) {
-    dates.push(new Date(cur));
-    cur.setDate(cur.getDate() + 1);
-  }
-  return dates;
-}
+const GuestInfoSchema = z.object({
+  guestName: z.string().min(1),
+  guestEmail: z.string().email(),
+  guestPhone: z.string().optional(),
+  specialRequests: z.string().optional(),
+});
 
-const cursor = z
-  .object({ id: z.string(), updatedAt: z.coerce.date() })
-  .nullish();
-
-export const clientBookingRouter = createTRPCRouter({
-  /* ── Tạo booking + Stripe PaymentIntent ── */
-  create: protectedProcedure
+export const bookingRouter = createTRPCRouter({
+  createIntent: protectedProcedure
     .input(
       z.object({
-        hotelId: z.string(),
-        roomId: z.string(),
-        checkIn: z.coerce.date(),
-        checkOut: z.coerce.date(),
-        adults: z.number().min(1),
-        children: z.number().min(0).default(0),
-        guestName: z.string().min(2),
-        guestEmail: z.string().email(),
-        guestPhone: z.string().optional(),
-        specialRequests: z.string().optional(),
+        hotelSlug: z.string(),
+        roomSlug: z.string(),
+        checkIn: z.date(),
+        checkOut: z.date(),
+        adults: z.number().int().min(1),
+        children: z.number().int().min(0).default(0),
+        ...GuestInfoSchema.shape,
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const { success } = await bookingRateLimit.limit(ctx.user.id);
-      if (!success) throw new TRPCError({ code: "TOO_MANY_REQUESTS" });
-
-      if (input.checkIn >= input.checkOut)
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Ngày trả phòng phải sau ngày nhận phòng",
-        });
-
-      const nights = Math.ceil(
-        (input.checkOut.getTime() - input.checkIn.getTime()) / 86_400_000,
-      );
-
-      const room = await ctx.db.room.findUnique({
-        where: { id: input.roomId, isActive: true },
-        include: { hotel: { select: { status: true } } },
+      const hotel = await ctx.db.hotel.findUnique({
+        where: { slug: input.hotelSlug, status: "ACTIVE" },
+        include: { policy: true },
       });
-      if (!room || room.hotel.status !== "ACTIVE")
+      if (!hotel)
         throw new TRPCError({
           code: "NOT_FOUND",
-          message: "Phòng không khả dụng",
+          message: "Khách sạn không tồn tại",
         });
 
-      const dates = getDateRange(input.checkIn, input.checkOut);
-      const lockToken = randomUUID();
-      const lockExpiresAt = new Date(Date.now() + LOCK_MINUTES * 60_000);
-
-      return ctx.db.$transaction(async (tx) => {
-        // Kiểm tra phòng bị khoá / đặt
-        const blocked = await tx.roomAvailability.findMany({
-          where: {
-            roomId: input.roomId,
-            date: { in: dates },
-            status: { in: ["LOCKED", "BOOKED", "MAINTENANCE"] },
-            OR: [
-              { lockExpiresAt: null },
-              { lockExpiresAt: { gt: new Date() } },
-            ],
-          },
-        });
-        if (blocked.length)
-          throw new TRPCError({
-            code: "CONFLICT",
-            message: "Phòng đã được đặt trong khoảng thời gian này",
-          });
-
-        // Upsert availability → LOCKED
-        const existing = await tx.roomAvailability.findMany({
-          where: { roomId: input.roomId, date: { in: dates } },
-          select: { date: true },
-        });
-        const existingSet = new Set(existing.map((r) => r.date.toISOString()));
-
-        await tx.roomAvailability.createMany({
-          data: dates
-            .filter((d) => !existingSet.has(d.toISOString()))
-            .map((d) => ({
-              roomId: input.roomId,
-              date: d,
-              status: "LOCKED" as const,
-              lockToken,
-              lockExpiresAt,
-            })),
-        });
-        await tx.roomAvailability.updateMany({
-          where: { roomId: input.roomId, date: { in: dates } },
-          data: { status: "LOCKED", lockToken, lockExpiresAt },
+      const room = await ctx.db.room.findFirst({
+        where: { hotelId: hotel.id, slug: input.roomSlug, isActive: true },
+      });
+      if (!room)
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Phòng không tồn tại",
         });
 
-        const unitPrice = Number(room.basePrice);
-        const total = unitPrice * nights;
+      const nights = calcNights(input.checkIn, input.checkOut);
+      const total = calcTotal(room.basePrice, nights);
 
-        const booking = await tx.booking.create({
+      const dates: Date[] = [];
+      const cur = new Date(input.checkIn);
+      while (cur < input.checkOut) {
+        dates.push(new Date(cur));
+        cur.setDate(cur.getDate() + 1);
+      }
+
+      const unavailable = await ctx.db.roomAvailability.findFirst({
+        where: {
+          roomId: room.id,
+          date: { in: dates },
+          status: { not: "AVAILABLE" },
+        },
+      });
+      if (unavailable)
+        throw new TRPCError({
+          code: "CONFLICT",
+          message: "Phòng đã được đặt trong khoảng ngày này",
+        });
+
+      const expiresAt = getBookingExpiresAt();
+
+      const booking = await ctx.db.$transaction(async (tx) => {
+        const b = await tx.booking.create({
           data: {
             userId: ctx.user.id,
-            hotelId: input.hotelId,
+            hotelId: hotel.id,
             status: "PENDING",
             paymentStatus: "UNPAID",
             guestName: input.guestName,
@@ -126,16 +86,16 @@ export const clientBookingRouter = createTRPCRouter({
             checkOut: input.checkOut,
             totalAmount: total,
             currency: "USD",
-            expiresAt: lockExpiresAt,
+            expiresAt,
             items: {
               create: {
-                roomId: input.roomId,
+                roomId: room.id,
                 checkIn: input.checkIn,
                 checkOut: input.checkOut,
                 nights,
                 adults: input.adults,
                 children: input.children,
-                unitPrice,
+                unitPrice: room.basePrice,
                 total,
                 currency: "USD",
                 status: "PENDING",
@@ -145,47 +105,138 @@ export const clientBookingRouter = createTRPCRouter({
           include: { items: true },
         });
 
+        const bookingItem = b.items[0];
+        await tx.roomAvailability.createMany({
+          data: dates.map((date) => ({
+            roomId: room.id,
+            date,
+            status: "LOCKED",
+            bookingItemId: bookingItem.id,
+            lockToken: b.id,
+            lockExpiresAt: expiresAt,
+          })),
+          skipDuplicates: true,
+        });
+
         await tx.roomAvailability.updateMany({
-          where: { roomId: input.roomId, date: { in: dates }, lockToken },
-          data: { bookingItemId: booking.items[0].id },
-        });
-
-        const paymentIntent = await stripe.paymentIntents.create({
-          amount: Math.round(total),
-          currency: CURRENCY,
-          metadata: {
-            bookingId: booking.id,
-            bookingRef: booking.bookingRef,
-            userId: ctx.user.id,
-          },
-        });
-
-        await tx.payment.create({
+          where: { roomId: room.id, date: { in: dates } },
           data: {
-            bookingId: booking.id,
-            userId: ctx.user.id,
-            type: "CHARGE",
-            status: "PENDING",
-            amount: total,
-            currency: "USD",
-            stripePaymentIntentId: paymentIntent.id,
+            status: "LOCKED",
+            bookingItemId: bookingItem.id,
+            lockToken: b.id,
+            lockExpiresAt: expiresAt,
           },
         });
 
-        return {
-          bookingRef: booking.bookingRef,
-          clientSecret: paymentIntent.client_secret,
-          expiresAt: lockExpiresAt,
-        };
+        return b;
       });
+
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: Math.round(total * 100),
+        currency: "usd",
+        metadata: { bookingId: booking.id, bookingRef: booking.bookingRef },
+      });
+
+      await ctx.db.payment.create({
+        data: {
+          bookingId: booking.id,
+          userId: ctx.user.id,
+          type: "CHARGE",
+          status: "PENDING",
+          amount: total,
+          currency: "USD",
+          stripePaymentIntentId: paymentIntent.id,
+        },
+      });
+
+      return {
+        bookingRef: booking.bookingRef,
+        bookingId: booking.id,
+        clientSecret: paymentIntent.client_secret,
+        expiresAt,
+        total,
+        currency: "USD",
+        nights,
+      };
     }),
 
-  /* ── Danh sách booking của user (infinite) ── */
-  list: protectedProcedure
+  confirmPayment: protectedProcedure
+    .input(z.object({ bookingId: z.string(), paymentIntentId: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const payment = await ctx.db.payment.findFirst({
+        where: {
+          bookingId: input.bookingId,
+          stripePaymentIntentId: input.paymentIntentId,
+        },
+        include: { booking: { include: { items: true } } },
+      });
+      if (!payment) throw new TRPCError({ code: "NOT_FOUND" });
+      if (payment.booking.userId !== ctx.user.id)
+        throw new TRPCError({ code: "FORBIDDEN" });
+
+      const intent = await stripe.paymentIntents.retrieve(
+        input.paymentIntentId,
+      );
+      if (intent.status !== "succeeded") {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Thanh toán chưa hoàn tất",
+        });
+      }
+
+      await ctx.db.$transaction(async (tx) => {
+        await tx.booking.update({
+          where: { id: input.bookingId },
+          data: { status: "CONFIRMED", paymentStatus: "PAID", expiresAt: null },
+        });
+        await tx.bookingItem.updateMany({
+          where: { bookingId: input.bookingId },
+          data: { status: "CONFIRMED" },
+        });
+        await tx.payment.update({
+          where: { id: payment.id },
+          data: { status: "PAID", paidAt: new Date() },
+        });
+        for (const item of payment.booking.items) {
+          await tx.roomAvailability.updateMany({
+            where: { bookingItemId: item.id },
+            data: { status: "BOOKED", lockToken: null, lockExpiresAt: null },
+          });
+        }
+      });
+
+      return { bookingRef: payment.booking.bookingRef };
+    }),
+
+  getConfirmation: protectedProcedure
+    .input(z.object({ bookingRef: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const booking = await ctx.db.booking.findUnique({
+        where: { bookingRef: input.bookingRef },
+        include: {
+          hotel: {
+            include: {
+              address: { include: { city: { include: { country: true } } } },
+              policy: true,
+            },
+          },
+          items: {
+            include: {
+              room: { include: { roomType: true } },
+            },
+          },
+          payments: { orderBy: { createdAt: "desc" } },
+        },
+      });
+      if (!booking) throw new TRPCError({ code: "NOT_FOUND" });
+      if (booking.userId !== ctx.user.id)
+        throw new TRPCError({ code: "FORBIDDEN" });
+      return booking;
+    }),
+
+  myBookings: protectedProcedure
     .input(
       z.object({
-        cursor,
-        limit: z.number().min(1).max(20).default(10),
         status: z
           .enum([
             "PENDING",
@@ -196,89 +247,53 @@ export const clientBookingRouter = createTRPCRouter({
             "NO_SHOW",
           ])
           .optional(),
+        cursor: z.object({ id: z.string(), updatedAt: z.date() }).optional(),
+        limit: z.number().int().default(10),
       }),
     )
     .query(async ({ ctx, input }) => {
-      const { cursor: cur, limit, status } = input;
+      const where: Record<string, unknown> = { userId: ctx.user.id };
+      if (input.status) where.status = input.status;
+      if (input.cursor) {
+        where.OR = [
+          { updatedAt: { lt: input.cursor.updatedAt } },
+          { updatedAt: input.cursor.updatedAt, id: { lt: input.cursor.id } },
+        ];
+      }
 
-      const items = await ctx.db.booking.findMany({
-        where: {
-          userId: ctx.user.id,
-          ...(status ? { status } : {}),
-          ...(cur
-            ? {
-                OR: [
-                  { updatedAt: { lt: cur.updatedAt } },
-                  {
-                    AND: [{ updatedAt: cur.updatedAt }, { id: { lt: cur.id } }],
-                  },
-                ],
-              }
-            : {}),
-        },
+      const bookings = await ctx.db.booking.findMany({
+        where,
+        take: input.limit + 1,
         orderBy: [{ updatedAt: "desc" }, { id: "desc" }],
-        take: limit + 1,
-        select: {
-          id: true,
-          bookingRef: true,
-          status: true,
-          paymentStatus: true,
-          checkIn: true,
-          checkOut: true,
-          totalAmount: true,
-          currency: true,
-          createdAt: true,
-          updatedAt: true,
+        include: {
           hotel: {
-            select: {
-              name: true,
-              slug: true,
-              images: {
-                where: { isPrimary: true },
-                take: 1,
-                select: { url: true },
-              },
-              address: {
-                select: {
-                  city: {
-                    select: { name: true, country: { select: { name: true } } },
-                  },
-                },
-              },
-            },
+            include: { images: { where: { isPrimary: true }, take: 1 } },
           },
           items: {
-            select: {
-              nights: true,
-              room: {
-                select: { name: true, roomType: { select: { name: true } } },
-              },
-            },
+            include: { room: { include: { roomType: true } } },
           },
+          _count: { select: { payments: true } },
         },
       });
 
-      let nextCursor: typeof cur = null;
-      if (items.length > limit) {
-        const last = items.pop()!;
+      let nextCursor: { id: string; updatedAt: Date } | null = null;
+      if (bookings.length > input.limit) {
+        bookings.pop();
+        const last = bookings[bookings.length - 1];
         nextCursor = { id: last.id, updatedAt: last.updatedAt };
       }
-      return { items, nextCursor };
+
+      return { items: bookings, nextCursor };
     }),
 
-  /* ── Chi tiết booking ── */
-  detail: protectedProcedure
+  bookingDetail: protectedProcedure
     .input(z.object({ bookingRef: z.string() }))
     .query(async ({ ctx, input }) => {
-      const booking = await ctx.db.booking.findFirst({
-        where: { bookingRef: input.bookingRef, userId: ctx.user.id },
+      const booking = await ctx.db.booking.findUnique({
+        where: { bookingRef: input.bookingRef },
         include: {
           hotel: {
-            select: {
-              name: true,
-              slug: true,
-              phone: true,
-              images: { where: { isPrimary: true }, take: 1 },
+            include: {
               address: { include: { city: { include: { country: true } } } },
               policy: true,
             },
@@ -286,49 +301,44 @@ export const clientBookingRouter = createTRPCRouter({
           items: {
             include: {
               room: {
-                select: {
-                  name: true,
-                  roomType: {
-                    select: {
-                      name: true,
-                    },
-                  },
+                include: {
+                  roomType: true,
                   images: { where: { isPrimary: true }, take: 1 },
                 },
               },
             },
           },
-          payments: {
-            select: {
-              id: true,
-              type: true,
-              status: true,
-              amount: true,
-              currency: true,
-              paidAt: true,
-              refundedAt: true,
-            },
-          },
-          review: { select: { id: true, overallRating: true, status: true } },
+          payments: { orderBy: { createdAt: "asc" } },
+          review: true,
         },
       });
       if (!booking) throw new TRPCError({ code: "NOT_FOUND" });
+      if (booking.userId !== ctx.user.id)
+        throw new TRPCError({ code: "FORBIDDEN" });
       return booking;
     }),
 
-  /* ── Hủy booking ── */
   cancel: protectedProcedure
-    .input(z.object({ bookingId: z.string(), reason: z.string().optional() }))
+    .input(
+      z.object({ bookingRef: z.string(), cancelReason: z.string().optional() }),
+    )
     .mutation(async ({ ctx, input }) => {
-      const booking = await ctx.db.booking.findFirst({
-        where: {
-          id: input.bookingId,
-          userId: ctx.user.id,
-          status: { in: ["PENDING", "CONFIRMED"] },
+      const booking = await ctx.db.booking.findUnique({
+        where: { bookingRef: input.bookingRef },
+        include: {
+          items: true,
+          payments: { where: { status: "PAID", type: "CHARGE" } },
         },
-        include: { items: true },
       });
       if (!booking) throw new TRPCError({ code: "NOT_FOUND" });
+      if (booking.userId !== ctx.user.id)
+        throw new TRPCError({ code: "FORBIDDEN" });
+      if (!["PENDING", "CONFIRMED"].includes(booking.status)) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Không thể huỷ đặt phòng ở trạng thái này",
+        });
+      }
 
       await ctx.db.$transaction(async (tx) => {
         await tx.booking.update({
@@ -336,50 +346,81 @@ export const clientBookingRouter = createTRPCRouter({
           data: {
             status: "CANCELLED",
             cancelledAt: new Date(),
-            cancelReason: input.reason,
+            cancelReason: input.cancelReason,
           },
         });
         await tx.bookingItem.updateMany({
           where: { bookingId: booking.id },
           data: { status: "CANCELLED" },
         });
-        await tx.roomAvailability.updateMany({
-          where: { bookingItemId: { in: booking.items.map((i) => i.id) } },
-          data: {
-            status: "AVAILABLE",
-            bookingItemId: null,
-            lockToken: null,
-            lockExpiresAt: null,
-          },
-        });
+        for (const item of booking.items) {
+          await tx.roomAvailability.updateMany({
+            where: { bookingItemId: item.id },
+            data: {
+              status: "AVAILABLE",
+              bookingItemId: null,
+              lockToken: null,
+              lockExpiresAt: null,
+            },
+          });
+        }
 
-        const paidPayment = await tx.payment.findFirst({
-          where: { bookingId: booking.id, status: "PAID", type: "CHARGE" },
-        });
-        if (paidPayment?.stripePaymentIntentId) {
-          const pi = await stripe.paymentIntents.retrieve(
-            paidPayment.stripePaymentIntentId,
-          );
-          if (pi.latest_charge) {
+        for (const payment of booking.payments) {
+          if (payment.stripePaymentIntentId) {
             const refund = await stripe.refunds.create({
-              charge: pi.latest_charge as string,
-              metadata: { bookingId: booking.id },
+              payment_intent: payment.stripePaymentIntentId,
             });
             await tx.payment.create({
               data: {
                 bookingId: booking.id,
                 userId: ctx.user.id,
                 type: "REFUND",
-                status: "PENDING",
-                amount: Number(paidPayment.amount),
-                currency: "VND",
+                status: "REFUNDED",
+                amount: payment.amount,
+                currency: payment.currency,
                 stripeRefundId: refund.id,
+                refundedAt: new Date(),
               },
             });
           }
+        }
+
+        if (booking.payments.length > 0) {
+          await tx.booking.update({
+            where: { id: booking.id },
+            data: { paymentStatus: "REFUNDED" },
+          });
         }
       });
 
       return { success: true };
     }),
+
+  quickStats: protectedProcedure.query(async ({ ctx }) => {
+    const [bookingCount, reviewCount, totalSpent] = await Promise.all([
+      ctx.db.booking.count({ where: { userId: ctx.user.id } }),
+      ctx.db.review.count({ where: { userId: ctx.user.id } }),
+      ctx.db.payment.aggregate({
+        where: { userId: ctx.user.id, status: "PAID", type: "CHARGE" },
+        _sum: { amount: true },
+      }),
+    ]);
+    return {
+      bookingCount,
+      reviewCount,
+      totalSpent: totalSpent._sum.amount ?? 0,
+    };
+  }),
+
+  recentBookings: protectedProcedure.query(async ({ ctx }) => {
+    return ctx.db.booking.findMany({
+      where: { userId: ctx.user.id },
+      take: 5,
+      orderBy: { createdAt: "desc" },
+      include: {
+        hotel: { include: { images: { where: { isPrimary: true }, take: 1 } } },
+        items: { include: { room: true }, take: 1 },
+      },
+    });
+  }),
 });

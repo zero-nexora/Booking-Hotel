@@ -31,7 +31,6 @@ const ImageCard = ({ image, onDelete }: ImageCardProps) => (
       alt={image.alt ?? ""}
       fill
       className="object-cover"
-      sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 25vw"
     />
     {image.isPrimary && (
       <div className="absolute top-2 left-2 z-10 bg-amber-400 text-white rounded px-1.5 py-0.5 flex items-center gap-1 text-xs font-medium">

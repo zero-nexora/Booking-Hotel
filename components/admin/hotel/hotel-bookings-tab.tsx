@@ -26,6 +26,7 @@ import { format } from "date-fns";
 import { RouterOutput } from "@/trpc/client";
 import { BookingStatus, PaymentStatus } from "@/generated/prisma/enums";
 import { TableSkeleton } from "@/components/shared/table-skeleton";
+import { DEFAULT_PAGE } from "@/lib/constants";
 
 type Booking = RouterOutput["admin"]["booking"]["list"]["items"][number];
 
@@ -199,7 +200,7 @@ export const HotelBookingsTab = ({ hotelId }: HotelBookingsTabProps) => {
             total={data.total}
             limit={params.limit}
             onPageChange={(p) => void setParams({ page: p })}
-            onLimitChange={(l) => void setParams({ limit: l, page: 1 })}
+            onLimitChange={(l) => void setParams({ limit: l, page: DEFAULT_PAGE })}
           />
         )}
       </Card>

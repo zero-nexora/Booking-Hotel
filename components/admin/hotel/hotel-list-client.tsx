@@ -36,6 +36,7 @@ import {
 import { useCityList, useCountryList } from "@/hooks/admin/use-admin-locations";
 import { ListHeader } from "@/components/shared/list-header";
 import { TableSkeleton } from "@/components/shared/table-skeleton";
+import { DEFAULT_PAGE } from "@/lib/constants";
 
 type Hotel = RouterOutput["admin"]["hotel"]["list"]["items"][number];
 
@@ -82,7 +83,7 @@ export const HotelListClient = () => {
         <div className="flex flex-wrap gap-3">
           <SearchInput
             value={params.search}
-            onChange={(v) => setParams({ search: v, page: 1 })}
+            onChange={(v) => setParams({ search: v, page: DEFAULT_PAGE })}
             placeholder="Tìm tên khách sạn..."
             className="w-64"
           />
@@ -91,7 +92,7 @@ export const HotelListClient = () => {
             onValueChange={(v) =>
               setParams({
                 status: v === "all" ? null : (v as HotelStatus),
-                page: 1,
+                page: DEFAULT_PAGE,
               })
             }
           >
@@ -108,7 +109,10 @@ export const HotelListClient = () => {
           <Select
             value={params.starRating ? String(params.starRating) : "all"}
             onValueChange={(v) =>
-              setParams({ starRating: v === "all" ? null : Number(v), page: 1 })
+              setParams({
+                starRating: v === "all" ? null : Number(v),
+                page: DEFAULT_PAGE,
+              })
             }
           >
             <SelectTrigger className="w-36">
@@ -129,7 +133,7 @@ export const HotelListClient = () => {
               setParams({
                 countryId: v === "all" ? null : v,
                 cityId: "",
-                page: 1,
+                page: DEFAULT_PAGE,
               })
             }
           >
@@ -148,7 +152,7 @@ export const HotelListClient = () => {
           <Select
             value={params.cityId || "all"}
             onValueChange={(v) =>
-              setParams({ cityId: v === "all" ? null : v, page: 1 })
+              setParams({ cityId: v === "all" ? null : v, page: DEFAULT_PAGE })
             }
             disabled={!params.countryId}
           >
@@ -205,7 +209,7 @@ export const HotelListClient = () => {
             limit={params.limit}
             onPageChange={(p) => setParams((prev) => ({ ...prev, page: p }))}
             onLimitChange={(l) =>
-              setParams((prev) => ({ ...prev, limit: l, page: 1 }))
+              setParams((prev) => ({ ...prev, limit: l, page: DEFAULT_PAGE }))
             }
           />
         )}

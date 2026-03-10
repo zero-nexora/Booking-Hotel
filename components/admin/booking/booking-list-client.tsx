@@ -1,7 +1,6 @@
 "use client";
 
 import { useRef } from "react";
-import { format } from "date-fns";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import listPlugin from "@fullcalendar/list";
@@ -39,6 +38,7 @@ import { parseAsString, useQueryStates } from "nuqs";
 import { BookingStatus, PaymentStatus } from "@/generated/prisma/enums";
 import { ListHeader } from "@/components/shared/list-header";
 import { TableSkeleton } from "@/components/shared/table-skeleton";
+import { formatDateShort, formatCurrencyUSD } from "@/lib/utils";
 
 type Booking = RouterOutput["admin"]["booking"]["list"]["items"][number];
 
@@ -60,12 +60,12 @@ const PAYMENT_STATUS_OPTIONS = [
 ];
 
 const BOOKING_STATUS_COLOR: Record<string, string> = {
-  PENDING: "#f59e0b",
-  CONFIRMED: "#10b981",
-  CHECKED_IN: "#3b82f6",
+  PENDING: "#d97706",
+  CONFIRMED: "#059669",
+  CHECKED_IN: "#2563eb",
   CHECKED_OUT: "#6b7280",
-  CANCELLED: "#ef4444",
-  NO_SHOW: "#ef4444",
+  CANCELLED: "#dc2626",
+  NO_SHOW: "#dc2626",
 };
 
 const BOOKING_STATUS_VARIANT: Record<
@@ -115,36 +115,52 @@ const BookingRow = ({
   booking: Booking;
   onClick: (id: string) => void;
 }) => (
-  <TableRow className="cursor-pointer" onClick={() => onClick(booking.id)}>
-    <TableCell className="font-mono text-xs">
-      {booking.bookingRef.slice(0, 8).toUpperCase()}
+  <TableRow
+    className="cursor-pointer hover:bg-muted/40"
+    onClick={() => onClick(booking.id)}
+  >
+    <TableCell>
+      <span className="font-mono text-[11px] tracking-wide text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
+        {booking.bookingRef.slice(0, 8).toUpperCase()}
+      </span>
     </TableCell>
     <TableCell>
-      <p className="text-sm font-medium">{booking.guestName}</p>
-      <p className="text-xs text-muted-foreground">{booking.guestEmail}</p>
+      <p className="text-sm font-medium leading-tight">{booking.guestName}</p>
+      <p className="text-xs text-muted-foreground mt-0.5">
+        {booking.guestEmail}
+      </p>
     </TableCell>
     <TableCell>
-      <p className="text-sm">{booking.hotel.name}</p>
-      <p className="text-xs text-muted-foreground">
+      <p className="text-sm leading-tight">{booking.hotel.name}</p>
+      <p className="text-xs text-muted-foreground mt-0.5">
         {booking.items.map((i) => i.room.name).join(", ")}
       </p>
     </TableCell>
-    <TableCell className="text-sm text-muted-foreground">
-      {format(new Date(booking.checkIn), "dd/MM/yy")} →{" "}
-      {format(new Date(booking.checkOut), "dd/MM/yy")}
+    <TableCell>
+      <span className="text-xs tabular-nums text-muted-foreground">
+        {formatDateShort(booking.checkIn)} → {formatDateShort(booking.checkOut)}
+      </span>
     </TableCell>
     <TableCell>
-      <Badge variant={BOOKING_STATUS_VARIANT[booking.status]}>
+      <Badge
+        variant={BOOKING_STATUS_VARIANT[booking.status]}
+        className="text-xs"
+      >
         {BOOKING_STATUS_LABEL[booking.status]}
       </Badge>
     </TableCell>
     <TableCell>
-      <Badge variant={PAYMENT_STATUS_VARIANT[booking.paymentStatus]}>
+      <Badge
+        variant={PAYMENT_STATUS_VARIANT[booking.paymentStatus]}
+        className="text-xs"
+      >
         {PAYMENT_STATUS_LABEL[booking.paymentStatus]}
       </Badge>
     </TableCell>
-    <TableCell className="text-sm text-right">
-      {Number(booking.totalAmount).toLocaleString("vi-VN")}đ
+    <TableCell className="text-right">
+      <span className="text-sm font-medium tabular-nums">
+        {formatCurrencyUSD(Number(booking.totalAmount))}
+      </span>
     </TableCell>
   </TableRow>
 );
@@ -231,11 +247,11 @@ export const BookingListClient = () => {
             </SelectContent>
           </Select>
 
-          <div className="ml-auto flex gap-1 border rounded-md p-0.5">
+          <div className="ml-auto flex gap-0.5 border border-border rounded-lg p-0.5 bg-muted/40">
             <Button
               variant={view === "list" ? "default" : "ghost"}
               size="sm"
-              className="h-7 px-2"
+              className="h-7 px-2.5 rounded-md"
               onClick={() => void setView({ view: "list" })}
             >
               <List className="w-3.5 h-3.5" />
@@ -243,7 +259,7 @@ export const BookingListClient = () => {
             <Button
               variant={view === "calendar" ? "default" : "ghost"}
               size="sm"
-              className="h-7 px-2"
+              className="h-7 px-2.5 rounded-md"
               onClick={() => void setView({ view: "calendar" })}
             >
               <Calendar className="w-3.5 h-3.5" />
@@ -253,17 +269,31 @@ export const BookingListClient = () => {
       </ListHeader>
 
       {view === "list" ? (
-        <Card>
+        <Card className="overflow-hidden">
           <Table>
             <TableHeader>
-              <TableRow>
-                <TableHead>Mã</TableHead>
-                <TableHead>Khách</TableHead>
-                <TableHead>Khách sạn / Phòng</TableHead>
-                <TableHead>Thời gian</TableHead>
-                <TableHead>Trạng thái</TableHead>
-                <TableHead>Thanh toán</TableHead>
-                <TableHead className="text-right">Tổng tiền</TableHead>
+              <TableRow className="bg-muted/50 hover:bg-muted/50">
+                <TableHead className="text-xs font-semibold text-muted-foreground uppercase tracking-wide w-28">
+                  Mã
+                </TableHead>
+                <TableHead className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                  Khách
+                </TableHead>
+                <TableHead className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                  Khách sạn / Phòng
+                </TableHead>
+                <TableHead className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                  Thời gian
+                </TableHead>
+                <TableHead className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                  Trạng thái
+                </TableHead>
+                <TableHead className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                  Thanh toán
+                </TableHead>
+                <TableHead className="text-xs font-semibold text-muted-foreground uppercase tracking-wide text-right">
+                  Tổng tiền
+                </TableHead>
               </TableRow>
             </TableHeader>
             {isLoading ? (
@@ -274,7 +304,7 @@ export const BookingListClient = () => {
                   <TableRow>
                     <TableCell
                       colSpan={7}
-                      className="text-center text-muted-foreground py-12"
+                      className="text-center text-muted-foreground py-16 text-sm"
                     >
                       Không có booking nào
                     </TableCell>
@@ -303,7 +333,7 @@ export const BookingListClient = () => {
           )}
         </Card>
       ) : (
-        <Card className="p-4 [&_.fc-daygrid-event]:text-xs [&_.fc-event]:rounded [&_.fc-event]:px-1.5 [&_.fc-col-header-cell-cushion]:text-xs [&_.fc-col-header-cell-cushion]:text-muted-foreground [&_.fc-col-header-cell-cushion]:font-medium [&_.fc-daygrid-day-number]:text-sm [&_.fc-toolbar-title]:text-base [&_.fc-toolbar-title]:font-semibold [&_.fc-button]:bg-background! [&_.fc-button]:text-foreground! [&_.fc-button]:border-border! [&_.fc-button]:shadow-none! [&_.fc-button-active]:bg-muted!">
+        <Card className="p-5">
           <FullCalendar
             ref={calendarRef}
             plugins={[dayGridPlugin, listPlugin, interactionPlugin]}

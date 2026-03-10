@@ -32,6 +32,7 @@ import { useAdminRoomList, useDeleteRoom } from "@/hooks/admin/use-admin-rooms";
 import { useRoomTypeList } from "@/hooks/admin/use-admin-room-type";
 import { ListHeader } from "@/components/shared/list-header";
 import { TableSkeleton } from "@/components/shared/table-skeleton";
+import { DEFAULT_PAGE } from "@/lib/constants";
 
 type Room = RouterOutput["admin"]["room"]["list"]["items"][number];
 
@@ -43,9 +44,11 @@ export const HotelRoomsTab = ({ hotelId }: HotelRoomsTabProps) => {
   const router = useRouter();
   const { openConfirm } = useConfirmDialogStore();
   const { openSheet } = useSheetDialogStore();
+
   const [params, setParams] = useQueryStates(adminRoomParsers);
   const { data, isLoading } = useAdminRoomList(hotelId, params);
   const { data: roomTypes = [] } = useRoomTypeList();
+
   const deleteRoom = useDeleteRoom();
 
   const openCreate = () =>
@@ -80,14 +83,14 @@ export const HotelRoomsTab = ({ hotelId }: HotelRoomsTabProps) => {
         <div className="flex flex-wrap gap-3">
           <SearchInput
             value={params.search}
-            onChange={(v) => setParams({ search: v, page: 1 })}
+            onChange={(v) => setParams({ search: v, page: DEFAULT_PAGE })}
             placeholder="Tìm tên phòng..."
             className="w-56"
           />
           <Select
             value={params.roomTypeId || "all"}
             onValueChange={(v) =>
-              setParams({ roomTypeId: v === "all" ? "" : v, page: 1 })
+              setParams({ roomTypeId: v === "all" ? null : v, page: DEFAULT_PAGE })
             }
           >
             <SelectTrigger className="w-44">
@@ -107,7 +110,7 @@ export const HotelRoomsTab = ({ hotelId }: HotelRoomsTabProps) => {
             onValueChange={(v) =>
               setParams({
                 isActive: v === "all" ? null : v === "true",
-                page: 1,
+                page: DEFAULT_PAGE,
               })
             }
           >
@@ -204,7 +207,7 @@ const RoomRow = ({ room, onNavigate, onEdit, onDelete }: RoomRowProps) => (
     </TableCell>
     <TableCell className="text-sm">{room.capacity} khách</TableCell>
     <TableCell className="text-sm">
-      {Number(room.basePrice).toLocaleString("vi-VN")}đ
+      ${Number(room.basePrice).toLocaleString("en-US")}
     </TableCell>
     <TableCell>
       <Badge variant={room.isActive ? "default" : "outline"}>

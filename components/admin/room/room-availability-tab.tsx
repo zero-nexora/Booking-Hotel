@@ -8,7 +8,6 @@ import {
   addMonths,
   subMonths,
 } from "date-fns";
-import { vi } from "date-fns/locale";
 import { toast } from "sonner";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
@@ -22,14 +21,16 @@ import {
   useSetRoomAvailability,
 } from "@/hooks/admin/use-admin-rooms";
 import { cn } from "@/lib/utils";
+import { toDateStr, formatDateDisplay, formatMonthYear } from "@/lib/utils";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 type AvailabilityStatus = "AVAILABLE" | "LOCKED" | "BOOKED" | "MAINTENANCE";
 
 const STATUS_COLOR: Record<AvailabilityStatus, string> = {
-  AVAILABLE: "#10b981",
-  LOCKED: "#f59e0b",
-  BOOKED: "#3b82f6",
-  MAINTENANCE: "#ef4444",
+  AVAILABLE: "#059669",
+  LOCKED: "#d97706",
+  BOOKED: "#2563eb",
+  MAINTENANCE: "#dc2626",
 };
 
 const STATUS_LABEL: Record<AvailabilityStatus, string> = {
@@ -40,23 +41,14 @@ const STATUS_LABEL: Record<AvailabilityStatus, string> = {
 };
 
 const STATUS_BADGE_CLASS: Record<AvailabilityStatus, string> = {
-  AVAILABLE: "bg-emerald-100 text-emerald-700 border-emerald-200",
-  LOCKED: "bg-yellow-100 text-yellow-700 border-yellow-200",
-  BOOKED: "bg-blue-100 text-blue-700 border-blue-200",
-  MAINTENANCE: "bg-red-100 text-red-700 border-red-200",
-};
-
-const toDateStr = (date: Date | string): string => {
-  if (typeof date === "string") return date.slice(0, 10);
-  return format(date, "yyyy-MM-dd");
-};
-
-const fcDateToStr = (date: Date): string => {
-  return format(date, "yyyy-MM-dd");
-};
-
-const formatDisplay = (date: Date) => {
-  return format(date, "dd/MM");
+  AVAILABLE:
+    "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/30 dark:text-emerald-400 dark:border-emerald-800",
+  LOCKED:
+    "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-800",
+  BOOKED:
+    "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/30 dark:text-blue-400 dark:border-blue-800",
+  MAINTENANCE:
+    "bg-red-50 text-red-700 border-red-200 dark:bg-red-950/30 dark:text-red-400 dark:border-red-800",
 };
 
 interface RoomAvailabilityTabProps {
@@ -98,10 +90,7 @@ export const RoomAvailabilityTab = ({ roomId }: RoomAvailabilityTabProps) => {
   };
 
   const handleSelect = (arg: DateSelectArg) => {
-    setSelected({
-      start: new Date(arg.startStr),
-      end: new Date(arg.endStr),
-    });
+    setSelected({ start: new Date(arg.startStr), end: new Date(arg.endStr) });
   };
 
   const handleSetStatus = async (status: "AVAILABLE" | "MAINTENANCE") => {
@@ -153,7 +142,7 @@ export const RoomAvailabilityTab = ({ roomId }: RoomAvailabilityTabProps) => {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between flex-wrap gap-3">
-        <div className="flex gap-1.5 flex-wrap">
+        <div className="flex items-center gap-1.5 flex-wrap">
           {(
             [
               "AVAILABLE",
@@ -165,24 +154,32 @@ export const RoomAvailabilityTab = ({ roomId }: RoomAvailabilityTabProps) => {
             <Badge
               key={s}
               variant="outline"
-              className={cn("text-xs", STATUS_BADGE_CLASS[s])}
+              className={cn(
+                "text-xs font-medium px-2 py-0.5",
+                STATUS_BADGE_CLASS[s],
+              )}
             >
+              <span
+                className="inline-block w-1.5 h-1.5 rounded-full mr-1.5 shrink-0"
+                style={{ backgroundColor: STATUS_COLOR[s] }}
+              />
               {STATUS_LABEL[s]}
             </Badge>
           ))}
         </div>
 
         {selected && displayEnd && (
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground">
+          <div className="flex items-center gap-2 border border-border rounded-lg px-3 py-1.5 bg-muted/40">
+            <span className="text-xs font-medium tabular-nums text-muted-foreground">
               {isSingleDay
-                ? formatDisplay(selected.start)
-                : `${formatDisplay(selected.start)} – ${formatDisplay(displayEnd)}`}
+                ? formatDateDisplay(selected.start)
+                : `${formatDateDisplay(selected.start)} – ${formatDateDisplay(displayEnd)}`}
             </span>
+            <div className="w-px h-4 bg-border" />
             <Button
               size="sm"
-              variant="outline"
-              className="text-emerald-600 border-emerald-200 hover:bg-emerald-50"
+              variant="ghost"
+              className="h-6 px-2 text-xs text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-950/30"
               disabled={setAvailability.isPending}
               onClick={() => void handleSetStatus("AVAILABLE")}
             >
@@ -190,8 +187,8 @@ export const RoomAvailabilityTab = ({ roomId }: RoomAvailabilityTabProps) => {
             </Button>
             <Button
               size="sm"
-              variant="outline"
-              className="text-red-600 border-red-200 hover:bg-red-50"
+              variant="ghost"
+              className="h-6 px-2 text-xs text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/30"
               disabled={setAvailability.isPending}
               onClick={() => void handleSetStatus("MAINTENANCE")}
             >
@@ -200,6 +197,7 @@ export const RoomAvailabilityTab = ({ roomId }: RoomAvailabilityTabProps) => {
             <Button
               size="sm"
               variant="ghost"
+              className="h-6 px-2 text-xs text-muted-foreground"
               onClick={() => {
                 setSelected(null);
                 calendarRef.current?.getApi().unselect();
@@ -211,47 +209,49 @@ export const RoomAvailabilityTab = ({ roomId }: RoomAvailabilityTabProps) => {
         )}
       </div>
 
-      <Card className="p-4 [&_.fc-toolbar]:hidden [&_.fc-daygrid-day-number]:text-sm [&_.fc-daygrid-day-number]:font-medium [&_.fc-event]:text-xs [&_.fc-event]:rounded [&_.fc-event]:px-1 [&_.fc-col-header-cell-cushion]:text-xs [&_.fc-col-header-cell-cushion]:text-muted-foreground [&_.fc-col-header-cell-cushion]:font-medium [&_.fc-highlight]:bg-primary/10!">
-        <div className="flex items-center justify-between mb-3">
-          <span className="font-medium capitalize text-sm">
-            {format(currentMonth, "MMMM yyyy", { locale: vi })}
+      <Card className="overflow-hidden">
+        <div className="flex items-center justify-between px-5 py-3 border-b border-border bg-muted/30">
+          <span className="text-sm font-semibold capitalize tracking-tight">
+            {formatMonthYear(currentMonth)}
           </span>
-          <div className="flex gap-1">
+          <div className="flex gap-0.5">
             <Button
               variant="ghost"
               size="icon"
-              className="h-7 w-7"
+              className="h-7 w-7 rounded-md"
               onClick={handlePrev}
             >
-              ‹
+              <ChevronLeft className="w-3.5 h-3.5" />
             </Button>
             <Button
               variant="ghost"
               size="icon"
-              className="h-7 w-7"
+              className="h-7 w-7 rounded-md"
               onClick={handleNext}
             >
-              ›
+              <ChevronRight className="w-3.5 h-3.5" />
             </Button>
           </div>
         </div>
 
-        <FullCalendar
-          ref={calendarRef}
-          plugins={[dayGridPlugin, interactionPlugin]}
-          initialView="dayGridMonth"
-          locale="vi"
-          firstDay={1}
-          selectable
-          selectMirror
-          unselectAuto={false}
-          events={events}
-          select={handleSelect}
-          height="auto"
-          dayMaxEvents={1}
-          headerToolbar={false}
-          timeZone="local"
-        />
+        <div className="p-4">
+          <FullCalendar
+            ref={calendarRef}
+            plugins={[dayGridPlugin, interactionPlugin]}
+            initialView="dayGridMonth"
+            locale="vi"
+            firstDay={1}
+            selectable
+            selectMirror
+            unselectAuto={false}
+            events={events}
+            select={handleSelect}
+            height="auto"
+            dayMaxEvents={1}
+            headerToolbar={false}
+            timeZone="local"
+          />
+        </div>
       </Card>
     </div>
   );

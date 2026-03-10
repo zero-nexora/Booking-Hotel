@@ -10,7 +10,7 @@ const AdminRoomDetailPage = async ({ params }: AdminRoomDetailPageProps) => {
   const { id, roomId } = await params;
   const queryClient = getQueryClient();
 
-  void queryClient.prefetchQuery(
+  await queryClient.prefetchQuery(
     trpc.admin.room.detail.queryOptions({ id: roomId }),
   );
 

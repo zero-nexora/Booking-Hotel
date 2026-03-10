@@ -30,7 +30,7 @@ html {
   display: none;
 }
 
-@media (min-width: 1024px) {
+@media (min-width: 768px) {
   .box-hidden {
     display: flex;
   }
@@ -155,4 +155,284 @@ html {
   body {
     @apply bg-background text-foreground;
   }
+}
+
+.fc {
+  font-size: 0.8125rem;
+  font-family: inherit;
+  color: var(--foreground);
+}
+
+.fc .fc-toolbar {
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.fc .fc-toolbar-title {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--foreground);
+}
+
+.fc .fc-button {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--foreground);
+  border-radius: var(--radius-md);
+  font-size: 0.75rem;
+  font-weight: 500;
+  padding: 0.25rem 0.625rem;
+  line-height: 1.5;
+  box-shadow: none;
+  cursor: pointer;
+  transition:
+    background 0.15s,
+    color 0.15s;
+}
+
+.fc .fc-button:hover:not(:disabled) {
+  background: var(--muted);
+  border-color: var(--border);
+  color: var(--foreground);
+}
+
+.fc .fc-button:focus,
+.fc .fc-button:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+  box-shadow: none;
+}
+
+.fc .fc-button-primary:not(.fc-button-active):not(:disabled) {
+  background: transparent;
+  border-color: var(--border);
+  color: var(--foreground);
+}
+
+.fc .fc-button-primary.fc-button-active {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: var(--primary-foreground);
+}
+
+.fc .fc-button-primary.fc-button-active:hover {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: var(--primary-foreground);
+  opacity: 0.9;
+}
+
+.fc .fc-button-group {
+  gap: 0.25rem;
+}
+
+.fc .fc-button-group .fc-button {
+  border-radius: var(--radius-md) !important;
+  margin: 0 !important;
+}
+
+/* ─── Table frame ──────────────────────────────────────── */
+.fc .fc-scrollgrid {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.fc .fc-scrollgrid-section > * {
+  border: none;
+}
+
+.fc .fc-scrollgrid td,
+.fc .fc-scrollgrid th {
+  border-color: var(--border);
+}
+
+/* ─── Day header row ───────────────────────────────────── */
+.fc .fc-col-header-cell {
+  background: var(--muted);
+  padding: 0.375rem 0;
+}
+
+.fc .fc-col-header-cell-cushion {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted-foreground);
+  text-decoration: none;
+  padding: 0.25rem 0.5rem;
+}
+
+/* ─── Day cells ────────────────────────────────────────── */
+.fc .fc-daygrid-day {
+  background: transparent;
+}
+
+.fc .fc-daygrid-day:hover {
+  background: var(--muted);
+}
+
+.fc .fc-daygrid-day-number {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--muted-foreground);
+  padding: 0.375rem 0.5rem;
+  text-decoration: none;
+  line-height: 1;
+}
+
+.fc .fc-day-today {
+  background: oklch(from var(--primary) l c h / 0.04) !important;
+}
+
+.fc .fc-day-today .fc-daygrid-day-number {
+  background: var(--primary);
+  color: var(--primary-foreground);
+  border-radius: var(--radius-sm);
+  width: 1.5rem;
+  height: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+}
+
+.fc .fc-day-other .fc-daygrid-day-number {
+  color: var(--border);
+}
+
+/* ─── Events ───────────────────────────────────────────── */
+.fc .fc-event {
+  border-radius: var(--radius-sm);
+  border: none !important;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  padding: 0.125rem 0.375rem;
+  cursor: pointer;
+  line-height: 1.4;
+  overflow: hidden;
+}
+
+.fc .fc-event-title {
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.fc .fc-event-time {
+  color: rgba(255, 255, 255, 0.75);
+  font-weight: 400;
+}
+
+.fc .fc-daygrid-event-dot {
+  border-color: currentColor;
+}
+
+.fc .fc-more-link {
+  font-size: 0.6875rem;
+  font-weight: 500;
+  color: var(--muted-foreground);
+  padding: 0.125rem 0.375rem;
+  border-radius: var(--radius-sm);
+}
+
+.fc .fc-more-link:hover {
+  background: var(--muted);
+  color: var(--foreground);
+}
+
+/* ─── Selection highlight ──────────────────────────────── */
+.fc .fc-highlight {
+  background: oklch(from var(--primary) l c h / 0.08);
+  border-radius: var(--radius-sm);
+}
+
+/* ─── List view ────────────────────────────────────────── */
+.fc .fc-list {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.fc .fc-list-day-cushion {
+  background: var(--muted);
+  padding: 0.375rem 0.75rem;
+}
+
+.fc .fc-list-day-text,
+.fc .fc-list-day-side-text {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--muted-foreground);
+  text-decoration: none;
+}
+
+.fc .fc-list-event {
+  cursor: pointer;
+}
+
+.fc .fc-list-event:hover td {
+  background: var(--muted);
+}
+
+.fc .fc-list-event-dot {
+  border-radius: 50%;
+}
+
+.fc .fc-list-event-title a {
+  font-size: 0.8125rem;
+  color: var(--foreground);
+  text-decoration: none;
+}
+
+.fc .fc-list-event-time {
+  font-size: 0.75rem;
+  color: var(--muted-foreground);
+}
+
+.fc .fc-list-empty {
+  background: transparent;
+}
+
+.fc .fc-list-empty-cushion {
+  font-size: 0.8125rem;
+  color: var(--muted-foreground);
+}
+
+/* ─── Popover ("+N more") ──────────────────────────────── */
+.fc .fc-popover {
+  background: var(--popover);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 8px 24px -4px oklch(0 0 0 / 0.12);
+  overflow: hidden;
+}
+
+.fc .fc-popover-header {
+  background: var(--muted);
+  padding: 0.5rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--muted-foreground);
+}
+
+.fc .fc-popover-close {
+  color: var(--muted-foreground);
+  opacity: 0.6;
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+
+.fc .fc-popover-close:hover {
+  opacity: 1;
+}
+
+.fc .fc-popover-body {
+  padding: 0.375rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
 }

@@ -5,7 +5,7 @@ import { DashboardClient } from "@/components/admin/dashboard/dashboard-client";
 const AdminDashboardPage = async () => {
   const queryClient = getQueryClient();
 
-  void Promise.all([
+  await Promise.all([
     queryClient.prefetchQuery(trpc.admin.dashboard.stats.queryOptions()),
     queryClient.prefetchQuery(trpc.admin.dashboard.revenueChart.queryOptions()),
     queryClient.prefetchQuery(
