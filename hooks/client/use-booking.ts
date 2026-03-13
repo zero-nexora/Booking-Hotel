@@ -19,20 +19,6 @@ export function useCreateBookingIntent() {
   );
 }
 
-export function useConfirmPayment() {
-  const trpc = useTRPC();
-  const qc = useQueryClient();
-  return useMutation(
-    trpc.client.booking.confirmPayment.mutationOptions({
-      onSuccess: () => {
-        qc.invalidateQueries({ queryKey: ["booking"] });
-      },
-      onError: (err) =>
-        toast.error(err.message ?? "Xác nhận thanh toán thất bại"),
-    }),
-  );
-}
-
 export function useBookingConfirmation(bookingRef: string) {
   const trpc = useTRPC();
   return useQuery(

@@ -13,11 +13,16 @@ import Stripe from "stripe";
 export async function POST(req: NextRequest) {
   const body = await req.text();
   const sig = req.headers.get("stripe-signature");
-  if (!sig) return NextResponse.json({ error: "No signature" }, { status: 400 });
+  if (!sig)
+    return NextResponse.json({ error: "No signature" }, { status: 400 });
 
   let event: Stripe.Event;
   try {
-    event = stripe.webhooks.constructEvent(body, sig, env.STRIPE_WEBHOOK_SECRET);
+    event = stripe.webhooks.constructEvent(
+      body,
+      sig,
+      env.STRIPE_WEBHOOK_SECRET,
+    );
   } catch {
     return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
   }
@@ -47,10 +52,13 @@ async function onPaymentSucceeded(pi: Stripe.PaymentIntent) {
     where: { stripePaymentIntentId: pi.id },
     select: {
       id: true,
+      status: true,
       bookingId: true,
       booking: {
         select: {
           id: true,
+          status: true,
+          paymentStatus: true,
           bookingRef: true,
           checkIn: true,
           checkOut: true,
@@ -83,10 +91,14 @@ async function onPaymentSucceeded(pi: Stripe.PaymentIntent) {
       },
     },
   });
+
   if (!payment) return;
 
   const { booking } = payment;
-  const item = booking.items[0];
+
+  if (booking.status === "CONFIRMED" && booking.paymentStatus === "PAID")
+    return;
+  if (booking.status === "CANCELLED") return;
 
   await prisma.$transaction([
     prisma.payment.update({
@@ -95,7 +107,7 @@ async function onPaymentSucceeded(pi: Stripe.PaymentIntent) {
     }),
     prisma.booking.update({
       where: { id: booking.id },
-      data: { status: "CONFIRMED", paymentStatus: "PAID" },
+      data: { status: "CONFIRMED", paymentStatus: "PAID", expiresAt: null },
     }),
     prisma.bookingItem.updateMany({
       where: { bookingId: booking.id },
@@ -107,31 +119,32 @@ async function onPaymentSucceeded(pi: Stripe.PaymentIntent) {
     }),
   ]);
 
-  if (booking.guestEmail && item) {
-    const hotelAddress = [
-      booking.hotel.address?.street,
-      booking.hotel.address?.city.name,
-    ]
-      .filter(Boolean)
-      .join(", ");
+  const item = booking.items[0];
+  if (!booking.guestEmail || !item) return;
 
-    await sendBookingConfirmation({
-      to: booking.guestEmail,
-      name: booking.guestName,
-      bookingRef: booking.bookingRef,
-      hotelName: booking.hotel.name,
-      hotelAddress,
-      roomName: item.room.name,
-      checkIn: format(booking.checkIn, "EEEE, dd/MM/yyyy"),
-      checkOut: format(booking.checkOut, "EEEE, dd/MM/yyyy"),
-      nights: item.nights,
-      adults: item.adults,
-      children: item.children,
-      totalAmount: Number(booking.totalAmount).toLocaleString("vi-VN"),
-      currency: booking.currency,
-      bookingUrl: `${env.NEXT_PUBLIC_APP_URL}/account/bookings/${booking.bookingRef}`,
-    }).catch((err) => console.error("[email] booking-confirmation failed", err));
-  }
+  const hotelAddress = [
+    booking.hotel.address?.street,
+    booking.hotel.address?.city.name,
+  ]
+    .filter(Boolean)
+    .join(", ");
+
+  await sendBookingConfirmation({
+    to: booking.guestEmail,
+    name: booking.guestName,
+    bookingRef: booking.bookingRef,
+    hotelName: booking.hotel.name,
+    hotelAddress,
+    roomName: item.room.name,
+    checkIn: format(booking.checkIn, "EEEE, dd/MM/yyyy"),
+    checkOut: format(booking.checkOut, "EEEE, dd/MM/yyyy"),
+    nights: item.nights,
+    adults: item.adults,
+    children: item.children,
+    totalAmount: Number(booking.totalAmount).toLocaleString("vi-VN"),
+    currency: booking.currency,
+    bookingUrl: `${env.NEXT_PUBLIC_APP_URL}/account/bookings/${booking.bookingRef}`,
+  }).catch((err) => console.error("[email] booking-confirmation failed", err));
 }
 
 async function onPaymentFailed(pi: Stripe.PaymentIntent) {
@@ -139,6 +152,7 @@ async function onPaymentFailed(pi: Stripe.PaymentIntent) {
     where: { stripePaymentIntentId: pi.id },
     select: {
       id: true,
+      status: true,
       bookingId: true,
       booking: {
         select: {
@@ -149,17 +163,15 @@ async function onPaymentFailed(pi: Stripe.PaymentIntent) {
           currency: true,
           guestName: true,
           guestEmail: true,
-          items: {
-            select: { room: { select: { name: true } } },
-          },
+          items: { select: { room: { select: { name: true } } } },
           hotel: { select: { name: true, slug: true } },
         },
       },
     },
   });
-  if (!payment) return;
 
-  const { booking } = payment;
+  if (!payment) return;
+  if (payment.status === "FAILED") return;
 
   await prisma.payment.update({
     where: { id: payment.id },
@@ -169,22 +181,22 @@ async function onPaymentFailed(pi: Stripe.PaymentIntent) {
     },
   });
 
+  const { booking } = payment;
   const item = booking.items[0];
-  if (booking.guestEmail && item) {
-    const retryUrl = `${env.NEXT_PUBLIC_APP_URL}/account/bookings/${booking.bookingRef}`;
-    await sendPaymentFailed({
-      to: booking.guestEmail,
-      name: booking.guestName,
-      bookingRef: booking.bookingRef,
-      hotelName: booking.hotel.name,
-      roomName: item.room.name,
-      checkIn: format(booking.checkIn, "dd/MM/yyyy"),
-      checkOut: format(booking.checkOut, "dd/MM/yyyy"),
-      totalAmount: Number(booking.totalAmount).toLocaleString("vi-VN"),
-      currency: booking.currency,
-      retryUrl,
-    }).catch((err) => console.error("[email] payment-failed failed", err));
-  }
+  if (!booking.guestEmail || !item) return;
+
+  await sendPaymentFailed({
+    to: booking.guestEmail,
+    name: booking.guestName,
+    bookingRef: booking.bookingRef,
+    hotelName: booking.hotel.name,
+    roomName: item.room.name,
+    checkIn: format(booking.checkIn, "dd/MM/yyyy"),
+    checkOut: format(booking.checkOut, "dd/MM/yyyy"),
+    totalAmount: Number(booking.totalAmount).toLocaleString("vi-VN"),
+    currency: booking.currency,
+    retryUrl: `${env.NEXT_PUBLIC_APP_URL}/account/bookings/${booking.bookingRef}`,
+  }).catch((err) => console.error("[email] payment-failed failed", err));
 }
 
 async function onChargeRefunded(charge: Stripe.Charge) {
@@ -201,6 +213,7 @@ async function onChargeRefunded(charge: Stripe.Charge) {
       bookingId: true,
       booking: {
         select: {
+          paymentStatus: true,
           bookingRef: true,
           checkIn: true,
           checkOut: true,
@@ -216,40 +229,41 @@ async function onChargeRefunded(charge: Stripe.Charge) {
     },
   });
 
+  if (!chargePayment) return;
+  if (chargePayment.booking.paymentStatus === "REFUNDED") return;
+
   const refundIds = (charge.refunds?.data ?? []).map((r) => r.id);
 
-  await Promise.all([
+  await prisma.$transaction([
     prisma.payment.updateMany({
       where: { stripeRefundId: { in: refundIds } },
       data: { status: "REFUNDED", refundedAt: new Date() },
     }),
-    chargePayment &&
-      prisma.booking.update({
-        where: { id: chargePayment.bookingId },
-        data: { paymentStatus: "REFUNDED" },
-      }),
+    prisma.booking.update({
+      where: { id: chargePayment.bookingId },
+      data: { paymentStatus: "REFUNDED" },
+    }),
   ]);
-
-  if (!chargePayment) return;
 
   const { booking } = chargePayment;
   const item = booking.items[0];
+  if (!booking.guestEmail || !item) return;
 
-  if (booking.guestEmail && item) {
-    const refundTotal = charge.refunds?.data.reduce((sum, r) => sum + r.amount, 0) ?? 0;
-    await sendBookingCancellation({
-      to: booking.guestEmail,
-      name: booking.guestName,
-      bookingRef: booking.bookingRef,
-      hotelName: booking.hotel.name,
-      roomName: item.room.name,
-      checkIn: format(booking.checkIn, "dd/MM/yyyy"),
-      checkOut: format(booking.checkOut, "dd/MM/yyyy"),
-      totalAmount: Number(booking.totalAmount).toLocaleString("vi-VN"),
-      currency: booking.currency,
-      refundAmount: (refundTotal / 100).toLocaleString("vi-VN"),
-      cancelReason: booking.cancelReason ?? undefined,
-      hotelsUrl: `${env.NEXT_PUBLIC_APP_URL}/hotels`,
-    }).catch((err) => console.error("[email] booking-cancellation failed", err));
-  }
+  const refundTotal =
+    charge.refunds?.data.reduce((sum, r) => sum + r.amount, 0) ?? 0;
+
+  await sendBookingCancellation({
+    to: booking.guestEmail,
+    name: booking.guestName,
+    bookingRef: booking.bookingRef,
+    hotelName: booking.hotel.name,
+    roomName: item.room.name,
+    checkIn: format(booking.checkIn, "dd/MM/yyyy"),
+    checkOut: format(booking.checkOut, "dd/MM/yyyy"),
+    totalAmount: Number(booking.totalAmount).toLocaleString("vi-VN"),
+    currency: booking.currency,
+    refundAmount: (refundTotal / 100).toLocaleString("vi-VN"),
+    cancelReason: booking.cancelReason ?? undefined,
+    hotelsUrl: `${env.NEXT_PUBLIC_APP_URL}/hotels`,
+  }).catch((err) => console.error("[email] booking-cancellation failed", err));
 }

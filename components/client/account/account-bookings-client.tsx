@@ -1,8 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { format } from "date-fns";
-import { vi } from "date-fns/locale";
 import { useQueryStates } from "nuqs";
 import {
   CalendarDays,
@@ -16,7 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useMyBookings } from "@/hooks/client/use-booking";
-import { cn } from "@/lib/utils";
+import { cn, formatCurrencyUSD, formatDateShort } from "@/lib/utils";
 import { accountBookingParsers } from "@/lib/search-params/booking-search";
 import { useInfiniteScroll } from "@/hooks/use-infinity-scroll";
 
@@ -60,7 +58,7 @@ const PAYMENT_MAP: Record<string, string> = {
   FAILED: "Thanh toán lỗi",
 };
 
-export function AccountBookingsClient() {
+export const AccountBookingsClient = () => {
   const [params, setParams] = useQueryStates(accountBookingParsers);
 
   const { data, isLoading, isFetchingNextPage, hasNextPage, fetchNextPage } =
@@ -77,7 +75,6 @@ export function AccountBookingsClient() {
     <div className="space-y-5">
       <h1 className="text-lg font-semibold">Đặt phòng của tôi</h1>
 
-      {/* Filter tabs */}
       <div className="flex gap-1.5 flex-wrap">
         {TABS.map((tab) => (
           <button
@@ -95,7 +92,6 @@ export function AccountBookingsClient() {
         ))}
       </div>
 
-      {/* Booking list */}
       {isLoading ? (
         <div className="space-y-3">
           {Array.from({ length: 4 }).map((_, i) => (
@@ -139,12 +135,10 @@ export function AccountBookingsClient() {
                   href={`/account/bookings/${booking.bookingRef}`}
                   className="flex items-start gap-4 p-4"
                 >
-                  {/* Icon */}
                   <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center shrink-0 mt-0.5">
                     <Building2 className="w-4 h-4 text-muted-foreground" />
                   </div>
 
-                  {/* Info */}
                   <div className="flex-1 min-w-0 space-y-1">
                     <div className="flex items-start justify-between gap-2">
                       <p className="font-semibold text-sm leading-tight truncate">
@@ -168,13 +162,9 @@ export function AccountBookingsClient() {
                     <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                       <CalendarDays className="w-3 h-3" />
                       <span>
-                        {format(new Date(booking.checkIn), "dd/MM/yyyy", {
-                          locale: vi,
-                        })}
+                        {formatDateShort(booking.checkIn)}
                         {" → "}
-                        {format(new Date(booking.checkOut), "dd/MM/yyyy", {
-                          locale: vi,
-                        })}
+                        {formatDateShort(booking.checkOut)}
                         {item && ` · ${item.nights} đêm`}
                       </span>
                     </div>
@@ -182,7 +172,7 @@ export function AccountBookingsClient() {
                     <div className="flex items-center justify-between pt-1">
                       <div className="flex items-center gap-2">
                         <span className="text-xs font-semibold">
-                          ${Number(booking.totalAmount)}
+                          {formatCurrencyUSD(Number(booking.totalAmount))}
                         </span>
                         <span className="text-xs text-muted-foreground">
                           {PAYMENT_MAP[booking.paymentStatus]}
@@ -197,7 +187,6 @@ export function AccountBookingsClient() {
                   <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0 mt-1" />
                 </Link>
 
-                {/* Action buttons */}
                 {(canCancel || canReview) && (
                   <div className="flex gap-2 px-4 pb-3 pt-0">
                     {canReview && (
@@ -249,4 +238,4 @@ export function AccountBookingsClient() {
       )}
     </div>
   );
-}
+};

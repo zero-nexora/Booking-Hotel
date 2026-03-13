@@ -56,7 +56,7 @@ interface WriteReviewClientProps {
   bookingRef: string;
 }
 
-export function WriteReviewClient({ bookingRef }: WriteReviewClientProps) {
+export const WriteReviewClient = ({ bookingRef }: WriteReviewClientProps) => {
   const router = useRouter();
   const { data, isLoading } = useReviewForBooking(bookingRef);
   const createReview = useCreateReview(bookingRef);
@@ -78,7 +78,6 @@ export function WriteReviewClient({ bookingRef }: WriteReviewClientProps) {
 
   if (!data) return null;
 
-  // Guard: already reviewed
   if (data.review) {
     return (
       <div className="space-y-5">
@@ -102,7 +101,6 @@ export function WriteReviewClient({ bookingRef }: WriteReviewClientProps) {
     );
   }
 
-  // Guard: not checked out
   if (data.status !== "CHECKED_OUT") {
     return (
       <div className="space-y-5">
@@ -125,7 +123,6 @@ export function WriteReviewClient({ bookingRef }: WriteReviewClientProps) {
 
       <h1 className="text-lg font-semibold">Viết đánh giá</h1>
 
-      {/* Booking reference */}
       <div className="rounded-2xl border bg-card p-4 space-y-3">
         <p className="text-xs text-muted-foreground uppercase tracking-wide font-medium">
           Bạn đang đánh giá chuyến đi
@@ -152,11 +149,9 @@ export function WriteReviewClient({ bookingRef }: WriteReviewClientProps) {
         </div>
       </div>
 
-      {/* Form */}
       <Form {...form}>
         <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-5">
           <div className="rounded-2xl border bg-card p-5 space-y-5">
-            {/* Star rating */}
             <FormField
               control={form.control}
               name="overallRating"
@@ -206,7 +201,6 @@ export function WriteReviewClient({ bookingRef }: WriteReviewClientProps) {
 
             <Separator />
 
-            {/* Title */}
             <FormField
               control={form.control}
               name="title"
@@ -230,7 +224,6 @@ export function WriteReviewClient({ bookingRef }: WriteReviewClientProps) {
               )}
             />
 
-            {/* Comment */}
             <FormField
               control={form.control}
               name="comment"
@@ -258,12 +251,11 @@ export function WriteReviewClient({ bookingRef }: WriteReviewClientProps) {
             />
           </div>
 
-          {/* Notice */}
           <div className="flex items-start gap-2 text-xs text-muted-foreground bg-muted/50 rounded-xl px-4 py-3">
             <Info className="w-3.5 h-3.5 mt-0.5 shrink-0" />
             <p>
               Đánh giá sẽ được kiểm duyệt trước khi hiển thị công khai. Thời
-              gian xét duyệt thường từ 1–2 ngày làm việc.
+              gian xét duyệt thường từ 1-2 ngày làm việc.
             </p>
           </div>
 
@@ -278,9 +270,9 @@ export function WriteReviewClient({ bookingRef }: WriteReviewClientProps) {
       </Form>
     </div>
   );
-}
+};
 
-function BackLink({ bookingRef }: { bookingRef: string }) {
+const BackLink = ({ bookingRef }: { bookingRef: string }) => {
   return (
     <Button variant="ghost" size="sm" className="gap-1.5 -ml-2 h-8" asChild>
       <Link href={`/account/bookings/${bookingRef}`}>
@@ -289,9 +281,9 @@ function BackLink({ bookingRef }: { bookingRef: string }) {
       </Link>
     </Button>
   );
-}
+};
 
-function WriteReviewSkeleton() {
+const WriteReviewSkeleton = () => {
   return (
     <div className="space-y-5">
       <Skeleton className="h-8 w-36" />
@@ -300,4 +292,4 @@ function WriteReviewSkeleton() {
       <Skeleton className="h-64 rounded-2xl" />
     </div>
   );
-}
+};

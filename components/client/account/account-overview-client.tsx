@@ -1,8 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { format } from "date-fns";
-import { vi } from "date-fns/locale";
 import {
   BookOpen,
   Star,
@@ -17,6 +15,8 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useMe } from "@/hooks/client/use-user";
 import { useQuickStats, useRecentBookings } from "@/hooks/client/use-booking";
+import { formatDateShort } from "@/lib/utils";
+import { Card } from "@/components/ui/card";
 
 const BOOKING_STATUS_MAP: Record<
   string,
@@ -33,14 +33,13 @@ const BOOKING_STATUS_MAP: Record<
   NO_SHOW: { label: "Không đến", variant: "destructive" },
 };
 
-export function AccountOverviewClient() {
+export const AccountOverviewClient = () => {
   const { data: user, isLoading: userLoading } = useMe();
   const { data: stats, isLoading: statsLoading } = useQuickStats();
   const { data: recent, isLoading: recentLoading } = useRecentBookings();
 
   return (
     <div className="space-y-6">
-      {/* Profile summary */}
       <div className="rounded-2xl border bg-card p-5">
         {userLoading ? (
           <div className="flex items-center gap-4">
@@ -64,10 +63,7 @@ export function AccountOverviewClient() {
                 <p className="text-sm text-muted-foreground">{user?.email}</p>
                 {user?.createdAt && (
                   <p className="text-xs text-muted-foreground mt-0.5">
-                    Thành viên từ{" "}
-                    {format(new Date(user.createdAt), "MM/yyyy", {
-                      locale: vi,
-                    })}
+                    Thành viên từ {formatDateShort(user.createdAt)}
                   </p>
                 )}
               </div>
@@ -79,7 +75,6 @@ export function AccountOverviewClient() {
         )}
       </div>
 
-      {/* Quick stats */}
       <div className="grid grid-cols-3 gap-3">
         {statsLoading ? (
           Array.from({ length: 3 }).map((_, i) => (
@@ -106,9 +101,8 @@ export function AccountOverviewClient() {
         )}
       </div>
 
-      {/* Recent bookings */}
-      <div className="rounded-2xl border bg-card">
-        <div className="flex items-center justify-between px-5 py-4 border-b">
+      <Card className="rounded-2xl border bg-card">
+        <div className="flex items-center justify-between px-5 pb-4 border-b">
           <h2 className="font-semibold text-sm">Đặt phòng gần đây</h2>
           <Button
             variant="ghost"
@@ -168,8 +162,8 @@ export function AccountOverviewClient() {
                       <div className="flex items-center gap-1 mt-0.5">
                         <CalendarDays className="w-3 h-3 text-muted-foreground" />
                         <span className="text-xs text-muted-foreground">
-                          {format(new Date(booking.checkIn), "dd/MM")} →{" "}
-                          {format(new Date(booking.checkOut), "dd/MM/yyyy")}
+                          {formatDateShort(booking.checkIn)} →{" "}
+                          {formatDateShort(booking.checkOut)}
                         </span>
                       </div>
                     )}
@@ -182,12 +176,12 @@ export function AccountOverviewClient() {
             })}
           </div>
         )}
-      </div>
+      </Card>
     </div>
   );
-}
+};
 
-function StatCard({
+const StatCard = ({
   icon,
   label,
   value,
@@ -195,9 +189,9 @@ function StatCard({
   icon: React.ReactNode;
   label: string;
   value: string | number;
-}) {
+}) => {
   return (
-    <div className="rounded-2xl border bg-card p-4 flex flex-col gap-2">
+    <Card className="rounded-2xl p-4 flex flex-col gap-3">
       <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center">
         {icon}
       </div>
@@ -205,6 +199,6 @@ function StatCard({
         <p className="text-lg font-bold leading-none">{value}</p>
         <p className="text-xs text-muted-foreground mt-0.5">{label}</p>
       </div>
-    </div>
+    </Card>
   );
-}
+};

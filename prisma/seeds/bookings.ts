@@ -356,7 +356,6 @@ export async function seedBookings(
       specialRequests: "Two extra beds for children",
     },
 
-    // ── PENDING (not yet paid) ─────────────────────────────────────────────────
     {
       userId: customer5.id,
       roomSlug: "heritage-room-dalat",
@@ -411,7 +410,6 @@ export async function seedBookings(
           ? "CHECKED_IN"
           : "CONFIRMED";
 
-    // Build payments
     const paymentsCreate: any[] = [];
     if (!isPending) {
       paymentsCreate.push({
@@ -478,7 +476,6 @@ export async function seedBookings(
     bookings[`booking${i + 1}`] = { ...booking, hotelId };
   }
 
-  // ── Update room availability ───────────────────────────────────────────────
   const allBookingItems = await prisma.bookingItem.findMany({
     where: { bookingId: { in: Object.values(bookings).map((b: any) => b.id) } },
   });

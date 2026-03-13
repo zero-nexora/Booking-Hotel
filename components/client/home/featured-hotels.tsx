@@ -26,7 +26,7 @@ export const FeaturedHotels = () => {
         <Link
           key={hotel.id}
           href={`/hotels/${hotel.slug}`}
-          className="group flex"
+          className="flex"
         >
           <div className="flex flex-col w-full rounded-2xl overflow-hidden border bg-card hover:shadow-md transition-shadow">
             <div className="relative h-48 bg-muted overflow-hidden shrink-0">
@@ -35,7 +35,7 @@ export const FeaturedHotels = () => {
                   src={hotel.images[0].url}
                   alt={hotel.images[0].alt ?? hotel.name}
                   fill
-                  className="object-cover group-hover:scale-105 transition-transform duration-300"
+                  className="object-cover"
                 />
               ) : (
                 <div className="w-full h-full bg-muted flex items-center justify-center">

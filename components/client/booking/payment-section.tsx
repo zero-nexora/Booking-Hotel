@@ -16,9 +16,7 @@ import { stripePromise } from "@/lib/stripe-client";
 interface PaymentSectionProps {
   clientSecret: string;
   total: number;
-  currency: string;
-  isSubmitting: boolean;
-  onPaymentSuccess: (paymentIntentId: string) => void;
+  onPaymentSuccess: () => void;
   onPaymentError: (message: string) => void;
 }
 
@@ -42,13 +40,11 @@ export const PaymentSection = (props: PaymentSectionProps) => {
   );
 };
 
-function PaymentForm({
+const PaymentForm = ({
   total,
-  currency,
-  isSubmitting,
   onPaymentSuccess,
   onPaymentError,
-}: PaymentSectionProps) {
+}: PaymentSectionProps) => {
   const stripe = useStripe();
   const elements = useElements();
   const [agreed, setAgreed] = useState(false);
@@ -69,11 +65,11 @@ function PaymentForm({
       onPaymentError(error.message ?? "Thanh toán thất bại");
       setProcessing(false);
     } else if (paymentIntent?.status === "succeeded") {
-      onPaymentSuccess(paymentIntent.id);
+      onPaymentSuccess();
     }
   };
 
-  const busy = isSubmitting || processing;
+  const busy = processing;
 
   return (
     <div className="space-y-5">
@@ -137,4 +133,4 @@ function PaymentForm({
       </div>
     </div>
   );
-}
+};

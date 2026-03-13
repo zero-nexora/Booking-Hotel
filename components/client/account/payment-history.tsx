@@ -39,7 +39,7 @@ interface PaymentHistoryProps {
   payments: Payment[];
 }
 
-export function PaymentHistory({ payments }: PaymentHistoryProps) {
+export const PaymentHistory = ({ payments }: PaymentHistoryProps) => {
   if (!payments.length) return null;
 
   return (
@@ -93,4 +93,4 @@ export function PaymentHistory({ payments }: PaymentHistoryProps) {
       </Table>
     </div>
   );
-}
+};

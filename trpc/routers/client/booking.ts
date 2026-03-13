@@ -7,10 +7,17 @@ import {
   calcTotal,
   getBookingExpiresAt,
   getDatesInRange,
+  buildCursorWhere,
 } from "@/lib/utils";
 import { Prisma } from "@/generated/prisma/client";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+
+function isPrismaUniqueError(e: unknown): boolean {
+  return (
+    e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002"
+  );
+}
 
 const GuestInfoSchema = z.object({
   guestName: z.string().min(1),
@@ -63,23 +70,7 @@ export const bookingRouter = createTRPCRouter({
       const expiresAt = getBookingExpiresAt();
       const dates = getDatesInRange(checkIn, checkOut);
 
-      const booking = await ctx.db.$transaction(async (tx) => {
-        const existing = await tx.roomAvailability.findFirst({
-          where: {
-            roomId: room.id,
-            date: { in: dates },
-            status: { notIn: ["AVAILABLE"] },
-          },
-          select: { date: true, status: true },
-        });
-
-        if (existing) {
-          throw new TRPCError({
-            code: "CONFLICT",
-            message: "Phòng đã được đặt trong khoảng thời gian này",
-          });
-        }
-
+      const { booking, paymentId } = await ctx.db.$transaction(async (tx) => {
         const b = await tx.booking.create({
           data: {
             userId: ctx.user.id,
@@ -119,19 +110,40 @@ export const bookingRouter = createTRPCRouter({
 
         const bookingItemId = b.items[0]!.id;
 
-        await tx.roomAvailability.createMany({
-          data: dates.map((date) => ({
-            roomId: room.id,
-            date,
-            status: "LOCKED" as const,
-            bookingItemId,
-            lockToken: b.id,
-            lockExpiresAt: expiresAt,
-          })),
-          skipDuplicates: true,
+        try {
+          await tx.roomAvailability.createMany({
+            data: dates.map((date) => ({
+              roomId: room.id,
+              date,
+              status: "LOCKED" as const,
+              bookingItemId,
+              lockToken: b.id,
+              lockExpiresAt: expiresAt,
+            })),
+          });
+        } catch (e) {
+          if (isPrismaUniqueError(e)) {
+            throw new TRPCError({
+              code: "CONFLICT",
+              message: "Phòng đã được đặt trong khoảng thời gian này",
+            });
+          }
+          throw e;
+        }
+
+        const p = await tx.payment.create({
+          data: {
+            bookingId: b.id,
+            userId: ctx.user.id,
+            type: "CHARGE",
+            status: "PENDING",
+            amount: total,
+            currency: "USD",
+          },
+          select: { id: true },
         });
 
-        return b;
+        return { booking: b, paymentId: p.id };
       });
 
       let paymentIntent: Stripe.PaymentIntent;
@@ -163,16 +175,9 @@ export const bookingRouter = createTRPCRouter({
         });
       }
 
-      await ctx.db.payment.create({
-        data: {
-          bookingId: booking.id,
-          userId: ctx.user.id,
-          type: "CHARGE",
-          status: "PENDING",
-          amount: total,
-          currency: "USD",
-          stripePaymentIntentId: paymentIntent.id,
-        },
+      await ctx.db.payment.update({
+        where: { id: paymentId },
+        data: { stripePaymentIntentId: paymentIntent.id },
       });
 
       return {
@@ -184,54 +189,6 @@ export const bookingRouter = createTRPCRouter({
         currency: "USD",
         nights,
       };
-    }),
-
-  confirmPayment: protectedProcedure
-    .input(z.object({ bookingId: z.string(), paymentIntentId: z.string() }))
-    .mutation(async ({ ctx, input }) => {
-      const payment = await ctx.db.payment.findFirst({
-        where: {
-          bookingId: input.bookingId,
-          stripePaymentIntentId: input.paymentIntentId,
-        },
-        include: { booking: { include: { items: true } } },
-      });
-      if (!payment) throw new TRPCError({ code: "NOT_FOUND" });
-      if (payment.booking.userId !== ctx.user.id)
-        throw new TRPCError({ code: "FORBIDDEN" });
-
-      const intent = await stripe.paymentIntents.retrieve(
-        input.paymentIntentId,
-      );
-      if (intent.status !== "succeeded") {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Thanh toán chưa hoàn tất",
-        });
-      }
-
-      await ctx.db.$transaction(async (tx) => {
-        await tx.booking.update({
-          where: { id: input.bookingId },
-          data: { status: "CONFIRMED", paymentStatus: "PAID", expiresAt: null },
-        });
-        await tx.bookingItem.updateMany({
-          where: { bookingId: input.bookingId },
-          data: { status: "CONFIRMED" },
-        });
-        await tx.payment.update({
-          where: { id: payment.id },
-          data: { status: "PAID", paidAt: new Date() },
-        });
-        for (const item of payment.booking.items) {
-          await tx.roomAvailability.updateMany({
-            where: { bookingItemId: item.id },
-            data: { status: "BOOKED", lockToken: null, lockExpiresAt: null },
-          });
-        }
-      });
-
-      return { bookingRef: payment.booking.bookingRef };
     }),
 
   getConfirmation: protectedProcedure
@@ -278,14 +235,12 @@ export const bookingRouter = createTRPCRouter({
       }),
     )
     .query(async ({ ctx, input }) => {
-      const where: Record<string, unknown> = { userId: ctx.user.id };
-      if (input.status) where.status = input.status;
-      if (input.cursor) {
-        where.OR = [
-          { updatedAt: { lt: input.cursor.updatedAt } },
-          { updatedAt: input.cursor.updatedAt, id: { lt: input.cursor.id } },
-        ];
-      }
+      const cursorWhere = buildCursorWhere(input.cursor);
+      const where = {
+        userId: ctx.user.id,
+        ...(input.status && { status: input.status }),
+        ...cursorWhere,
+      };
 
       const bookings = await ctx.db.booking.findMany({
         where,
@@ -384,35 +339,28 @@ export const bookingRouter = createTRPCRouter({
       const bookingItemIds = booking.items.map((i) => i.id);
       const hasPaidPayments = booking.payments.length > 0;
 
-      const refunds: {
-        paymentId: string;
-        stripeRefundId: string;
-        amount: Prisma.Decimal;
-        currency: string;
-      }[] = [];
-
-      for (const payment of booking.payments) {
-        if (!payment.stripePaymentIntentId) continue;
-
-        let refund: Stripe.Refund;
-        try {
-          refund = await stripe.refunds.create({
-            payment_intent: payment.stripePaymentIntentId,
-          });
-        } catch (err) {
-          throw new TRPCError({
-            code: "INTERNAL_SERVER_ERROR",
-            message: "Hoàn tiền thất bại. Vui lòng liên hệ hỗ trợ.",
-          });
-        }
-
-        refunds.push({
-          paymentId: payment.id,
-          stripeRefundId: refund.id,
-          amount: payment.amount,
-          currency: payment.currency,
-        });
-      }
+      const refunds = await Promise.all(
+        booking.payments
+          .filter((p) => p.stripePaymentIntentId)
+          .map(async (payment) => {
+            try {
+              const refund = await stripe.refunds.create({
+                payment_intent: payment.stripePaymentIntentId!,
+              });
+              return {
+                paymentId: payment.id,
+                stripeRefundId: refund.id,
+                amount: payment.amount,
+                currency: payment.currency,
+              };
+            } catch {
+              throw new TRPCError({
+                code: "INTERNAL_SERVER_ERROR",
+                message: "Hoàn tiền thất bại. Vui lòng liên hệ hỗ trợ.",
+              });
+            }
+          }),
+      );
 
       const now = new Date();
 

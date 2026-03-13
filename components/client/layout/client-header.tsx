@@ -27,7 +27,7 @@ const navLinks = [
 
 const navItemClass = (active: boolean) =>
   cn(
-    "px-3 py-1.5 rounded-lg text-sm font-medium transition-colors",
+    "px-3 py-1.5 rounded-lg text-sm font-medium transition-colors block",
     active
       ? "bg-primary/10 text-primary"
       : "text-muted-foreground hover:text-foreground hover:bg-muted",

@@ -16,7 +16,7 @@ const navLinks = [
   { href: "/account/profile", label: "Hồ sơ", icon: User },
 ];
 
-export function AccountSidebar() {
+export const AccountSidebar = () => {
   const pathname = usePathname();
   const router = useRouter();
   const { data: user } = useMe();
@@ -29,7 +29,6 @@ export function AccountSidebar() {
 
   return (
     <aside className="w-full md:w-52 shrink-0">
-      {/* Profile summary */}
       <div className="flex items-center gap-3 mb-4 px-1">
         <Avatar className="w-10 h-10">
           <AvatarImage src={user?.image ?? undefined} />
@@ -82,4 +81,4 @@ export function AccountSidebar() {
       </nav>
     </aside>
   );
-}
+};

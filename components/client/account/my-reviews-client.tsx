@@ -39,7 +39,7 @@ const REVIEW_STATUS_MAP: Record<
   },
 };
 
-export function MyReviewsClient() {
+export const MyReviewsClient = () => {
   const { data, isLoading, isFetchingNextPage, hasNextPage, fetchNextPage } =
     useMyReviews();
   const { sentinelRef } = useInfiniteScroll({

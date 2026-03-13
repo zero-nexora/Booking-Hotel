@@ -15,10 +15,7 @@ import { ArrowLeft, ChevronRight, User, CreditCard } from "lucide-react";
 import Link from "next/link";
 
 import { useHotelDetail } from "@/hooks/client/use-hotels";
-import {
-  useCreateBookingIntent,
-  useConfirmPayment,
-} from "@/hooks/client/use-booking";
+import { useCreateBookingIntent } from "@/hooks/client/use-booking";
 import { useMe } from "@/hooks/client/use-user";
 
 import { BookingSummary } from "./booking-summary";
@@ -66,13 +63,13 @@ export const BookingClient = ({
   const [intentData, setIntentData] = useState<{
     clientSecret: string;
     bookingId: string;
+    bookingRef: string;
     expiresAt: Date;
     total: number;
     currency: string;
   } | null>(null);
 
   const createIntent = useCreateBookingIntent();
-  const confirmPayment = useConfirmPayment();
 
   const form = useForm<GuestValues>({
     resolver: zodResolver(guestSchema),
@@ -135,17 +132,14 @@ export const BookingClient = ({
       expiresAt: new Date(result.expiresAt),
       total: result.total,
       currency: result.currency,
+      bookingRef: result.bookingRef,
     });
     setStep("payment");
   };
 
-  const handlePaymentSuccess = async (paymentIntentId: string) => {
+  const handlePaymentSuccess = async () => {
     if (!intentData) return;
-    const result = await confirmPayment.mutateAsync({
-      bookingId: intentData.bookingId,
-      paymentIntentId,
-    });
-    router.push(`/booking/confirmation/${result.bookingRef}`);
+    router.push(`/booking/confirmation/${intentData.bookingRef}`);
   };
 
   const handlePaymentError = (message: string) => {
@@ -198,7 +192,7 @@ export const BookingClient = ({
         />
       )}
 
-      <div className="flex flex-col lg:flex-row gap-6 items-start">
+      <div className="flex wrapper gap-6 items-start">
         <div className="flex-1 min-w-0 space-y-6">
           {step === "guest" && (
             <Form {...form}>
@@ -229,8 +223,6 @@ export const BookingClient = ({
               <PaymentSection
                 clientSecret={intentData.clientSecret}
                 total={total}
-                currency={intentData.currency}
-                isSubmitting={confirmPayment.isPending}
                 onPaymentSuccess={handlePaymentSuccess}
                 onPaymentError={handlePaymentError}
               />
@@ -262,13 +254,13 @@ export const BookingClient = ({
   );
 };
 
-function Section({
+const Section = ({
   title,
   children,
 }: {
   title: string;
   children: React.ReactNode;
-}) {
+}) => {
   return (
     <div className="rounded-2xl border bg-card p-5 space-y-4">
       <h2 className="font-semibold text-sm">{title}</h2>
@@ -276,9 +268,9 @@ function Section({
       {children}
     </div>
   );
-}
+};
 
-function StepBadge({
+const StepBadge = ({
   icon,
   label,
   active,
@@ -290,7 +282,7 @@ function StepBadge({
   active: boolean;
   done: boolean;
   number: number;
-}) {
+}) => {
   return (
     <div className="flex items-center gap-2 shrink-0">
       <div
@@ -313,9 +305,9 @@ function StepBadge({
       </span>
     </div>
   );
-}
+};
 
-function BookingPageSkeleton() {
+const BookingPageSkeleton = () => {
   return (
     <div className="max-w-4xl mx-auto px-4 py-6 space-y-6">
       <Skeleton className="h-8 w-48" />
@@ -331,4 +323,4 @@ function BookingPageSkeleton() {
       </div>
     </div>
   );
-}
+};

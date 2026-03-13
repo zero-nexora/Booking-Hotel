@@ -46,7 +46,7 @@ export const HotelDetailClient = ({
     <div className="max-w-6xl mx-auto px-4 py-6 space-y-8">
       <ImageGallery images={hotel.images} hotelName={hotel.name} />
 
-      <div className="flex flex-col lg:flex-row gap-8">
+      <div className="flex wapper gap-8">
         <div className="flex-1 min-w-0 space-y-8">
           <HotelOverview
             name={hotel.name}

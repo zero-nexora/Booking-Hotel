@@ -14,6 +14,8 @@ import {
   EyeOff,
   Github,
   Chrome,
+  Pencil,
+  X,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -30,17 +32,6 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import {
   useMe,
   useUpdateProfile,
   useConnectedAccounts,
@@ -50,6 +41,8 @@ import { authClient } from "@/lib/auth-client";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { UploadButton } from "@/utils/uploadthing";
+import { Card } from "@/components/ui/card";
+import { useConfirmDialogStore } from "@/store/confirm-dialog-store";
 
 const profileSchema = z.object({
   name: z.string().min(1, "Vui lòng nhập tên"),
@@ -76,12 +69,17 @@ const PROVIDER_ICONS: Record<string, React.ElementType> = {
   google: Chrome,
 };
 
-export function ProfileClient() {
+export const ProfileClient = () => {
   const router = useRouter();
+  const { openConfirm } = useConfirmDialogStore();
+
   const { data: user, isLoading } = useMe();
   const { data: accounts } = useConnectedAccounts();
   const updateProfile = useUpdateProfile();
   const deleteAccount = useDeleteAccount();
+
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [isEditingPassword, setIsEditingPassword] = useState(false);
 
   const [showCurrent, setShowCurrent] = useState(false);
   const [showNew, setShowNew] = useState(false);
@@ -114,6 +112,29 @@ export function ProfileClient() {
 
   const handleProfileSubmit = async (values: ProfileValues) => {
     await updateProfile.mutateAsync(values);
+    setIsEditingProfile(false);
+  };
+
+  const handleCancelProfile = () => {
+    profileForm.reset({
+      name: user?.name ?? "",
+      phone: user?.phone ?? "",
+      image: user?.image ?? "",
+    });
+    setIsEditingProfile(false);
+  };
+
+  const handleCancelPassword = () => {
+    passwordForm.reset();
+    setShowCurrent(false);
+    setShowNew(false);
+    setShowConfirm(false);
+    setIsEditingPassword(false);
+  };
+
+  const handleUnLinkAccount = async (providerId: string, accountId: string) => {
+    await authClient.unlinkAccount({ providerId, accountId });
+    router.refresh();
   };
 
   const handlePasswordSubmit = async (values: PasswordValues) => {
@@ -125,7 +146,7 @@ export function ProfileClient() {
         revokeOtherSessions: true,
       });
       toast.success("Đổi mật khẩu thành công");
-      passwordForm.reset();
+      handleCancelPassword();
     } catch {
       toast.error("Mật khẩu hiện tại không đúng");
     } finally {
@@ -147,6 +168,20 @@ export function ProfileClient() {
     }
   };
 
+  const handleOpenDeleteAccountDialog = () =>
+    openConfirm({
+      title: "Bạn chắc chắn muốn xoá?",
+      description: `Hành động này không thể hoàn tác. Tài khoản, đặt phòng và đánh giá của bạn sẽ bị xoá vĩnh viễn`,
+      onConfirm: handleDeleteAccount,
+    });
+
+  const handleOpenUnLinkDialog = (providerId: string, accountId: string) =>
+    openConfirm({
+      title: `Ngắt kết nối ${providerId}?`,
+      description: `Bạn có chắc chắn muốn ngắt kết nối tài khoản ${providerId}? Sau khi ngắt, bạn sẽ không thể đăng nhập bằng ${providerId} nữa.`,
+      onConfirm: () => handleUnLinkAccount(providerId, accountId),
+    });
+
   if (isLoading) return <ProfileSkeleton />;
   if (!user) return null;
 
@@ -156,14 +191,38 @@ export function ProfileClient() {
     <div className="space-y-6">
       <h1 className="text-lg font-semibold">Hồ sơ</h1>
 
-      {/* Avatar + profile form */}
       <Form {...profileForm}>
         <form onSubmit={profileForm.handleSubmit(handleProfileSubmit)}>
-          <div className="rounded-2xl border bg-card p-5 space-y-5">
-            <p className="text-sm font-medium">Thông tin cá nhân</p>
+          <Card className="rounded-2xl border p-5">
+            <div className="flex items-center justify-between">
+              <p className="text-sm font-medium">Thông tin cá nhân</p>
+              {!isEditingProfile ? (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 gap-1 text-xs"
+                  onClick={() => setIsEditingProfile(true)}
+                >
+                  <Pencil className="w-3 h-3" />
+                  Chỉnh sửa
+                </Button>
+              ) : (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 gap-1 text-xs text-muted-foreground"
+                  onClick={handleCancelProfile}
+                >
+                  <X className="w-3 h-3" />
+                  Huỷ
+                </Button>
+              )}
+            </div>
+
             <Separator />
 
-            {/* Avatar */}
             <div className="flex items-center gap-4">
               <div className="relative flex flex-col gap-4 items-center">
                 <Avatar className="w-16 h-16">
@@ -172,14 +231,15 @@ export function ProfileClient() {
                     {user.name?.charAt(0).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
-                <UploadButton
-                  endpoint="roomImages"
-                  onClientUploadComplete={(res) => {
-                    profileForm.setValue("image", res[0].ufsUrl);
-                  }}
-                  onUploadError={(err) => console.error("Upload error:", err)}
-                  // className="h-16 w-32"
-                />
+                {isEditingProfile && (
+                  <UploadButton
+                    endpoint="roomImages"
+                    onClientUploadComplete={(res) => {
+                      profileForm.setValue("image", res[0].ufsUrl);
+                    }}
+                    onUploadError={(err) => console.error("Upload error:", err)}
+                  />
+                )}
               </div>
               <div>
                 <p className="text-sm font-medium">{user.name}</p>
@@ -187,7 +247,6 @@ export function ProfileClient() {
               </div>
             </div>
 
-            {/* Name + Phone */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <FormField
                 control={profileForm.control}
@@ -198,7 +257,7 @@ export function ProfileClient() {
                       Họ và tên
                     </FormLabel>
                     <FormControl>
-                      <Input {...field} />
+                      <Input {...field} disabled={!isEditingProfile} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -213,7 +272,11 @@ export function ProfileClient() {
                       Số điện thoại
                     </FormLabel>
                     <FormControl>
-                      <Input placeholder="+84 901 234 567" {...field} />
+                      <Input
+                        placeholder="+84 901 234 567"
+                        {...field}
+                        disabled={!isEditingProfile}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -221,7 +284,6 @@ export function ProfileClient() {
               />
             </div>
 
-            {/* Email (readonly) */}
             <div className="space-y-1.5">
               <p className="text-xs font-medium">Email</p>
               <div className="flex items-center gap-2">
@@ -249,106 +311,140 @@ export function ProfileClient() {
               </div>
             </div>
 
-            <Button
-              type="submit"
-              size="sm"
-              className="rounded-xl"
-              disabled={updateProfile.isPending}
-            >
-              {updateProfile.isPending ? "Đang lưu..." : "Lưu thay đổi"}
-            </Button>
-          </div>
+            {isEditingProfile && (
+              <Button
+                type="submit"
+                size="sm"
+                className="rounded-xl w-fit"
+                disabled={updateProfile.isPending}
+              >
+                {updateProfile.isPending ? "Đang lưu..." : "Lưu thay đổi"}
+              </Button>
+            )}
+          </Card>
         </form>
       </Form>
 
-      {/* Change password */}
       <Form {...passwordForm}>
         <form onSubmit={passwordForm.handleSubmit(handlePasswordSubmit)}>
-          <div className="rounded-2xl border bg-card p-5 space-y-5">
-            <div className="flex items-center gap-2">
-              <Shield className="w-4 h-4 text-muted-foreground" />
-              <p className="text-sm font-medium">Đổi mật khẩu</p>
+          <Card className="rounded-2xl border p-5">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Shield className="w-4 h-4 text-muted-foreground" />
+                <p className="text-sm font-medium">Đổi mật khẩu</p>
+              </div>
+              {!isEditingPassword ? (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 gap-1 text-xs"
+                  onClick={() => setIsEditingPassword(true)}
+                >
+                  <Pencil className="w-3 h-3" />
+                  Chỉnh sửa
+                </Button>
+              ) : (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 gap-1 text-xs text-muted-foreground"
+                  onClick={handleCancelPassword}
+                >
+                  <X className="w-3 h-3" />
+                  Huỷ
+                </Button>
+              )}
             </div>
             <Separator />
 
-            <FormField
-              control={passwordForm.control}
-              name="currentPassword"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-xs font-medium">
-                    Mật khẩu hiện tại
-                  </FormLabel>
-                  <FormControl>
-                    <PasswordInput
-                      show={showCurrent}
-                      onToggle={() => setShowCurrent((v) => !v)}
-                      placeholder="••••••••"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <FormField
-                control={passwordForm.control}
-                name="newPassword"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-xs font-medium">
-                      Mật khẩu mới
-                    </FormLabel>
-                    <FormControl>
-                      <PasswordInput
-                        show={showNew}
-                        onToggle={() => setShowNew((v) => !v)}
-                        placeholder="Tối thiểu 8 ký tự"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={passwordForm.control}
-                name="confirmPassword"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-xs font-medium">
-                      Xác nhận mật khẩu
-                    </FormLabel>
-                    <FormControl>
-                      <PasswordInput
-                        show={showConfirm}
-                        onToggle={() => setShowConfirm((v) => !v)}
-                        placeholder="Nhập lại mật khẩu mới"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+            {isEditingPassword && (
+              <>
+                <FormField
+                  control={passwordForm.control}
+                  name="currentPassword"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-xs font-medium">
+                        Mật khẩu hiện tại
+                      </FormLabel>
+                      <FormControl>
+                        <PasswordInput
+                          show={showCurrent}
+                          onToggle={() => setShowCurrent((v) => !v)}
+                          placeholder="••••••••"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <FormField
+                    control={passwordForm.control}
+                    name="newPassword"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-xs font-medium">
+                          Mật khẩu mới
+                        </FormLabel>
+                        <FormControl>
+                          <PasswordInput
+                            show={showNew}
+                            onToggle={() => setShowNew((v) => !v)}
+                            placeholder="Tối thiểu 8 ký tự"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={passwordForm.control}
+                    name="confirmPassword"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-xs font-medium">
+                          Xác nhận mật khẩu
+                        </FormLabel>
+                        <FormControl>
+                          <PasswordInput
+                            show={showConfirm}
+                            onToggle={() => setShowConfirm((v) => !v)}
+                            placeholder="Nhập lại mật khẩu mới"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                <Button
+                  type="submit"
+                  size="sm"
+                  className="rounded-xl"
+                  disabled={changingPassword}
+                >
+                  {changingPassword ? "Đang đổi..." : "Đổi mật khẩu"}
+                </Button>
+              </>
+            )}
 
-            <Button
-              type="submit"
-              size="sm"
-              className="rounded-xl"
-              disabled={changingPassword}
-            >
-              {changingPassword ? "Đang đổi..." : "Đổi mật khẩu"}
-            </Button>
-          </div>
+            {!isEditingPassword && (
+              <p className="text-xs text-muted-foreground">
+                Nhấn chỉnh sửa để thay đổi mật khẩu của bạn.
+              </p>
+            )}
+          </Card>
         </form>
       </Form>
 
-      {/* Connected accounts */}
       {accounts && accounts.length > 0 && (
-        <div className="rounded-2xl border bg-card p-5 space-y-4">
+        <Card className="rounded-2xl border p-5">
           <div className="flex items-center gap-2">
             <Link2 className="w-4 h-4 text-muted-foreground" />
             <p className="text-sm font-medium">Tài khoản liên kết</p>
@@ -376,6 +472,9 @@ export function ProfileClient() {
                     variant="ghost"
                     size="sm"
                     className="h-7 gap-1 text-xs text-muted-foreground hover:text-destructive"
+                    onClick={() =>
+                      handleOpenUnLinkDialog(acc.providerId, acc.id)
+                    }
                   >
                     <Link2Off className="w-3 h-3" />
                     Ngắt kết nối
@@ -384,13 +483,12 @@ export function ProfileClient() {
               );
             })}
           </div>
-        </div>
+        </Card>
       )}
 
-      {/* Danger zone */}
       <div className="rounded-2xl border border-destructive/30 bg-destructive/5 p-5 space-y-4">
         <p className="text-sm font-medium text-destructive">Vùng nguy hiểm</p>
-        <Separator className="border-destructive/20" />
+        <Separator className="bg-destructive/20" />
         <div className="flex items-center justify-between gap-3 flex-wrap">
           <div>
             <p className="text-sm font-medium">Xoá tài khoản</p>
@@ -398,50 +496,29 @@ export function ProfileClient() {
               Tất cả dữ liệu sẽ bị xoá vĩnh viễn và không thể khôi phục.
             </p>
           </div>
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button
-                variant="destructive"
-                size="sm"
-                className="rounded-xl gap-1.5"
-              >
-                <Trash2 className="w-3.5 h-3.5" />
-                Xoá tài khoản
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Bạn chắc chắn muốn xoá?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  Hành động này không thể hoàn tác. Tài khoản, đặt phòng và đánh
-                  giá của bạn sẽ bị xoá vĩnh viễn.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Huỷ</AlertDialogCancel>
-                <AlertDialogAction
-                  className="bg-destructive hover:bg-destructive/90"
-                  onClick={handleDeleteAccount}
-                >
-                  Xoá vĩnh viễn
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+          <Button
+            variant="destructive"
+            size="sm"
+            className="rounded-xl gap-1.5"
+            onClick={handleOpenDeleteAccountDialog}
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+            Xoá tài khoản
+          </Button>
         </div>
       </div>
     </div>
   );
-}
+};
 
-function PasswordInput({
+const PasswordInput = ({
   show,
   onToggle,
   ...props
 }: React.InputHTMLAttributes<HTMLInputElement> & {
   show: boolean;
   onToggle: () => void;
-}) {
+}) => {
   return (
     <div className="relative">
       <Input type={show ? "text" : "password"} className="pr-9" {...props} />
@@ -459,9 +536,9 @@ function PasswordInput({
       </button>
     </div>
   );
-}
+};
 
-function ProfileSkeleton() {
+const ProfileSkeleton = () => {
   return (
     <div className="space-y-5">
       <Skeleton className="h-7 w-24" />
@@ -470,4 +547,4 @@ function ProfileSkeleton() {
       <Skeleton className="h-32 rounded-2xl" />
     </div>
   );
-}
+};

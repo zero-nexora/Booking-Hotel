@@ -1,8 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { format } from "date-fns";
-import { vi } from "date-fns/locale";
 import {
   ArrowLeft,
   Building2,
@@ -24,6 +22,7 @@ import { useBookingDetail } from "@/hooks/client/use-booking";
 import { StatusTimeline } from "./status-timeline";
 import { PaymentHistory } from "./payment-history";
 import { CancelSection } from "./cancel-section";
+import { formatCurrencyUSD, formatDateShort } from "@/lib/utils";
 
 const STATUS_MAP: Record<
   string,
@@ -44,7 +43,9 @@ interface BookingDetailClientProps {
   bookingRef: string;
 }
 
-export function BookingDetailClient({ bookingRef }: BookingDetailClientProps) {
+export const BookingDetailClient = ({
+  bookingRef,
+}: BookingDetailClientProps) => {
   const { data: booking, isLoading } = useBookingDetail(bookingRef);
 
   if (isLoading) return <BookingDetailSkeleton />;
@@ -57,7 +58,6 @@ export function BookingDetailClient({ bookingRef }: BookingDetailClientProps) {
 
   return (
     <div className="space-y-5">
-      {/* Back */}
       <div className="flex items-center gap-2">
         <Button variant="ghost" size="sm" className="gap-1.5 -ml-2 h-8" asChild>
           <Link href="/account/bookings">
@@ -67,7 +67,6 @@ export function BookingDetailClient({ bookingRef }: BookingDetailClientProps) {
         </Button>
       </div>
 
-      {/* Header */}
       <div className="flex items-start justify-between gap-3 flex-wrap">
         <div>
           <h1 className="text-lg font-semibold">Chi tiết đặt phòng</h1>
@@ -78,12 +77,10 @@ export function BookingDetailClient({ bookingRef }: BookingDetailClientProps) {
         <Badge variant={status.variant}>{status.label}</Badge>
       </div>
 
-      {/* Status timeline */}
       <div className="rounded-2xl border bg-card p-5">
         <StatusTimeline status={booking.status as never} />
       </div>
 
-      {/* Hotel + Room info */}
       <div className="rounded-2xl border bg-card divide-y">
         <div className="p-4 space-y-1.5">
           <p className="text-[10px] text-muted-foreground uppercase tracking-wide font-medium">
@@ -119,7 +116,6 @@ export function BookingDetailClient({ bookingRef }: BookingDetailClientProps) {
           </div>
         )}
 
-        {/* Dates */}
         <div className="p-4 grid grid-cols-2 gap-4">
           <div>
             <p className="text-[10px] text-muted-foreground uppercase tracking-wide font-medium mb-1">
@@ -128,9 +124,7 @@ export function BookingDetailClient({ bookingRef }: BookingDetailClientProps) {
             <div className="flex items-center gap-1.5">
               <CalendarDays className="w-3.5 h-3.5 text-muted-foreground" />
               <span className="text-sm font-semibold">
-                {format(new Date(booking.checkIn), "dd/MM/yyyy", {
-                  locale: vi,
-                })}
+                {formatDateShort(booking.checkIn)}
               </span>
             </div>
             {booking.hotel.policy && (
@@ -147,9 +141,7 @@ export function BookingDetailClient({ bookingRef }: BookingDetailClientProps) {
             <div className="flex items-center gap-1.5">
               <CalendarDays className="w-3.5 h-3.5 text-muted-foreground" />
               <span className="text-sm font-semibold">
-                {format(new Date(booking.checkOut), "dd/MM/yyyy", {
-                  locale: vi,
-                })}
+                {formatDateShort(booking.checkOut)}
               </span>
             </div>
             {booking.hotel.policy && (
@@ -171,7 +163,6 @@ export function BookingDetailClient({ bookingRef }: BookingDetailClientProps) {
         </div>
       </div>
 
-      {/* Guest details */}
       <div className="rounded-2xl border bg-card p-4 space-y-3">
         <p className="text-xs text-muted-foreground uppercase tracking-wide font-medium">
           Thông tin khách
@@ -207,7 +198,6 @@ export function BookingDetailClient({ bookingRef }: BookingDetailClientProps) {
         </div>
       </div>
 
-      {/* Payment history */}
       {booking.payments.length > 0 && (
         <div className="space-y-2">
           <p className="text-sm font-semibold">Lịch sử thanh toán</p>
@@ -215,13 +205,13 @@ export function BookingDetailClient({ bookingRef }: BookingDetailClientProps) {
           <div className="flex justify-between items-center px-1">
             <span className="text-sm text-muted-foreground">Tổng cộng</span>
             <span className="text-base font-bold">
-              ${Number(booking.totalAmount)} {booking.currency}
+              {formatCurrencyUSD(Number(booking.totalAmount))}{" "}
+              {booking.currency}
             </span>
           </div>
         </div>
       )}
 
-      {/* Review CTA */}
       {canReview && (
         <div className="rounded-2xl border bg-amber-50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-800 p-4 flex items-center justify-between gap-3">
           <div className="flex items-center gap-2">
@@ -242,13 +232,12 @@ export function BookingDetailClient({ bookingRef }: BookingDetailClientProps) {
         </div>
       )}
 
-      {/* Cancel section */}
       {canCancel && <CancelSection bookingRef={bookingRef} />}
     </div>
   );
-}
+};
 
-function BookingDetailSkeleton() {
+const BookingDetailSkeleton = () => {
   return (
     <div className="space-y-5">
       <Skeleton className="h-8 w-36" />
@@ -259,4 +248,4 @@ function BookingDetailSkeleton() {
       <Skeleton className="h-32 rounded-2xl" />
     </div>
   );
-}
+};

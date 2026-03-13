@@ -17,7 +17,7 @@ interface CancelSectionProps {
   bookingRef: string;
 }
 
-export function CancelSection({ bookingRef }: CancelSectionProps) {
+export const CancelSection = ({ bookingRef }: CancelSectionProps) => {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [reason, setReason] = useState("");
@@ -30,26 +30,36 @@ export function CancelSection({ bookingRef }: CancelSectionProps) {
   };
 
   return (
-    <div id="cancel" className="rounded-2xl border border-destructive/30 bg-destructive/5">
+    <div
+      id="cancel"
+      className="rounded-2xl border border-destructive/30 bg-destructive/5"
+    >
       <Collapsible open={open} onOpenChange={setOpen}>
         <CollapsibleTrigger asChild>
           <button className="w-full flex items-center justify-between gap-3 p-4 text-left">
             <div className="flex items-center gap-2.5">
               <AlertTriangle className="w-4 h-4 text-destructive shrink-0" />
-              <span className="text-sm font-medium text-destructive">Huỷ đặt phòng</span>
+              <span className="text-sm font-medium text-destructive">
+                Huỷ đặt phòng
+              </span>
             </div>
-            <span className="text-xs text-muted-foreground">{open ? "Thu gọn" : "Mở rộng"}</span>
+            <span className="text-xs text-muted-foreground">
+              {open ? "Thu gọn" : "Mở rộng"}
+            </span>
           </button>
         </CollapsibleTrigger>
         <CollapsibleContent>
           <div className="px-4 pb-4 space-y-4 border-t border-destructive/20 pt-4">
             <p className="text-sm text-muted-foreground">
-              Sau khi huỷ, phòng sẽ được giải phóng. Nếu bạn đã thanh toán, khoản tiền sẽ được hoàn trả theo chính sách.
+              Sau khi huỷ, phòng sẽ được giải phóng. Nếu bạn đã thanh toán,
+              khoản tiền sẽ được hoàn trả theo chính sách.
             </p>
             <div className="space-y-1.5">
               <Label className="text-xs font-medium">
                 Lý do huỷ{" "}
-                <span className="text-muted-foreground font-normal">(tuỳ chọn)</span>
+                <span className="text-muted-foreground font-normal">
+                  (tuỳ chọn)
+                </span>
               </Label>
               <Textarea
                 placeholder="Nhập lý do huỷ..."
@@ -83,4 +93,4 @@ export function CancelSection({ bookingRef }: CancelSectionProps) {
       </Collapsible>
     </div>
   );
-}
+};
