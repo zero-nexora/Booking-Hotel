@@ -96,9 +96,10 @@ export const AdminSidebar = ({
       >
         <div
           className={cn(
-            "flex items-center justify-center h-16 px-4 border-b gap-3",
+            "flex items-center justify-center h-16 px-4 border-b gap-3 cursor-pointer",
             collapsed && " px-0",
           )}
+          onClick={() => router.push("/")}
         >
           {collapsed ? (
             <Image alt="logo" src={hotelIcon} width={36} height={36} />

@@ -10,6 +10,7 @@ import { adminReviewParsers } from "@/lib/search-params/admin-reviews";
 import { CheckCircle2, XCircle, Star } from "lucide-react";
 import { format } from "date-fns";
 import { useQueryStates } from "nuqs";
+import { useCallback } from "react";
 import { RouterOutput } from "@/trpc/client";
 import { ReviewStatus } from "@/generated/prisma/enums";
 import {
@@ -119,17 +120,38 @@ export const HotelReviewsTab = ({ hotelId }: HotelReviewsTabProps) => {
   const { data, isLoading } = useAdminReviewList({ ...params, hotelId });
   const updateStatus = useUpdateReviewStatus();
 
+  const handleTabChange = useCallback(
+    (v: string) =>
+      setParams({
+        status: v === "all" ? null : (v as ReviewStatus),
+        page: 1,
+      }),
+    [setParams],
+  );
+
+  const handleApprove = useCallback(
+    (id: string) => updateStatus.mutateAsync({ id, status: "APPROVED" }),
+    [updateStatus],
+  );
+
+  const handleReject = useCallback(
+    (id: string) => updateStatus.mutateAsync({ id, status: "REJECTED" }),
+    [updateStatus],
+  );
+
+  const handlePageChange = useCallback(
+    (p: number) => setParams({ page: p }),
+    [setParams],
+  );
+
+  const handleLimitChange = useCallback(
+    (l: number) => setParams({ limit: l, page: 1 }),
+    [setParams],
+  );
+
   return (
     <div className="space-y-4">
-      <Tabs
-        value={params.status ?? "all"}
-        onValueChange={(v) =>
-          void setParams({
-            status: v === "all" ? null : (v as ReviewStatus),
-            page: 1,
-          })
-        }
-      >
+      <Tabs value={params.status ?? "all"} onValueChange={handleTabChange}>
         <TabsList>
           <TabsTrigger value="all">Tất cả</TabsTrigger>
           <TabsTrigger value="PENDING">Chờ duyệt</TabsTrigger>
@@ -150,12 +172,8 @@ export const HotelReviewsTab = ({ hotelId }: HotelReviewsTabProps) => {
             <ReviewCard
               key={review.id}
               review={review}
-              onApprove={(id) =>
-                void updateStatus.mutateAsync({ id, status: "APPROVED" })
-              }
-              onReject={(id) =>
-                void updateStatus.mutateAsync({ id, status: "REJECTED" })
-              }
+              onApprove={handleApprove}
+              onReject={handleReject}
               isPending={updateStatus.isPending}
             />
           ))}
@@ -168,8 +186,8 @@ export const HotelReviewsTab = ({ hotelId }: HotelReviewsTabProps) => {
           totalPages={data.totalPages}
           total={data.total}
           limit={params.limit}
-          onPageChange={(p) => void setParams({ page: p })}
-          onLimitChange={(l) => void setParams({ limit: l, page: 1 })}
+          onPageChange={handlePageChange}
+          onLimitChange={handleLimitChange}
         />
       )}
     </div>

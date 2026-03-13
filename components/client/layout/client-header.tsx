@@ -1,17 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useSearchParams, useRouter } from "next/navigation";
 import { useState } from "react";
-import {
-  Hotel,
-  Menu,
-  User,
-  BookOpen,
-  Star,
-  LogOut,
-  ChevronDown,
-} from "lucide-react";
+import { Menu, User, BookOpen, Star, LogOut, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -33,11 +25,23 @@ const navLinks = [
   { label: "Điểm đến", href: "/hotels?view=map" },
 ];
 
+const navItemClass = (active: boolean) =>
+  cn(
+    "px-3 py-1.5 rounded-lg text-sm font-medium transition-colors",
+    active
+      ? "bg-primary/10 text-primary"
+      : "text-muted-foreground hover:text-foreground hover:bg-muted",
+  );
+
 export const ClientHeader = () => {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const router = useRouter();
   const { data: user } = useMe();
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  const viewParam = searchParams.get("view");
+  const currentUrl = viewParam ? `${pathname}?view=${viewParam}` : pathname;
 
   const handleSignOut = async () => {
     await authClient.signOut();
@@ -52,17 +56,12 @@ export const ClientHeader = () => {
           <Logo />
         </Link>
 
-        <nav className="box-hidden flex items-center gap-1">
+        <nav className="items-center gap-1 box-hidden">
           {navLinks.map((link) => (
             <Link
               key={link.href}
               href={link.href}
-              className={cn(
-                "px-3 py-1.5 rounded-lg text-sm font-medium transition-colors",
-                pathname === link.href
-                  ? "bg-primary/10 text-primary"
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted",
-              )}
+              className={navItemClass(currentUrl === link.href)}
             >
               {link.label}
             </Link>
@@ -71,6 +70,7 @@ export const ClientHeader = () => {
 
         <div className="flex items-center gap-2">
           <ThemeToggle />
+
           {user ? (
             <DropdownMenu modal={false}>
               <DropdownMenuTrigger asChild>
@@ -127,7 +127,7 @@ export const ClientHeader = () => {
               <Button variant="ghost" size="sm" asChild>
                 <Link href="/sign-in">Đăng nhập</Link>
               </Button>
-              <Button size="sm" asChild className="box-hidden">
+              <Button size="sm" asChild>
                 <Link href="/sign-up">Đăng ký</Link>
               </Button>
             </div>
@@ -149,42 +149,35 @@ export const ClientHeader = () => {
                     key={link.href}
                     href={link.href}
                     onClick={() => setMobileOpen(false)}
-                    className={cn(
-                      "flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors",
-                      pathname === link.href
-                        ? "bg-primary/10 text-primary"
-                        : "text-muted-foreground hover:text-foreground hover:bg-muted",
-                    )}
+                    className={navItemClass(currentUrl === link.href)}
                   >
                     {link.label}
                   </Link>
                 ))}
                 {!user && (
-                  <>
-                    <div className="pt-3 border-t mt-3 space-y-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="w-full"
-                        asChild
+                  <div className="pt-3 border-t mt-3 space-y-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full"
+                      asChild
+                    >
+                      <Link
+                        href="/sign-in"
+                        onClick={() => setMobileOpen(false)}
                       >
-                        <Link
-                          href="/sign-in"
-                          onClick={() => setMobileOpen(false)}
-                        >
-                          Đăng nhập
-                        </Link>
-                      </Button>
-                      <Button size="sm" className="w-full" asChild>
-                        <Link
-                          href="/sign-up"
-                          onClick={() => setMobileOpen(false)}
-                        >
-                          Đăng ký
-                        </Link>
-                      </Button>
-                    </div>
-                  </>
+                        Đăng nhập
+                      </Link>
+                    </Button>
+                    <Button size="sm" className="w-full" asChild>
+                      <Link
+                        href="/sign-up"
+                        onClick={() => setMobileOpen(false)}
+                      >
+                        Đăng ký
+                      </Link>
+                    </Button>
+                  </div>
                 )}
               </nav>
             </SheetContent>

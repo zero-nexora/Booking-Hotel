@@ -1,5 +1,6 @@
 "use client";
 
+import { useCallback } from "react";
 import { Card } from "@/components/ui/card";
 import {
   Select,
@@ -28,9 +29,13 @@ import { StatusBadge } from "@/components/shared/status-badge";
 import { RouterOutput } from "@/trpc/client";
 import { UserRole } from "@/generated/prisma/enums";
 import { useUser } from "@/lib/auth-client";
-import { useAdminUserList, useSetUserRole } from "@/hooks/admin/use-admin-users";
+import {
+  useAdminUserList,
+  useSetUserRole,
+} from "@/hooks/admin/use-admin-users";
 import { ListHeader } from "@/components/shared/list-header";
 import { TableSkeleton } from "@/components/shared/table-skeleton";
+import { DEFAULT_PAGE } from "@/lib/constants";
 
 type User = RouterOutput["admin"]["user"]["list"]["items"][number];
 
@@ -41,14 +46,38 @@ export const UserListClient = () => {
   const [params, setParams] = useQueryStates(adminUserParsers);
   const { data, isLoading } = useAdminUserList(params);
 
-  if (!user) return null;
+  const handleChangeRole = useCallback(
+    (userId: string, name: string, role: UserRole) =>
+      openConfirm({
+        title: "Đổi role?",
+        description: `Đổi role của "${name}" sang ${role}?`,
+        onConfirm: () => void setRole.mutateAsync({ userId, role }),
+      }),
+    [openConfirm, setRole],
+  );
 
-  const handleChangeRole = (userId: string, name: string, role: UserRole) =>
-    openConfirm({
-      title: "Đổi role?",
-      description: `Đổi role của "${name}" sang ${role}?`,
-      onConfirm: () => void setRole.mutateAsync({ userId, role }),
-    });
+  const handleSearchChange = useCallback(
+    (v: string) => setParams({ search: v }),
+    [setParams],
+  );
+
+  const handleRoleChange = useCallback(
+    (v: string) => setParams({ role: v === "all" ? null : (v as UserRole) }),
+    [setParams],
+  );
+
+  const handlePageChange = useCallback(
+    (p: number) => setParams((prev) => ({ ...prev, page: p })),
+    [setParams],
+  );
+
+  const handleLimitChange = useCallback(
+    (l: number) =>
+      setParams((prev) => ({ ...prev, limit: l, page: DEFAULT_PAGE })),
+    [setParams],
+  );
+
+  if (!user) return null;
 
   return (
     <div className="space-y-4">
@@ -60,16 +89,11 @@ export const UserListClient = () => {
         <div className="flex flex-wrap gap-3">
           <SearchInput
             value={params.search}
-            onChange={(v) => setParams({ search: v })}
+            onChange={handleSearchChange}
             placeholder="Tìm tên, email, sđt..."
             className="w-64"
           />
-          <Select
-            value={params.role ?? "all"}
-            onValueChange={(v) =>
-              setParams({ role: v === "all" ? null : (v as UserRole) })
-            }
-          >
+          <Select value={params.role ?? "all"} onValueChange={handleRoleChange}>
             <SelectTrigger className="w-40">
               <SelectValue placeholder="Role" />
             </SelectTrigger>
@@ -117,10 +141,8 @@ export const UserListClient = () => {
             totalPages={data.totalPages}
             total={data.total}
             limit={params.limit}
-            onPageChange={(p) => setParams((prev) => ({ ...prev, page: p }))}
-            onLimitChange={(l) =>
-              setParams((prev) => ({ ...prev, limit: l, page: 1 }))
-            }
+            onPageChange={handlePageChange}
+            onLimitChange={handleLimitChange}
           />
         )}
       </Card>

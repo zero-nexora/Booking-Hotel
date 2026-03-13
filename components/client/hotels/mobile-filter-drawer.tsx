@@ -13,7 +13,7 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { HotelsFilterSidebar } from "./hotels-filter-sidebar";
 
-export function MobileFilterDrawer() {
+export const MobileFilterDrawer = () => {
   const [open, setOpen] = useState(false);
 
   return (
@@ -36,4 +36,4 @@ export function MobileFilterDrawer() {
       </SheetContent>
     </Sheet>
   );
-}
+};

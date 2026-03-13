@@ -11,7 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 
-export function GuestInfoForm() {
+export const GuestInfoForm = () => {
   const form = useFormContext();
 
   return (
@@ -86,4 +86,4 @@ export function GuestInfoForm() {
       />
     </div>
   );
-}
+};

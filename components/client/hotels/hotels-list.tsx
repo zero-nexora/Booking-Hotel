@@ -8,8 +8,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { calcNights } from "@/lib/utils";
 import { hotelSearchParsers } from "@/lib/search-params/hotel-search";
 import { useInfiniteScroll } from "@/hooks/use-infinity-scroll";
+import { HotelsMapView } from "./hotel-map-view";
 
-export function HotelsList() {
+export const HotelsList = () => {
   const [params] = useQueryStates(hotelSearchParsers);
 
   const nights =
@@ -19,6 +20,7 @@ export function HotelsList() {
 
   const { data, isLoading, isFetchingNextPage, hasNextPage, fetchNextPage } =
     useHotelSearch(params);
+
   const { sentinelRef } = useInfiniteScroll({
     hasNextPage,
     isFetchingNextPage,
@@ -26,9 +28,17 @@ export function HotelsList() {
   });
 
   const hotels = data?.pages.flatMap((p) => p.items) ?? [];
-  const view = (params.view === "grid" ? "grid" : "list") as "list" | "grid";
+  const view = (params.view ?? "list") as "list" | "grid" | "map";
 
   if (isLoading) {
+    if (view === "map") {
+      return (
+        <Skeleton
+          className="rounded-2xl"
+          style={{ height: "calc(100vh - 220px)", minHeight: 480 }}
+        />
+      );
+    }
     return (
       <div
         className={
@@ -59,6 +69,10 @@ export function HotelsList() {
         </p>
       </div>
     );
+  }
+
+  if (view === "map") {
+    return <HotelsMapView hotels={hotels as never} />;
   }
 
   return (
@@ -95,4 +109,4 @@ export function HotelsList() {
       )}
     </div>
   );
-}
+};

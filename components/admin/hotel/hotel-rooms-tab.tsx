@@ -21,6 +21,7 @@ import {
 import { Pencil, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useQueryStates } from "nuqs";
+import { useCallback } from "react";
 import { useConfirmDialogStore } from "@/store/confirm-dialog-store";
 import { useSheetDialogStore } from "@/store/sheet-dialog-store";
 import { adminRoomParsers } from "@/lib/search-params/admin-rooms";
@@ -51,25 +52,70 @@ export const HotelRoomsTab = ({ hotelId }: HotelRoomsTabProps) => {
 
   const deleteRoom = useDeleteRoom();
 
-  const openCreate = () =>
-    openSheet({
-      title: "Thêm phòng",
-      content: <CreateRoomForm hotelId={hotelId} />,
-    });
+  const openCreate = useCallback(
+    () =>
+      openSheet({
+        title: "Thêm phòng",
+        content: <CreateRoomForm hotelId={hotelId} />,
+      }),
+    [openSheet, hotelId],
+  );
 
-  const openEdit = (room: Room) =>
-    openSheet({
-      title: `Chỉnh sửa "${room.name}"`,
-      content: <EditRoomForm roomId={room.id} />,
-    });
+  const openEdit = useCallback(
+    (room: Room) =>
+      openSheet({
+        title: `Chỉnh sửa "${room.name}"`,
+        content: <EditRoomForm roomId={room.id} />,
+      }),
+    [openSheet],
+  );
 
-  const handleDelete = (room: Room) =>
-    openConfirm({
-      title: "Xóa phòng?",
-      description: `Xóa "${room.name}"? Hành động này không thể hoàn tác.`,
-      variant: "destructive",
-      onConfirm: () => void deleteRoom.mutateAsync({ id: room.id }),
-    });
+  const handleDelete = useCallback(
+    (room: Room) =>
+      openConfirm({
+        title: "Xóa phòng?",
+        description: `Xóa "${room.name}"? Hành động này không thể hoàn tác.`,
+        variant: "destructive",
+        onConfirm: () => void deleteRoom.mutateAsync({ id: room.id }),
+      }),
+    [openConfirm, deleteRoom],
+  );
+
+  const handleSearchChange = useCallback(
+    (v: string) => setParams({ search: v, page: DEFAULT_PAGE }),
+    [setParams],
+  );
+
+  const handleRoomTypeChange = useCallback(
+    (v: string) =>
+      setParams({ roomTypeId: v === "all" ? null : v, page: DEFAULT_PAGE }),
+    [setParams],
+  );
+
+  const handleActiveChange = useCallback(
+    (v: string) =>
+      setParams({
+        isActive: v === "all" ? null : v === "true",
+        page: DEFAULT_PAGE,
+      }),
+    [setParams],
+  );
+
+  const handleNavigate = useCallback(
+    (room: Room) =>
+      router.push(`/admin/hotels/${room.hotelId}/rooms/${room.id}`),
+    [router],
+  );
+
+  const handlePageChange = useCallback(
+    (p: number) => setParams((prev) => ({ ...prev, page: p })),
+    [setParams],
+  );
+
+  const handleLimitChange = useCallback(
+    (l: number) => setParams((prev) => ({ ...prev, limit: l, page: 1 })),
+    [setParams],
+  );
 
   return (
     <div className="space-y-4">
@@ -83,15 +129,13 @@ export const HotelRoomsTab = ({ hotelId }: HotelRoomsTabProps) => {
         <div className="flex flex-wrap gap-3">
           <SearchInput
             value={params.search}
-            onChange={(v) => setParams({ search: v, page: DEFAULT_PAGE })}
+            onChange={handleSearchChange}
             placeholder="Tìm tên phòng..."
             className="w-56"
           />
           <Select
             value={params.roomTypeId || "all"}
-            onValueChange={(v) =>
-              setParams({ roomTypeId: v === "all" ? null : v, page: DEFAULT_PAGE })
-            }
+            onValueChange={handleRoomTypeChange}
           >
             <SelectTrigger className="w-44">
               <SelectValue placeholder="Loại phòng" />
@@ -107,12 +151,7 @@ export const HotelRoomsTab = ({ hotelId }: HotelRoomsTabProps) => {
           </Select>
           <Select
             value={params.isActive === null ? "all" : String(params.isActive)}
-            onValueChange={(v) =>
-              setParams({
-                isActive: v === "all" ? null : v === "true",
-                page: DEFAULT_PAGE,
-              })
-            }
+            onValueChange={handleActiveChange}
           >
             <SelectTrigger className="w-40">
               <SelectValue placeholder="Trạng thái" />
@@ -157,11 +196,7 @@ export const HotelRoomsTab = ({ hotelId }: HotelRoomsTabProps) => {
                   <RoomRow
                     key={room.id}
                     room={room}
-                    onNavigate={() =>
-                      router.push(
-                        `/admin/hotels/${room.hotelId}/rooms/${room.id}`,
-                      )
-                    }
+                    onNavigate={handleNavigate}
                     onEdit={openEdit}
                     onDelete={handleDelete}
                   />
@@ -176,10 +211,8 @@ export const HotelRoomsTab = ({ hotelId }: HotelRoomsTabProps) => {
             totalPages={data.totalPages}
             total={data.total}
             limit={params.limit}
-            onPageChange={(p) => setParams((prev) => ({ ...prev, page: p }))}
-            onLimitChange={(l) =>
-              setParams((prev) => ({ ...prev, limit: l, page: 1 }))
-            }
+            onPageChange={handlePageChange}
+            onLimitChange={handleLimitChange}
           />
         )}
       </Card>
@@ -189,13 +222,13 @@ export const HotelRoomsTab = ({ hotelId }: HotelRoomsTabProps) => {
 
 interface RoomRowProps {
   room: Room;
-  onNavigate: () => void;
+  onNavigate: (room: Room) => void;
   onEdit: (room: Room) => void;
   onDelete: (room: Room) => void;
 }
 
 const RoomRow = ({ room, onNavigate, onEdit, onDelete }: RoomRowProps) => (
-  <TableRow className="cursor-pointer" onClick={onNavigate}>
+  <TableRow className="cursor-pointer" onClick={() => onNavigate(room)}>
     <TableCell>
       <div>
         <p className="font-medium text-sm">{room.name}</p>

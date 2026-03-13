@@ -36,7 +36,7 @@ interface AmenitiesGridProps {
   amenities: { amenity: { name: string; icon?: string | null } }[];
 }
 
-export function AmenitiesGrid({ amenities }: AmenitiesGridProps) {
+export const AmenitiesGrid = ({ amenities }: AmenitiesGridProps) => {
   if (!amenities.length) return null;
 
   return (
@@ -58,4 +58,4 @@ export function AmenitiesGrid({ amenities }: AmenitiesGridProps) {
       })}
     </div>
   );
-}
+};

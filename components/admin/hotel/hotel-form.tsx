@@ -36,12 +36,13 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Check, ChevronsUpDown } from "lucide-react";
+import { Check, ChevronsUpDown, MapPin } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { AmenityMultiSelect } from "./amenity-multi-select";
 import { RouterOutput } from "@/trpc/client";
 import { useCityList, useCountryList } from "@/hooks/admin/use-admin-locations";
 import { FormActions } from "@/components/shared/form-actions";
+import { MapPicker } from "@/components/common/map-picker";
 
 export const hotelFormSchema = z.object({
   name: z.string().min(2),
@@ -118,7 +119,6 @@ const ComboboxField = ({
   disabled,
 }: ComboboxFieldProps) => {
   const selected = options.find((o) => o.id === value);
-
   return (
     <Popover>
       <PopoverTrigger asChild>
@@ -191,6 +191,8 @@ export const HotelForm = ({
     control: form.control,
     name: "countryId",
   });
+  const watchedLat = useWatch({ control: form.control, name: "latitude" });
+  const watchedLng = useWatch({ control: form.control, name: "longitude" });
 
   const { data: countries = [] } = useCountryList();
   const { data: cities = [] } = useCityList(selectedCountryId || undefined);
@@ -198,6 +200,11 @@ export const HotelForm = ({
   const handleCountryChange = (countryId: string) => {
     form.setValue("countryId", countryId);
     form.setValue("cityId", "");
+  };
+
+  const handleMapClick = (lat: number, lng: number) => {
+    form.setValue("latitude", parseFloat(lat.toFixed(6)));
+    form.setValue("longitude", parseFloat(lng.toFixed(6)));
   };
 
   if (isLoading) {
@@ -417,54 +424,79 @@ export const HotelForm = ({
               </FormItem>
             )}
           />
+        </div>
 
-          <FormField
-            control={form.control}
-            name="latitude"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Vĩ độ (Latitude)</FormLabel>
-                <FormControl>
-                  <Input
-                    type="number"
-                    step="any"
-                    placeholder="21.0278"
-                    value={field.value ?? ""}
-                    onChange={(e) =>
-                      field.onChange(
-                        e.target.value ? Number(e.target.value) : undefined,
-                      )
-                    }
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-1.5">
+              <MapPin className="w-3.5 h-3.5 text-muted-foreground" />
+              <span className="text-sm font-medium">Vị trí trên bản đồ</span>
+            </div>
+            {watchedLat && watchedLng && (
+              <span className="text-xs text-muted-foreground font-mono bg-muted px-2 py-0.5 rounded">
+                {watchedLat.toFixed(5)}, {watchedLng.toFixed(5)}
+              </span>
             )}
+          </div>
+
+          <MapPicker
+            lat={watchedLat}
+            lng={watchedLng}
+            onChange={handleMapClick}
           />
 
-          <FormField
-            control={form.control}
-            name="longitude"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Kinh độ (Longitude)</FormLabel>
-                <FormControl>
-                  <Input
-                    type="number"
-                    step="any"
-                    placeholder="105.8342"
-                    value={field.value ?? ""}
-                    onChange={(e) =>
-                      field.onChange(
-                        e.target.value ? Number(e.target.value) : undefined,
-                      )
-                    }
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          <div className="grid grid-cols-2 gap-3">
+            <FormField
+              control={form.control}
+              name="latitude"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-xs text-muted-foreground">
+                    Vĩ độ (Latitude)
+                  </FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      step="any"
+                      placeholder="21.027800"
+                      value={field.value ?? ""}
+                      onChange={(e) =>
+                        field.onChange(
+                          e.target.value ? Number(e.target.value) : undefined,
+                        )
+                      }
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="longitude"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-xs text-muted-foreground">
+                    Kinh độ (Longitude)
+                  </FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      step="any"
+                      placeholder="105.834200"
+                      value={field.value ?? ""}
+                      onChange={(e) =>
+                        field.onChange(
+                          e.target.value ? Number(e.target.value) : undefined,
+                        )
+                      }
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
         </div>
 
         <FormField

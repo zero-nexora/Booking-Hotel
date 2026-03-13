@@ -9,7 +9,7 @@ interface ExpiryTimerProps {
   onExpire?: () => void;
 }
 
-export function ExpiryTimer({ expiresAt, onExpire }: ExpiryTimerProps) {
+export const ExpiryTimer = ({ expiresAt, onExpire }: ExpiryTimerProps) => {
   const [remaining, setRemaining] = useState(() =>
     Math.max(0, Math.floor((expiresAt.getTime() - Date.now()) / 1000)),
   );

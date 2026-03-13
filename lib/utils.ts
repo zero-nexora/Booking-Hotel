@@ -15,7 +15,7 @@ export const toDateStr = (date: Date | string): string => {
 };
 
 export const formatDateShort = (date: Date | string): string => {
-  return format(new Date(date), "MM/dd/yy");
+  return format(new Date(date), "MM/dd/yyyy");
 };
 
 export const formatDateDisplay = (date: Date | string): string => {
@@ -89,4 +89,14 @@ export function getBookingExpiresAt(): Date {
 
 export function isBookingCancellable(status: string): boolean {
   return ["PENDING", "CONFIRMED"].includes(status);
+}
+
+export function getDatesInRange(checkIn: Date, checkOut: Date): Date[] {
+  const dates: Date[] = [];
+  const cur = new Date(checkIn);
+  while (cur < checkOut) {
+    dates.push(new Date(cur));
+    cur.setDate(cur.getDate() + 1);
+  }
+  return dates;
 }

@@ -12,9 +12,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import { format } from "date-fns";
-import { calcNights } from "@/lib/utils";
+import { calcNights, formatDateShort, formatCurrencyUSD } from "@/lib/utils";
 
 type Room = {
   id: string;
@@ -29,8 +27,6 @@ type Room = {
   images: { url: string; alt?: string | null }[];
   beds: { quantity: number; bedType: { name: string } }[];
   amenities: { amenity: { name: string; icon?: string | null } }[];
-  totalPrice?: number;
-  nights?: number;
 };
 
 interface AvailableRoomsProps {
@@ -42,14 +38,14 @@ interface AvailableRoomsProps {
   childCount: number;
 }
 
-export function AvailableRooms({
+export const AvailableRooms = ({
   rooms,
   hotelSlug,
   checkIn,
   checkOut,
   adults,
   childCount,
-}: AvailableRoomsProps) {
+}: AvailableRoomsProps) => {
   const nights = checkIn && checkOut ? calcNights(checkIn, checkOut) : null;
 
   if (!rooms.length) {
@@ -58,7 +54,7 @@ export function AvailableRooms({
         <p className="font-medium text-sm">Không có phòng trống</p>
         <p className="text-sm text-muted-foreground mt-1">
           {checkIn && checkOut
-            ? `Không còn phòng trống từ ${format(checkIn, "dd/MM")} đến ${format(checkOut, "dd/MM/yyyy")}`
+            ? `Không còn phòng trống từ ${formatDateShort(checkIn)} đến ${formatDateShort(checkOut)}`
             : "Vui lòng chọn ngày để xem phòng trống"}
         </p>
       </div>
@@ -66,54 +62,57 @@ export function AvailableRooms({
   }
 
   const buildBookingUrl = (room: Room) => {
-    const base = `/booking/${hotelSlug}/${room.slug}`;
-    const p = new URLSearchParams();
-    if (checkIn) p.set("checkIn", format(checkIn, "yyyy-MM-dd"));
-    if (checkOut) p.set("checkOut", format(checkOut, "yyyy-MM-dd"));
-    p.set("adults", String(adults));
-    p.set("children", String(childCount));
-    return `${base}?${p.toString()}`;
+    const p = new URLSearchParams({
+      ...(checkIn && { checkIn: checkIn.toISOString() }),
+      ...(checkOut && { checkOut: checkOut.toISOString() }),
+      adults: String(adults),
+      children: String(childCount),
+    });
+    return `/booking/${hotelSlug}/${room.slug}?${p.toString()}`;
   };
 
   return (
     <div className="space-y-4">
-      {rooms.map((room) => {
+      {rooms.map((room, index) => {
         const price = Number(room.basePrice.toString());
-        const total = nights ? price * nights : null;
+        const image = room.images[0];
 
         return (
           <div
             key={room.id}
-            className="rounded-2xl border bg-card overflow-hidden hover:shadow-sm transition-shadow"
+            className="rounded-2xl border bg-card  overflow-hidden"
           >
-            <div className="flex flex-col sm:flex-row">
-              {/* Image */}
-              <div className="relative w-full sm:w-52 h-44 sm:h-auto bg-muted shrink-0">
-                {room.images[0] ? (
+            <div className="flex">
+              <div className="relative w-52 shrink-0 bg-muted">
+                {image ? (
                   <Image
-                    src={room.images[0].url}
-                    alt={room.images[0].alt ?? room.name}
+                    src={image.url}
+                    alt={image.alt ?? room.name}
                     fill
                     className="object-cover"
+                    priority={index === 0}
+                    loading={index === 0 ? "eager" : "lazy"}
+                    sizes="208px"
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center">
-                    <BedDouble className="w-8 h-8 text-muted-foreground" />
+                    <BedDouble className="w-6 h-6 text-muted-foreground" />
                   </div>
                 )}
                 <Badge
                   variant="secondary"
-                  className="absolute top-2 left-2 text-xs bg-background/80 backdrop-blur-sm"
+                  className="absolute top-2 left-2 bg-background/80 backdrop-blur-sm text-xs"
                 >
                   {room.roomType.name}
                 </Badge>
               </div>
 
-              {/* Content */}
-              <div className="flex flex-col flex-1 p-4 gap-3 min-w-0">
+              <div className="flex flex-col flex-1 p-4 gap-2 min-w-0">
                 <div>
-                  <h3 className="font-semibold text-sm">{room.name}</h3>
-                  <div className="flex flex-wrap gap-x-4 gap-y-1 mt-2">
+                  <h3 className="font-semibold text-sm leading-tight">
+                    {room.name}
+                  </h3>
+                  <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1.5">
                     {room.beds.map((b) => (
                       <div
                         key={b.bedType.name}
@@ -144,7 +143,7 @@ export function AvailableRooms({
 
                 {room.amenities.length > 0 && (
                   <div className="flex flex-wrap gap-1.5">
-                    {room.amenities.slice(0, 5).map((a) => (
+                    {room.amenities.slice(0, 4).map((a) => (
                       <span
                         key={a.amenity.name}
                         className="flex items-center gap-1 text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full"
@@ -156,23 +155,19 @@ export function AvailableRooms({
                   </div>
                 )}
 
-                <Separator />
-
-                <div className="flex items-center justify-between gap-3 mt-auto">
-                  <div>
-                    <div className="flex items-baseline gap-1">
-                      <span className="text-xl font-bold">${price}</span>
-                      <span className="text-xs text-muted-foreground">
-                        /đêm
-                      </span>
-                    </div>
-                    {total && nights && (
-                      <p className="text-xs text-muted-foreground">
-                        ${total} · {nights} đêm
-                      </p>
-                    )}
+                <div className="flex items-center justify-between mt-auto pt-2 border-t">
+                  <div className="flex items-baseline gap-0.5">
+                    <span className="text-lg font-bold">
+                      {formatCurrencyUSD(price)}
+                    </span>
+                    <span className="text-xs text-muted-foreground">/đêm</span>
                   </div>
-                  <Button asChild className="rounded-xl gap-1">
+                  {nights && nights > 1 && (
+                    <span className="text-xs text-muted-foreground">
+                      ≈ {formatCurrencyUSD(price * nights)} · {nights} đêm
+                    </span>
+                  )}
+                  <Button size="sm" asChild className="rounded-xl gap-1">
                     <Link href={buildBookingUrl(room)}>
                       Chọn phòng
                       <ChevronRight className="w-3.5 h-3.5" />
@@ -186,4 +181,4 @@ export function AvailableRooms({
       })}
     </div>
   );
-}
+};

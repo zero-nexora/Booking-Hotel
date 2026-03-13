@@ -33,7 +33,7 @@ export function Pagination({
   return (
     <div className="flex items-center justify-between px-2 py-3 border-t">
       <div className="text-sm text-muted-foreground">
-        {from}–{to} / {total} kết quả
+        {from}-{to} / {total} kết quả
       </div>
       <div className="flex items-center gap-4">
         {onLimitChange && (

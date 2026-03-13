@@ -7,15 +7,11 @@ import {
   useStripe,
   useElements,
 } from "@stripe/react-stripe-js";
-import { loadStripe } from "@stripe/stripe-js";
 import { Loader2, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-
-const stripePromise = loadStripe(
-  process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!,
-);
+import { stripePromise } from "@/lib/stripe-client";
 
 interface PaymentSectionProps {
   clientSecret: string;
@@ -26,7 +22,7 @@ interface PaymentSectionProps {
   onPaymentError: (message: string) => void;
 }
 
-export function PaymentSection(props: PaymentSectionProps) {
+export const PaymentSection = (props: PaymentSectionProps) => {
   return (
     <Elements
       stripe={stripePromise}
@@ -44,7 +40,7 @@ export function PaymentSection(props: PaymentSectionProps) {
       <PaymentForm {...props} />
     </Elements>
   );
-}
+};
 
 function PaymentForm({
   total,
@@ -93,7 +89,6 @@ function PaymentForm({
         )}
       </div>
 
-      {/* Terms */}
       <div className="flex items-start gap-3">
         <Checkbox
           id="terms"

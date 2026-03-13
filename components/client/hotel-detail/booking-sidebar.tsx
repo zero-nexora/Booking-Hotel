@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import { format } from "date-fns";
 import { Calendar, Users, Minus, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -12,7 +11,8 @@ import {
 } from "@/components/ui/popover";
 import { Calendar as CalendarUI } from "@/components/ui/calendar";
 import { Separator } from "@/components/ui/separator";
-import { calcNights, cn } from "@/lib/utils";
+import { calcNights, cn, formatCurrencyUSD, formatDateShort } from "@/lib/utils";
+import { Card } from "@/components/ui/card";
 
 interface BookingSidebarProps {
   minPrice: number | null;
@@ -45,9 +45,9 @@ export function BookingSidebar({
 
   const updateUrlDates = (cin?: Date, cout?: Date) => {
     const params = new URLSearchParams(window.location.search);
-    if (cin) params.set("checkIn", format(cin, "yyyy-MM-dd"));
+    if (cin) params.set("checkIn", cin.toISOString());
     else params.delete("checkIn");
-    if (cout) params.set("checkOut", format(cout, "yyyy-MM-dd"));
+    if (cout) params.set("checkOut", cout.toISOString());
     else params.delete("checkOut");
     params.set("adults", String(adults));
     params.set("children", String(children));
@@ -60,11 +60,13 @@ export function BookingSidebar({
   };
 
   return (
-    <div className="rounded-2xl border bg-card p-5 space-y-4 shadow-sm">
+    <Card className="rounded-2xl border bg-card p-5 shadow-sm">
       {minPrice && (
         <div>
           <div className="flex items-baseline gap-1">
-            <span className="text-2xl font-bold">${minPrice}</span>
+            <span className="text-2xl font-bold">
+              {formatCurrencyUSD(minPrice)}
+            </span>
             <span className="text-sm text-muted-foreground">/đêm</span>
           </div>
           <p className="text-xs text-muted-foreground">Giá từ</p>
@@ -73,7 +75,6 @@ export function BookingSidebar({
 
       <Separator />
 
-      {/* Date range */}
       <div className="rounded-xl border overflow-hidden">
         <Popover>
           <PopoverTrigger asChild>
@@ -89,7 +90,7 @@ export function BookingSidebar({
                     !checkIn && "text-muted-foreground",
                   )}
                 >
-                  {checkIn ? format(checkIn, "dd/MM/yyyy") : "Chọn ngày"}
+                  {checkIn ? formatDateShort(checkIn) : "Chọn ngày"}
                 </p>
               </div>
             </button>
@@ -123,7 +124,7 @@ export function BookingSidebar({
                     !checkOut && "text-muted-foreground",
                   )}
                 >
-                  {checkOut ? format(checkOut, "dd/MM/yyyy") : "Chọn ngày"}
+                  {checkOut ? formatDateShort(checkOut) : "Chọn ngày"}
                 </p>
               </div>
             </button>
@@ -221,14 +222,14 @@ export function BookingSidebar({
         <div className="rounded-xl bg-muted/50 p-3 space-y-1.5 text-sm">
           <div className="flex justify-between text-muted-foreground">
             <span>
-              ${minPrice} × {nights} đêm
+              {formatCurrencyUSD(minPrice || 0)} x {nights} đêm
             </span>
-            <span>${totalPrice}</span>
+            <span>{formatCurrencyUSD(totalPrice)}</span>
           </div>
           <Separator />
           <div className="flex justify-between font-semibold">
             <span>Tổng cộng</span>
-            <span>${totalPrice}</span>
+            <span>{formatCurrencyUSD(totalPrice)}</span>
           </div>
         </div>
       )}
@@ -240,6 +241,6 @@ export function BookingSidebar({
       <p className="text-xs text-center text-muted-foreground">
         Bạn chưa bị tính phí cho đến khi xác nhận
       </p>
-    </div>
+    </Card>
   );
 }

@@ -8,8 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Star, RotateCcw } from "lucide-react";
 import { useHotelFilterOptions } from "@/hooks/client/use-hotels";
-import { DEFAULT_PAGE } from "@/lib/constants";
 import { hotelSearchParsers } from "@/lib/search-params/hotel-search";
+import { formatCurrencyUSD } from "@/lib/utils";
 
 const STAR_OPTIONS = [5, 4, 3, 2, 1];
 const RATING_OPTIONS = [
@@ -71,7 +71,6 @@ export function HotelsFilterSidebar() {
         )}
       </div>
 
-      {/* Price range */}
       <div>
         <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-3">
           Giá / đêm
@@ -91,10 +90,10 @@ export function HotelsFilterSidebar() {
           />
           <div className="flex justify-between mt-2">
             <span className="text-xs text-muted-foreground">
-              ${params.minPrice ?? 0}
+              {formatCurrencyUSD(params.minPrice ?? 0)}
             </span>
             <span className="text-xs text-muted-foreground">
-              ${params.maxPrice ?? "2000+"}
+              {formatCurrencyUSD(params.maxPrice ?? 2000)}
             </span>
           </div>
         </div>
@@ -102,7 +101,6 @@ export function HotelsFilterSidebar() {
 
       <Separator />
 
-      {/* Stars */}
       <div>
         <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-3">
           Hạng sao
@@ -133,7 +131,6 @@ export function HotelsFilterSidebar() {
 
       <Separator />
 
-      {/* Min rating */}
       <div>
         <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-3">
           Điểm đánh giá

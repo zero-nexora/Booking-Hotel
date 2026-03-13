@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { format } from "date-fns";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -68,25 +68,43 @@ export const ReviewListClient = () => {
   const { data, isLoading } = useAdminReviewList(params);
   const updateStatus = useUpdateReviewStatus();
 
+  const handleSearchChange = useCallback(
+    (v: string) => setParams({ search: v, page: 1 }),
+    [setParams],
+  );
+
+  const handleTabChange = useCallback(
+    (v: string) =>
+      setParams({
+        status: v === "all" ? null : (v as ReviewStatus),
+        page: 1,
+      }),
+    [setParams],
+  );
+
+  const handlePageChange = useCallback(
+    (p: number) => setParams({ page: p }),
+    [setParams],
+  );
+
+  const handleLimitChange = useCallback(
+    (l: number) => setParams({ limit: l, page: 1 }),
+    [setParams],
+  );
+
+  const handleCloseDialog = useCallback(() => setViewReview(null), []);
+
   return (
     <div className="space-y-4">
       <ListHeader title="Đánh giá" count={data?.total} countLabel="đánh giá">
         <div className="flex flex-wrap gap-3 items-center">
           <SearchInput
             value={params.search}
-            onChange={(v) => void setParams({ search: v, page: 1 })}
+            onChange={handleSearchChange}
             placeholder="Tìm tên, email, khách sạn..."
             className="w-64"
           />
-          <Tabs
-            value={params.status ?? "all"}
-            onValueChange={(v) =>
-              void setParams({
-                status: v === "all" ? null : (v as ReviewStatus),
-                page: 1,
-              })
-            }
-          >
+          <Tabs value={params.status ?? "all"} onValueChange={handleTabChange}>
             <TabsList>
               <TabsTrigger value="all">Tất cả</TabsTrigger>
               <TabsTrigger value="PENDING">Chờ duyệt</TabsTrigger>
@@ -177,7 +195,10 @@ export const ReviewListClient = () => {
                               className="h-7 w-7 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50"
                               disabled={updateStatus.isPending}
                               onClick={() =>
-                                updateStatus.mutate({ id: review.id, status: "APPROVED" })
+                                updateStatus.mutate({
+                                  id: review.id,
+                                  status: "APPROVED",
+                                })
                               }
                             >
                               <Check className="w-3.5 h-3.5" />
@@ -188,7 +209,10 @@ export const ReviewListClient = () => {
                               className="h-7 w-7 text-destructive hover:text-destructive hover:bg-destructive/10"
                               disabled={updateStatus.isPending}
                               onClick={() =>
-                                updateStatus.mutate({ id: review.id, status: "REJECTED" })
+                                updateStatus.mutate({
+                                  id: review.id,
+                                  status: "REJECTED",
+                                })
                               }
                             >
                               <X className="w-3.5 h-3.5" />
@@ -209,13 +233,13 @@ export const ReviewListClient = () => {
             totalPages={data.totalPages}
             total={data.total}
             limit={params.limit}
-            onPageChange={(p) => void setParams({ page: p })}
-            onLimitChange={(l) => void setParams({ limit: l, page: 1 })}
+            onPageChange={handlePageChange}
+            onLimitChange={handleLimitChange}
           />
         )}
       </Card>
 
-      <Dialog open={!!viewReview} onOpenChange={() => setViewReview(null)}>
+      <Dialog open={!!viewReview} onOpenChange={handleCloseDialog}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Chi tiết đánh giá</DialogTitle>
@@ -257,7 +281,10 @@ export const ReviewListClient = () => {
                       className="text-emerald-600 border-emerald-200 hover:bg-emerald-50"
                       disabled={updateStatus.isPending}
                       onClick={() => {
-                        updateStatus.mutate({ id: viewReview.id, status: "APPROVED" });
+                        updateStatus.mutate({
+                          id: viewReview.id,
+                          status: "APPROVED",
+                        });
                         setViewReview(null);
                       }}
                     >
@@ -270,7 +297,10 @@ export const ReviewListClient = () => {
                       className="text-destructive border-destructive/30 hover:bg-destructive/10"
                       disabled={updateStatus.isPending}
                       onClick={() => {
-                        updateStatus.mutate({ id: viewReview.id, status: "REJECTED" });
+                        updateStatus.mutate({
+                          id: viewReview.id,
+                          status: "REJECTED",
+                        });
                         setViewReview(null);
                       }}
                     >

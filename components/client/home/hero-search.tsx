@@ -142,7 +142,7 @@ export const HeroSearch = () => {
                 />
                 <GuestCounter
                   label="Trẻ em"
-                  sublabel="0–12 tuổi"
+                  sublabel="0-12 tuổi"
                   value={children}
                   min={0}
                   max={6}
@@ -160,7 +160,6 @@ export const HeroSearch = () => {
           </Popover>
         </div>
 
-        {/* Search button — full width on its own row for visual weight */}
         <div className="p-2 bg-muted/30 border-t border-border/60">
           <Button
             className="w-full rounded-xl h-10 gap-2 font-semibold text-sm"

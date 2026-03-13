@@ -27,7 +27,7 @@ const AccountBookingsPage = async ({
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      <AccountBookingsClient />
+        <AccountBookingsClient />
     </HydrationBoundary>
   );
 };

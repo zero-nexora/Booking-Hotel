@@ -46,14 +46,14 @@ interface BookingClientProps {
   childCount: number;
 }
 
-export function BookingClient({
+export const BookingClient = ({
   hotelSlug,
   roomSlug,
   checkIn,
   checkOut,
   adults,
   childCount,
-}: BookingClientProps) {
+}: BookingClientProps) => {
   const router = useRouter();
   const { data: hotel, isLoading } = useHotelDetail(
     hotelSlug,
@@ -160,7 +160,6 @@ export function BookingClient({
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-6 space-y-6">
-      {/* Back + breadcrumb */}
       <div className="flex items-center gap-2 text-sm text-muted-foreground">
         <Button variant="ghost" size="sm" className="gap-1.5 -ml-2 h-8" asChild>
           <Link href={`/hotels/${hotelSlug}`}>
@@ -174,7 +173,6 @@ export function BookingClient({
         <span className="text-foreground font-medium">Đặt phòng</span>
       </div>
 
-      {/* Step indicator */}
       <div className="flex items-center gap-3">
         <StepBadge
           icon={<User className="w-3.5 h-3.5" />}
@@ -193,7 +191,6 @@ export function BookingClient({
         />
       </div>
 
-      {/* Expiry timer */}
       {step === "payment" && intentData && (
         <ExpiryTimer
           expiresAt={intentData.expiresAt}
@@ -202,7 +199,6 @@ export function BookingClient({
       )}
 
       <div className="flex flex-col lg:flex-row gap-6 items-start">
-        {/* Left: form area */}
         <div className="flex-1 min-w-0 space-y-6">
           {step === "guest" && (
             <Form {...form}>
@@ -242,7 +238,6 @@ export function BookingClient({
           )}
         </div>
 
-        {/* Right: summary */}
         <div className="w-full lg:w-80 shrink-0">
           <div className="sticky top-24">
             <BookingSummary
@@ -265,7 +260,7 @@ export function BookingClient({
       </div>
     </div>
   );
-}
+};
 
 function Section({
   title,
@@ -310,7 +305,7 @@ function StepBadge({
         {done ? "✓" : number}
       </div>
       <span
-        className={`text-sm font-medium hidden sm:block ${
+        className={`text-sm font-medium box-hidden ${
           active ? "text-foreground" : "text-muted-foreground"
         }`}
       >

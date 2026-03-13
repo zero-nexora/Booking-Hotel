@@ -22,9 +22,9 @@ export const env = createEnv({
     // Upstash
     UPSTASH_REDIS_REST_URL: z.string().url(),
     UPSTASH_REDIS_REST_TOKEN: z.string(),
-    // QSTASH_TOKEN: z.string(),
-    // QSTASH_CURRENT_SIGNING_KEY: z.string(),
-    // QSTASH_NEXT_SIGNING_KEY: z.string(),
+    QSTASH_TOKEN: z.string(),
+    QSTASH_CURRENT_SIGNING_KEY: z.string(),
+    QSTASH_NEXT_SIGNING_KEY: z.string(),
 
     // UploadThing
     // UPLOADTHING_SECRET: z.string(),
@@ -52,9 +52,9 @@ export const env = createEnv({
     EMAIL_FROM: process.env.EMAIL_FROM,
     UPSTASH_REDIS_REST_URL: process.env.UPSTASH_REDIS_REST_URL,
     UPSTASH_REDIS_REST_TOKEN: process.env.UPSTASH_REDIS_REST_TOKEN,
-    // QSTASH_TOKEN: process.env.QSTASH_TOKEN,
-    // QSTASH_CURRENT_SIGNING_KEY: process.env.QSTASH_CURRENT_SIGNING_KEY,
-    // QSTASH_NEXT_SIGNING_KEY: process.env.QSTASH_NEXT_SIGNING_KEY,
+    QSTASH_TOKEN: process.env.QSTASH_TOKEN,
+    QSTASH_CURRENT_SIGNING_KEY: process.env.QSTASH_CURRENT_SIGNING_KEY,
+    QSTASH_NEXT_SIGNING_KEY: process.env.QSTASH_NEXT_SIGNING_KEY,
     // UPLOADTHING_SECRET: process.env.UPLOADTHING_SECRET,
     // UPLOADTHING_APP_ID: process.env.UPLOADTHING_APP_ID,
     UPLOADTHING_TOKEN: process.env.UPLOADTHING_TOKEN,

@@ -7,6 +7,8 @@ import { useHotelReviews } from "@/hooks/client/use-hotels";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
 import { useInfiniteScroll } from "@/hooks/use-infinity-scroll";
+import { Card } from "@/components/ui/card";
+import { formatDateShort } from "@/lib/utils";
 
 interface ReviewsSectionProps {
   hotelId: string;
@@ -14,11 +16,11 @@ interface ReviewsSectionProps {
   reviewCount: number;
 }
 
-export function ReviewsSection({
+export const ReviewsSection = ({
   hotelId,
   avgRating,
   reviewCount,
-}: ReviewsSectionProps) {
+}: ReviewsSectionProps) => {
   const { data, isLoading, isFetchingNextPage, hasNextPage, fetchNextPage } =
     useHotelReviews(hotelId);
   const { sentinelRef } = useInfiniteScroll({
@@ -31,7 +33,6 @@ export function ReviewsSection({
 
   return (
     <div className="space-y-5">
-      {/* Summary */}
       {avgRating !== null && (
         <div className="flex items-center gap-4 p-4 rounded-2xl bg-muted/50 border">
           <div className="text-center">
@@ -80,7 +81,6 @@ export function ReviewsSection({
         </div>
       )}
 
-      {/* Reviews list */}
       {isLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {Array.from({ length: 4 }).map((_, i) => (
@@ -88,15 +88,15 @@ export function ReviewsSection({
           ))}
         </div>
       ) : reviews.length === 0 ? (
-        <div className="text-center py-10 text-sm text-muted-foreground">
+        <Card className="text-center py-10 text-sm text-muted-foreground">
           Chưa có đánh giá nào cho khách sạn này.
-        </div>
+        </Card>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {reviews.map((review) => (
-            <div
+            <Card
               key={review.id}
-              className="rounded-2xl border bg-card p-4 flex flex-col gap-3 relative"
+              className="rounded-2xl border p-4 flex flex-col gap-3 relative"
             >
               <Quote className="w-5 h-5 text-primary/15 absolute top-3 right-3" />
               <div className="flex items-center gap-1">
@@ -132,12 +132,10 @@ export function ReviewsSection({
                   </p>
                 </div>
                 <p className="text-xs text-muted-foreground shrink-0">
-                  {format(new Date(review.createdAt), "MM/yyyy", {
-                    locale: vi,
-                  })}
+                  {formatDateShort(review.createdAt)}
                 </p>
               </div>
-            </div>
+            </Card>
           ))}
         </div>
       )}
@@ -151,4 +149,4 @@ export function ReviewsSection({
       )}
     </div>
   );
-}
+};

@@ -8,6 +8,8 @@
 @custom-variant dark (&:is(.dark *));
 @source "../node_modules/@uploadthing/react/dist";
 
+@import "leaflet/dist/leaflet.css";
+
 /* body, 
 html {
   @apply h-screen w-screen overflow-hidden;

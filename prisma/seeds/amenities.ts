@@ -22,7 +22,10 @@ const amenityData = [
 ];
 
 export async function seedAmenities() {
-  const amenities: Record<string, { id: string; name: string; icon: string | null }> = {};
+  const amenities: Record<
+    string,
+    { id: string; name: string; icon: string | null }
+  > = {};
 
   for (const data of amenityData) {
     const amenity = await prisma.amenity.upsert({

@@ -3,12 +3,18 @@ import Image from "next/image";
 import Link from "next/link";
 import { Logo } from "@/components/common/logo";
 import authBg from "@/public/images/auth-bg.jpg";
+import { getSession } from "@/lib/auth";
+import { redirect } from "next/navigation";
 
 interface AuthLayoutProps {
   children: ReactNode;
 }
 
-const AuthLayout = ({ children }: AuthLayoutProps) => {
+const AuthLayout = async ({ children }: AuthLayoutProps) => {
+  const session = await getSession();
+
+  if (session) redirect("/");
+
   return (
     <div className="min-h-screen grid lg:grid-cols-2">
       <AuthPanel />

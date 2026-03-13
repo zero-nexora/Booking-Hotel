@@ -2,52 +2,92 @@ import { prisma } from "./client";
 
 export async function seedUsers() {
   const admin = await prisma.user.upsert({
-    where: { email: "admin@hotel.com" },
+    where: { email: "admin@staywise.com" },
     update: {},
     create: {
-      email: "admin@hotel.com",
+      email: "admin@staywise.com",
       name: "Admin User",
       emailVerified: true,
       role: "ADMIN",
-      phone: "+1234567890",
+      phone: "+84900000001",
     },
   });
 
+  // Vietnamese customers
   const customer1 = await prisma.user.upsert({
-    where: { email: "john.doe@example.com" },
+    where: { email: "nguyenvanan@gmail.com" },
     update: {},
     create: {
-      email: "john.doe@example.com",
-      name: "John Doe",
+      email: "nguyenvanan@gmail.com",
+      name: "Nguyen Van An",
       emailVerified: true,
       role: "CUSTOMER",
-      phone: "+1987654321",
+      phone: "+84912345678",
     },
   });
 
   const customer2 = await prisma.user.upsert({
-    where: { email: "jane.smith@example.com" },
+    where: { email: "tranthibich@gmail.com" },
     update: {},
     create: {
-      email: "jane.smith@example.com",
-      name: "Jane Smith",
+      email: "tranthibich@gmail.com",
+      name: "Tran Thi Bich",
       emailVerified: true,
       role: "CUSTOMER",
-      phone: "+1122334455",
+      phone: "+84987654321",
     },
   });
 
+  // International customers
   const customer3 = await prisma.user.upsert({
-    where: { email: "bob.wilson@example.com" },
+    where: { email: "david.chen@email.com" },
     update: {},
     create: {
-      email: "bob.wilson@example.com",
-      name: "Bob Wilson",
+      email: "david.chen@email.com",
+      name: "David Chen",
+      emailVerified: true,
+      role: "CUSTOMER",
+      phone: "+16505554321",
+    },
+  });
+
+  const customer4 = await prisma.user.upsert({
+    where: { email: "sophie.martin@email.fr" },
+    update: {},
+    create: {
+      email: "sophie.martin@email.fr",
+      name: "Sophie Martin",
+      emailVerified: true,
+      role: "CUSTOMER",
+      phone: "+33612345678",
+    },
+  });
+
+  const customer5 = await prisma.user.upsert({
+    where: { email: "yuki.tanaka@mail.jp" },
+    update: {},
+    create: {
+      email: "yuki.tanaka@mail.jp",
+      name: "Yuki Tanaka",
+      emailVerified: true,
+      role: "CUSTOMER",
+      phone: "+81312345678",
+    },
+  });
+
+  // Unverified customer
+  const customer6 = await prisma.user.upsert({
+    where: { email: "alex.johnson@example.com" },
+    update: {},
+    create: {
+      email: "alex.johnson@example.com",
+      name: "Alex Johnson",
       emailVerified: false,
       role: "CUSTOMER",
+      phone: "+14155551234",
     },
   });
 
   console.log("✅ Users seeded");
-  return { admin, customer1, customer2, customer3 };
+  return { admin, customer1, customer2, customer3, customer4, customer5, customer6 };
 }

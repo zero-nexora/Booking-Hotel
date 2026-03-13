@@ -5,6 +5,9 @@ import Image from "next/image";
 import { Star, MapPin, Wifi } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { formatCurrencyUSD } from "@/lib/utils";
+import { useQueryStates } from "nuqs";
+import { hotelSearchParsers } from "@/lib/search-params/hotel-search";
 
 type Hotel = {
   id: string;
@@ -28,12 +31,24 @@ interface HotelCardProps {
 }
 
 export const HotelCard = ({ hotel, view, nights = 1 }: HotelCardProps) => {
-  const href = `/hotels/${hotel.slug}`;
+  const [params] = useQueryStates(hotelSearchParsers);
+
+  const hotelDetailUrl = () => {
+    const searchParams = new URLSearchParams({
+      ...(params.checkIn && { checkIn: params.checkIn.toISOString() }),
+      ...(params.checkOut && { checkOut: params.checkOut.toISOString() }),
+      adults: String(params.adults),
+      children: String(params.children),
+    });
+
+    return `/hotels/${hotel.slug}?${searchParams.toString()}`;
+  };
+
   const price = hotel.minPrice ? Number(hotel.minPrice.toString()) : null;
 
   if (view === "grid") {
     return (
-      <Link href={href} className="group flex">
+      <Link href={hotelDetailUrl()} className="flex">
         <div className="flex flex-col w-full rounded-2xl overflow-hidden border bg-card hover:shadow-md transition-shadow">
           <div className="relative h-44 bg-muted overflow-hidden shrink-0">
             {hotel.images[0] ? (
@@ -41,7 +56,7 @@ export const HotelCard = ({ hotel, view, nights = 1 }: HotelCardProps) => {
                 src={hotel.images[0].url}
                 alt={hotel.images[0].alt ?? hotel.name}
                 fill
-                className="object-cover group-hover:scale-105 transition-transform duration-300"
+                className="object-cover"
               />
             ) : (
               <div className="w-full h-full flex items-center justify-center">
@@ -89,7 +104,9 @@ export const HotelCard = ({ hotel, view, nights = 1 }: HotelCardProps) => {
                 </div>
                 {price && (
                   <div className="text-right">
-                    <p className="text-sm font-bold text-primary">${price}</p>
+                    <p className="text-sm font-bold text-primary">
+                      {formatCurrencyUSD(price)}
+                    </p>
                     <p className="text-xs text-muted-foreground">/đêm</p>
                   </div>
                 )}
@@ -182,18 +199,20 @@ export const HotelCard = ({ hotel, view, nights = 1 }: HotelCardProps) => {
               {price && (
                 <div className="text-right">
                   <div className="flex items-baseline gap-0.5">
-                    <span className="text-lg font-bold">${price}</span>
+                    <span className="text-lg font-bold">
+                      {formatCurrencyUSD(price)}
+                    </span>
                     <span className="text-xs text-muted-foreground">/đêm</span>
                   </div>
                   {nights > 1 && (
                     <p className="text-xs text-muted-foreground">
-                      ≈ ${price * nights} tổng cộng
+                      ≈ {formatCurrencyUSD(price * nights)} tổng cộng
                     </p>
                   )}
                 </div>
               )}
               <Button size="sm" asChild className="rounded-xl">
-                <Link href={href}>Xem chi tiết</Link>
+                <Link href={hotelDetailUrl()}>Xem chi tiết</Link>
               </Button>
             </div>
           </div>

@@ -20,6 +20,7 @@ import { Button } from "@/components/ui/button";
 import { Pencil, Star, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useQueryStates } from "nuqs";
+import { useCallback } from "react";
 import { useConfirmDialogStore } from "@/store/confirm-dialog-store";
 import { useSheetDialogStore } from "@/store/sheet-dialog-store";
 import { adminHotelParsers } from "@/lib/search-params/admin-hotels";
@@ -51,25 +52,88 @@ export const HotelListClient = () => {
   const { data: countries = [] } = useCountryList();
   const { data: cities = [] } = useCityList(params.countryId || undefined);
 
-  const openCreate = () =>
-    openSheet({
-      title: "Thêm khách sạn",
-      content: <CreateHotelForm />,
-    });
+  const openCreate = useCallback(
+    () =>
+      openSheet({
+        title: "Thêm khách sạn",
+        content: <CreateHotelForm />,
+      }),
+    [openSheet]
+  );
 
-  const openEdit = (hotel: Hotel) =>
-    openSheet({
-      title: `Chỉnh sửa "${hotel.name}"`,
-      content: <EditHotelForm hotelId={hotel.id} />,
-    });
+  const openEdit = useCallback(
+    (hotel: Hotel) =>
+      openSheet({
+        title: `Chỉnh sửa "${hotel.name}"`,
+        content: <EditHotelForm hotelId={hotel.id} />,
+      }),
+    [openSheet]
+  );
 
-  const handleDelete = (hotel: Hotel) =>
-    openConfirm({
-      title: "Xóa khách sạn?",
-      description: `Xóa "${hotel.name}"? Hành động này không thể hoàn tác.`,
-      variant: "destructive",
-      onConfirm: () => void deleteHotel.mutateAsync({ id: hotel.id }),
-    });
+  const handleDelete = useCallback(
+    (hotel: Hotel) =>
+      openConfirm({
+        title: "Xóa khách sạn?",
+        description: `Xóa "${hotel.name}"? Hành động này không thể hoàn tác.`,
+        variant: "destructive",
+        onConfirm: () => void deleteHotel.mutateAsync({ id: hotel.id }),
+      }),
+    [openConfirm, deleteHotel]
+  );
+
+  const handleSearchChange = useCallback(
+    (v: string) => setParams({ search: v, page: DEFAULT_PAGE }),
+    [setParams]
+  );
+
+  const handleStatusChange = useCallback(
+    (v: string) =>
+      setParams({
+        status: v === "all" ? null : (v as HotelStatus),
+        page: DEFAULT_PAGE,
+      }),
+    [setParams]
+  );
+
+  const handleStarChange = useCallback(
+    (v: string) =>
+      setParams({
+        starRating: v === "all" ? null : Number(v),
+        page: DEFAULT_PAGE,
+      }),
+    [setParams]
+  );
+
+  const handleCountryChange = useCallback(
+    (v: string) =>
+      setParams({
+        countryId: v === "all" ? null : v,
+        cityId: "",
+        page: DEFAULT_PAGE,
+      }),
+    [setParams]
+  );
+
+  const handleCityChange = useCallback(
+    (v: string) =>
+      setParams({ cityId: v === "all" ? null : v, page: DEFAULT_PAGE }),
+    [setParams]
+  );
+
+  const handleNavigate = useCallback(
+    (id: string) => router.push(`/admin/hotels/${id}`),
+    [router]
+  );
+
+  const handlePageChange = useCallback(
+    (p: number) => setParams((prev) => ({ ...prev, page: p })),
+    [setParams]
+  );
+
+  const handleLimitChange = useCallback(
+    (l: number) => setParams((prev) => ({ ...prev, limit: l, page: DEFAULT_PAGE })),
+    [setParams]
+  );
 
   return (
     <div className="space-y-4">
@@ -83,18 +147,13 @@ export const HotelListClient = () => {
         <div className="flex flex-wrap gap-3">
           <SearchInput
             value={params.search}
-            onChange={(v) => setParams({ search: v, page: DEFAULT_PAGE })}
+            onChange={handleSearchChange}
             placeholder="Tìm tên khách sạn..."
             className="w-64"
           />
           <Select
             value={params.status ?? "all"}
-            onValueChange={(v) =>
-              setParams({
-                status: v === "all" ? null : (v as HotelStatus),
-                page: DEFAULT_PAGE,
-              })
-            }
+            onValueChange={handleStatusChange}
           >
             <SelectTrigger className="w-44">
               <SelectValue placeholder="Trạng thái" />
@@ -108,12 +167,7 @@ export const HotelListClient = () => {
           </Select>
           <Select
             value={params.starRating ? String(params.starRating) : "all"}
-            onValueChange={(v) =>
-              setParams({
-                starRating: v === "all" ? null : Number(v),
-                page: DEFAULT_PAGE,
-              })
-            }
+            onValueChange={handleStarChange}
           >
             <SelectTrigger className="w-36">
               <SelectValue placeholder="Hạng sao" />
@@ -129,13 +183,7 @@ export const HotelListClient = () => {
           </Select>
           <Select
             value={params.countryId || "all"}
-            onValueChange={(v) =>
-              setParams({
-                countryId: v === "all" ? null : v,
-                cityId: "",
-                page: DEFAULT_PAGE,
-              })
-            }
+            onValueChange={handleCountryChange}
           >
             <SelectTrigger className="w-44">
               <SelectValue placeholder="Quốc gia" />
@@ -151,9 +199,7 @@ export const HotelListClient = () => {
           </Select>
           <Select
             value={params.cityId || "all"}
-            onValueChange={(v) =>
-              setParams({ cityId: v === "all" ? null : v, page: DEFAULT_PAGE })
-            }
+            onValueChange={handleCityChange}
             disabled={!params.countryId}
           >
             <SelectTrigger className="w-44">
@@ -193,7 +239,7 @@ export const HotelListClient = () => {
                 <HotelRow
                   key={hotel.id}
                   hotel={hotel}
-                  onNavigate={() => router.push(`/admin/hotels/${hotel.id}`)}
+                  onNavigate={handleNavigate}
                   onEdit={openEdit}
                   onDelete={handleDelete}
                 />
@@ -207,10 +253,8 @@ export const HotelListClient = () => {
             totalPages={data.totalPages}
             total={data.total}
             limit={params.limit}
-            onPageChange={(p) => setParams((prev) => ({ ...prev, page: p }))}
-            onLimitChange={(l) =>
-              setParams((prev) => ({ ...prev, limit: l, page: DEFAULT_PAGE }))
-            }
+            onPageChange={handlePageChange}
+            onLimitChange={handleLimitChange}
           />
         )}
       </Card>
@@ -220,13 +264,13 @@ export const HotelListClient = () => {
 
 interface HotelRowProps {
   hotel: Hotel;
-  onNavigate: () => void;
+  onNavigate: (id: string) => void;
   onEdit: (hotel: Hotel) => void;
   onDelete: (hotel: Hotel) => void;
 }
 
 const HotelRow = ({ hotel, onNavigate, onEdit, onDelete }: HotelRowProps) => (
-  <TableRow className="cursor-pointer" onClick={onNavigate}>
+  <TableRow className="cursor-pointer" onClick={() => onNavigate(hotel.id)}>
     <TableCell>
       <div>
         <p className="font-medium text-sm">{hotel.name}</p>

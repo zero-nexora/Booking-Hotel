@@ -2,7 +2,13 @@ import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
 import { TRPCError } from "@trpc/server";
 import Stripe from "stripe";
-import { calcNights, calcTotal, getBookingExpiresAt } from "@/lib/utils";
+import {
+  calcNights,
+  calcTotal,
+  getBookingExpiresAt,
+  getDatesInRange,
+} from "@/lib/utils";
+import { Prisma } from "@/generated/prisma/client";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
@@ -27,51 +33,53 @@ export const bookingRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const hotel = await ctx.db.hotel.findUnique({
-        where: { slug: input.hotelSlug, status: "ACTIVE" },
-        include: { policy: true },
-      });
+      const { hotelSlug, roomSlug, checkIn, checkOut, adults, children } =
+        input;
+
+      const [hotel, room] = await Promise.all([
+        ctx.db.hotel.findUnique({
+          where: { slug: hotelSlug, status: "ACTIVE" },
+          select: { id: true, policy: true },
+        }),
+        ctx.db.room.findFirst({
+          where: { slug: roomSlug, isActive: true },
+          select: { id: true, basePrice: true },
+        }),
+      ]);
+
       if (!hotel)
         throw new TRPCError({
           code: "NOT_FOUND",
           message: "Khách sạn không tồn tại",
         });
-
-      const room = await ctx.db.room.findFirst({
-        where: { hotelId: hotel.id, slug: input.roomSlug, isActive: true },
-      });
       if (!room)
         throw new TRPCError({
           code: "NOT_FOUND",
           message: "Phòng không tồn tại",
         });
 
-      const nights = calcNights(input.checkIn, input.checkOut);
+      const nights = calcNights(checkIn, checkOut);
       const total = calcTotal(room.basePrice, nights);
-
-      const dates: Date[] = [];
-      const cur = new Date(input.checkIn);
-      while (cur < input.checkOut) {
-        dates.push(new Date(cur));
-        cur.setDate(cur.getDate() + 1);
-      }
-
-      const unavailable = await ctx.db.roomAvailability.findFirst({
-        where: {
-          roomId: room.id,
-          date: { in: dates },
-          status: { not: "AVAILABLE" },
-        },
-      });
-      if (unavailable)
-        throw new TRPCError({
-          code: "CONFLICT",
-          message: "Phòng đã được đặt trong khoảng ngày này",
-        });
-
       const expiresAt = getBookingExpiresAt();
+      const dates = getDatesInRange(checkIn, checkOut);
 
       const booking = await ctx.db.$transaction(async (tx) => {
+        const existing = await tx.roomAvailability.findFirst({
+          where: {
+            roomId: room.id,
+            date: { in: dates },
+            status: { notIn: ["AVAILABLE"] },
+          },
+          select: { date: true, status: true },
+        });
+
+        if (existing) {
+          throw new TRPCError({
+            code: "CONFLICT",
+            message: "Phòng đã được đặt trong khoảng thời gian này",
+          });
+        }
+
         const b = await tx.booking.create({
           data: {
             userId: ctx.user.id,
@@ -82,19 +90,19 @@ export const bookingRouter = createTRPCRouter({
             guestEmail: input.guestEmail,
             guestPhone: input.guestPhone,
             specialRequests: input.specialRequests,
-            checkIn: input.checkIn,
-            checkOut: input.checkOut,
+            checkIn,
+            checkOut,
             totalAmount: total,
             currency: "USD",
             expiresAt,
             items: {
               create: {
                 roomId: room.id,
-                checkIn: input.checkIn,
-                checkOut: input.checkOut,
+                checkIn,
+                checkOut,
                 nights,
-                adults: input.adults,
-                children: input.children,
+                adults,
+                children,
                 unitPrice: room.basePrice,
                 total,
                 currency: "USD",
@@ -102,40 +110,58 @@ export const bookingRouter = createTRPCRouter({
               },
             },
           },
-          include: { items: true },
+          select: {
+            id: true,
+            bookingRef: true,
+            items: { select: { id: true } },
+          },
         });
 
-        const bookingItem = b.items[0];
+        const bookingItemId = b.items[0]!.id;
+
         await tx.roomAvailability.createMany({
           data: dates.map((date) => ({
             roomId: room.id,
             date,
-            status: "LOCKED",
-            bookingItemId: bookingItem.id,
+            status: "LOCKED" as const,
+            bookingItemId,
             lockToken: b.id,
             lockExpiresAt: expiresAt,
           })),
           skipDuplicates: true,
         });
 
-        await tx.roomAvailability.updateMany({
-          where: { roomId: room.id, date: { in: dates } },
-          data: {
-            status: "LOCKED",
-            bookingItemId: bookingItem.id,
-            lockToken: b.id,
-            lockExpiresAt: expiresAt,
-          },
-        });
-
         return b;
       });
 
-      const paymentIntent = await stripe.paymentIntents.create({
-        amount: Math.round(total * 100),
-        currency: "usd",
-        metadata: { bookingId: booking.id, bookingRef: booking.bookingRef },
-      });
+      let paymentIntent: Stripe.PaymentIntent;
+      try {
+        paymentIntent = await stripe.paymentIntents.create({
+          amount: Math.round(total * 100),
+          currency: "usd",
+          metadata: { bookingId: booking.id, bookingRef: booking.bookingRef },
+        });
+      } catch {
+        await ctx.db.$transaction([
+          ctx.db.booking.update({
+            where: { id: booking.id },
+            data: { status: "CANCELLED", paymentStatus: "UNPAID" },
+          }),
+          ctx.db.roomAvailability.updateMany({
+            where: { lockToken: booking.id },
+            data: {
+              status: "AVAILABLE",
+              lockToken: null,
+              lockExpiresAt: null,
+              bookingItemId: null,
+            },
+          }),
+        ]);
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Không thể khởi tạo thanh toán",
+        });
+      }
 
       await ctx.db.payment.create({
         data: {
@@ -320,16 +346,31 @@ export const bookingRouter = createTRPCRouter({
 
   cancel: protectedProcedure
     .input(
-      z.object({ bookingRef: z.string(), cancelReason: z.string().optional() }),
+      z.object({
+        bookingRef: z.string(),
+        cancelReason: z.string().optional(),
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       const booking = await ctx.db.booking.findUnique({
         where: { bookingRef: input.bookingRef },
-        include: {
-          items: true,
-          payments: { where: { status: "PAID", type: "CHARGE" } },
+        select: {
+          id: true,
+          userId: true,
+          status: true,
+          items: { select: { id: true } },
+          payments: {
+            where: { status: "PAID", type: "CHARGE" },
+            select: {
+              id: true,
+              amount: true,
+              currency: true,
+              stripePaymentIntentId: true,
+            },
+          },
         },
       });
+
       if (!booking) throw new TRPCError({ code: "NOT_FOUND" });
       if (booking.userId !== ctx.user.id)
         throw new TRPCError({ code: "FORBIDDEN" });
@@ -340,60 +381,81 @@ export const bookingRouter = createTRPCRouter({
         });
       }
 
-      await ctx.db.$transaction(async (tx) => {
-        await tx.booking.update({
+      const bookingItemIds = booking.items.map((i) => i.id);
+      const hasPaidPayments = booking.payments.length > 0;
+
+      const refunds: {
+        paymentId: string;
+        stripeRefundId: string;
+        amount: Prisma.Decimal;
+        currency: string;
+      }[] = [];
+
+      for (const payment of booking.payments) {
+        if (!payment.stripePaymentIntentId) continue;
+
+        let refund: Stripe.Refund;
+        try {
+          refund = await stripe.refunds.create({
+            payment_intent: payment.stripePaymentIntentId,
+          });
+        } catch (err) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Hoàn tiền thất bại. Vui lòng liên hệ hỗ trợ.",
+          });
+        }
+
+        refunds.push({
+          paymentId: payment.id,
+          stripeRefundId: refund.id,
+          amount: payment.amount,
+          currency: payment.currency,
+        });
+      }
+
+      const now = new Date();
+
+      await ctx.db.$transaction([
+        ctx.db.booking.update({
           where: { id: booking.id },
           data: {
             status: "CANCELLED",
-            cancelledAt: new Date(),
-            cancelReason: input.cancelReason,
+            cancelledAt: now,
+            cancelReason: input.cancelReason ?? null,
+            ...(hasPaidPayments && { paymentStatus: "REFUNDED" }),
           },
-        });
-        await tx.bookingItem.updateMany({
+        }),
+        ctx.db.bookingItem.updateMany({
           where: { bookingId: booking.id },
           data: { status: "CANCELLED" },
-        });
-        for (const item of booking.items) {
-          await tx.roomAvailability.updateMany({
-            where: { bookingItemId: item.id },
+        }),
+        ctx.db.roomAvailability.updateMany({
+          where: { bookingItemId: { in: bookingItemIds } },
+          data: {
+            status: "AVAILABLE",
+            bookingItemId: null,
+            lockToken: null,
+            lockExpiresAt: null,
+          },
+        }),
+        ...refunds.map((r) =>
+          ctx.db.payment.create({
             data: {
-              status: "AVAILABLE",
-              bookingItemId: null,
-              lockToken: null,
-              lockExpiresAt: null,
+              bookingId: booking.id,
+              userId: ctx.user.id,
+              type: "REFUND",
+              status: "REFUNDED",
+              amount: r.amount,
+              currency: r.currency,
+              stripeRefundId: r.stripeRefundId,
+              refundedAt: now,
             },
-          });
-        }
+          }),
+        ),
+      ]);
 
-        for (const payment of booking.payments) {
-          if (payment.stripePaymentIntentId) {
-            const refund = await stripe.refunds.create({
-              payment_intent: payment.stripePaymentIntentId,
-            });
-            await tx.payment.create({
-              data: {
-                bookingId: booking.id,
-                userId: ctx.user.id,
-                type: "REFUND",
-                status: "REFUNDED",
-                amount: payment.amount,
-                currency: payment.currency,
-                stripeRefundId: refund.id,
-                refundedAt: new Date(),
-              },
-            });
-          }
-        }
-
-        if (booking.payments.length > 0) {
-          await tx.booking.update({
-            where: { id: booking.id },
-            data: { paymentStatus: "REFUNDED" },
-          });
-        }
-      });
-
-      return { success: true };
+      return { success: true, refunded: refunds.length > 0 };
     }),
 
   quickStats: protectedProcedure.query(async ({ ctx }) => {

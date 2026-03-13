@@ -12,7 +12,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Calendar as CalendarUI } from "@/components/ui/calendar";
-import { cn } from "@/lib/utils";
+import { cn, formatDateDisplay } from "@/lib/utils";
 import { hotelSearchParsers } from "@/lib/search-params/hotel-search";
 
 export const HotelsSearchBar = () => {
@@ -23,8 +23,7 @@ export const HotelsSearchBar = () => {
   const checkOut = params.checkOut ?? undefined;
 
   return (
-    <div className="flex items-stretch gap-0 bg-background border rounded-xl overflow-hidden shadow-sm">
-      {/* City */}
+    <div className="flex gap-0 bg-background border rounded-xl overflow-hidden shadow-sm">
       <div className="flex items-center gap-2 flex-1 px-3 py-2 border-r hover:bg-muted/50 transition-colors min-w-0">
         <MapPin className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
         <Input
@@ -35,7 +34,6 @@ export const HotelsSearchBar = () => {
         />
       </div>
 
-      {/* Dates */}
       <Popover>
         <PopoverTrigger asChild>
           <button
@@ -47,9 +45,9 @@ export const HotelsSearchBar = () => {
             <Calendar className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
             <span className="text-sm">
               {checkIn && checkOut
-                ? `${format(checkIn, "dd/MM")} – ${format(checkOut, "dd/MM")}`
+                ? `${formatDateDisplay(checkIn)} - ${formatDateDisplay(checkOut)}`
                 : checkIn
-                  ? `${format(checkIn, "dd/MM")} – ?`
+                  ? `${formatDateDisplay(checkIn)} - ?`
                   : "Ngày"}
             </span>
           </button>
@@ -62,13 +60,12 @@ export const HotelsSearchBar = () => {
               setParams({ checkIn: r?.from ?? null, checkOut: r?.to ?? null })
             }
             disabled={(d) => d < new Date()}
-            numberOfMonths={2}
+            numberOfMonths={1}
             initialFocus
           />
         </PopoverContent>
       </Popover>
 
-      {/* Guests */}
       <Popover open={guestOpen} onOpenChange={setGuestOpen}>
         <PopoverTrigger asChild>
           <button className="flex items-center gap-2 px-3 py-2 border-r hover:bg-muted/50 transition-colors whitespace-nowrap shrink-0">

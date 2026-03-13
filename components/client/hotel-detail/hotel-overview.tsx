@@ -19,7 +19,7 @@ interface HotelOverviewProps {
   policy?: { checkInTime: string; checkOutTime: string } | null;
 }
 
-export function HotelOverview({
+export const HotelOverview = ({
   name,
   starRating,
   address,
@@ -28,7 +28,7 @@ export function HotelOverview({
   avgRating,
   reviewCount,
   policy,
-}: HotelOverviewProps) {
+}: HotelOverviewProps) => {
   const ratingLabel =
     avgRating == null
       ? null

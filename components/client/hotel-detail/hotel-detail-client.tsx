@@ -20,13 +20,13 @@ interface HotelDetailClientProps {
   childCount: number;
 }
 
-export function HotelDetailClient({
+export const HotelDetailClient = ({
   slug,
   checkIn,
   checkOut,
   adults,
   childCount,
-}: HotelDetailClientProps) {
+}: HotelDetailClientProps) => {
   const { data: hotel, isLoading } = useHotelDetail(slug, checkIn, checkOut);
 
   if (isLoading) return <HotelDetailSkeleton />;
@@ -44,14 +44,10 @@ export function HotelDetailClient({
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-6 space-y-8">
-      {/* Gallery */}
       <ImageGallery images={hotel.images} hotelName={hotel.name} />
 
-      {/* Main grid: content + sidebar */}
       <div className="flex flex-col lg:flex-row gap-8">
-        {/* Left: content */}
         <div className="flex-1 min-w-0 space-y-8">
-          {/* Overview */}
           <HotelOverview
             name={hotel.name}
             starRating={hotel.starRating}
@@ -65,7 +61,6 @@ export function HotelDetailClient({
 
           <Separator />
 
-          {/* Description */}
           {hotel.description && (
             <>
               <section>
@@ -78,7 +73,6 @@ export function HotelDetailClient({
             </>
           )}
 
-          {/* Amenities */}
           {hotel.amenities.length > 0 && (
             <>
               <section>
@@ -89,7 +83,6 @@ export function HotelDetailClient({
             </>
           )}
 
-          {/* Rooms */}
           <section id="available-rooms">
             <h2 className="text-base font-semibold mb-4">
               Phòng trống
@@ -111,7 +104,6 @@ export function HotelDetailClient({
 
           <Separator />
 
-          {/* Map */}
           <section>
             <h2 className="text-base font-semibold mb-4">Vị trí</h2>
             <LocationMap
@@ -124,7 +116,6 @@ export function HotelDetailClient({
 
           <Separator />
 
-          {/* Reviews */}
           <section>
             <h2 className="text-base font-semibold mb-5">
               Đánh giá
@@ -142,7 +133,6 @@ export function HotelDetailClient({
           </section>
         </div>
 
-        {/* Right: sticky sidebar */}
         <aside className="w-full lg:w-80 shrink-0">
           <div className="sticky top-24">
             <BookingSidebar
@@ -158,12 +148,12 @@ export function HotelDetailClient({
       </div>
     </div>
   );
-}
+};
 
-function HotelDetailSkeleton() {
+const HotelDetailSkeleton = () => {
   return (
     <div className="max-w-6xl mx-auto px-4 py-6 space-y-6">
-      <Skeleton className="h-[420px] rounded-2xl" />
+      <Skeleton className="h-105 rounded-2xl" />
       <div className="flex gap-8">
         <div className="flex-1 space-y-4">
           <Skeleton className="h-8 w-2/3" />

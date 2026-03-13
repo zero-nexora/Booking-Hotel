@@ -22,11 +22,13 @@ import { SearchInput } from "@/components/shared/search-input";
 import { useAdminBookingList } from "@/hooks/admin/use-admin-bookings";
 import { adminBookingParsers } from "@/lib/search-params/admin-bookings";
 import { useQueryStates } from "nuqs";
+import { useCallback } from "react";
 import { format } from "date-fns";
 import { RouterOutput } from "@/trpc/client";
 import { BookingStatus, PaymentStatus } from "@/generated/prisma/enums";
 import { TableSkeleton } from "@/components/shared/table-skeleton";
 import { DEFAULT_PAGE } from "@/lib/constants";
+import { formatCurrencyUSD } from "@/lib/utils";
 
 type Booking = RouterOutput["admin"]["booking"]["list"]["items"][number];
 
@@ -94,7 +96,7 @@ const BookingRow = ({ booking }: { booking: Booking }) => (
       </Badge>
     </TableCell>
     <TableCell className="text-sm text-right">
-      {Number(booking.totalAmount).toLocaleString("vi-VN")}đ
+      {formatCurrencyUSD(Number(booking.totalAmount))}
     </TableCell>
   </TableRow>
 );
@@ -107,23 +109,51 @@ export const HotelBookingsTab = ({ hotelId }: HotelBookingsTabProps) => {
   const [params, setParams] = useQueryStates(adminBookingParsers);
   const { data, isLoading } = useAdminBookingList({ ...params, hotelId });
 
+  const handleSearchChange = useCallback(
+    (v: string) => setParams({ search: v, page: 1 }),
+    [setParams],
+  );
+
+  const handleStatusChange = useCallback(
+    (v: string) =>
+      setParams({
+        status: v === "all" ? null : (v as BookingStatus),
+        page: 1,
+      }),
+    [setParams],
+  );
+
+  const handlePaymentStatusChange = useCallback(
+    (v: string) =>
+      setParams({
+        paymentStatus: v === "all" ? null : (v as PaymentStatus),
+        page: 1,
+      }),
+    [setParams],
+  );
+
+  const handlePageChange = useCallback(
+    (p: number) => setParams({ page: p }),
+    [setParams],
+  );
+
+  const handleLimitChange = useCallback(
+    (l: number) => setParams({ limit: l, page: DEFAULT_PAGE }),
+    [setParams],
+  );
+
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap gap-3">
         <SearchInput
           value={params.search}
-          onChange={(v) => void setParams({ search: v, page: 1 })}
+          onChange={handleSearchChange}
           placeholder="Tìm mã, tên, email..."
           className="w-56"
         />
         <Select
           value={params.status ?? "all"}
-          onValueChange={(v) =>
-            void setParams({
-              status: v === "all" ? null : (v as BookingStatus),
-              page: 1,
-            })
-          }
+          onValueChange={handleStatusChange}
         >
           <SelectTrigger className="w-44">
             <SelectValue placeholder="Trạng thái" />
@@ -139,12 +169,7 @@ export const HotelBookingsTab = ({ hotelId }: HotelBookingsTabProps) => {
         </Select>
         <Select
           value={params.paymentStatus ?? "all"}
-          onValueChange={(v) =>
-            void setParams({
-              paymentStatus: v === "all" ? null : (v as PaymentStatus),
-              page: 1,
-            })
-          }
+          onValueChange={handlePaymentStatusChange}
         >
           <SelectTrigger className="w-40">
             <SelectValue placeholder="Thanh toán" />
@@ -199,8 +224,8 @@ export const HotelBookingsTab = ({ hotelId }: HotelBookingsTabProps) => {
             totalPages={data.totalPages}
             total={data.total}
             limit={params.limit}
-            onPageChange={(p) => void setParams({ page: p })}
-            onLimitChange={(l) => void setParams({ limit: l, page: DEFAULT_PAGE })}
+            onPageChange={handlePageChange}
+            onLimitChange={handleLimitChange}
           />
         )}
       </Card>

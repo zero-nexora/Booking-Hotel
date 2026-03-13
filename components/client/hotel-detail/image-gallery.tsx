@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import { X, ChevronLeft, ChevronRight, Grid2x2, Images } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -10,7 +10,7 @@ interface ImageGalleryProps {
   hotelName: string;
 }
 
-export function ImageGallery({ images, hotelName }: ImageGalleryProps) {
+export const ImageGallery = ({ images, hotelName }: ImageGalleryProps) => {
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
   const primary = images[0];
@@ -19,52 +19,62 @@ export function ImageGallery({ images, hotelName }: ImageGalleryProps) {
 
   const openLightbox = (i: number) => setLightboxIndex(i);
   const closeLightbox = () => setLightboxIndex(null);
-  const prev = () =>
-    setLightboxIndex((i) => (i != null ? Math.max(0, i - 1) : 0));
-  const next = () =>
-    setLightboxIndex((i) =>
-      i != null ? Math.min(images.length - 1, i + 1) : 0,
-    );
+  const prev = useCallback(
+    () => setLightboxIndex((i) => (i != null && i > 0 ? i - 1 : i)),
+    [],
+  );
+  const next = useCallback(
+    () =>
+      setLightboxIndex((i) => (i != null && i < images.length - 1 ? i + 1 : i)),
+    [images.length],
+  );
+
+  useEffect(() => {
+    if (lightboxIndex === null) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "ArrowLeft") prev();
+      if (e.key === "ArrowRight") next();
+      if (e.key === "Escape") closeLightbox();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [lightboxIndex, prev, next]);
 
   if (!primary) return null;
 
   return (
     <>
-      {/* Grid layout */}
       <div className="relative rounded-2xl overflow-hidden bg-muted">
-        <div className="grid grid-cols-4 grid-rows-2 gap-1.5 h-105 sm:h-120">
-          {/* Primary large */}
+        <div className="grid grid-cols-4 grid-rows-2 gap-1.5 h-72 sm:h-96">
           <div
-            className="col-span-2 row-span-2 relative cursor-pointer"
+            className="col-span-2 row-span-2 relative cursor-pointer group"
             onClick={() => openLightbox(0)}
           >
             <Image
               src={primary.url}
               alt={primary.alt ?? hotelName}
               fill
-              className="object-cover hover:brightness-90 transition-[filter]"
+              className="object-cover"
               priority
             />
           </div>
 
-          {/* Thumbs */}
           {thumbs.map((img, i) => (
             <div
               key={i}
-              className="relative cursor-pointer"
+              className="relative cursor-pointer group"
               onClick={() => openLightbox(i + 1)}
             >
               <Image
                 src={img.url}
                 alt={img.alt ?? `${hotelName} ${i + 2}`}
                 fill
-                className="object-cover hover:brightness-90 transition-[filter]"
+                className="object-cover"
               />
-              {/* Show more overlay on last thumb */}
               {i === thumbs.length - 1 && hasMore && (
                 <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center gap-1">
                   <Images className="w-5 h-5 text-white" />
-                  <span className="text-white text-sm font-medium">
+                  <span className="text-white text-sm font-semibold">
                     +{images.length - 5}
                   </span>
                 </div>
@@ -72,7 +82,6 @@ export function ImageGallery({ images, hotelName }: ImageGalleryProps) {
             </div>
           ))}
 
-          {/* Fill empty slots if < 5 images */}
           {Array.from({ length: Math.max(0, 4 - thumbs.length) }).map(
             (_, i) => (
               <div key={`empty-${i}`} className="bg-muted" />
@@ -83,7 +92,7 @@ export function ImageGallery({ images, hotelName }: ImageGalleryProps) {
         <Button
           variant="secondary"
           size="sm"
-          className="absolute bottom-3 right-3 gap-1.5 text-xs shadow"
+          className="absolute bottom-3 right-3 gap-1.5 text-xs shadow-md"
           onClick={() => openLightbox(0)}
         >
           <Grid2x2 className="w-3.5 h-3.5" />
@@ -91,63 +100,88 @@ export function ImageGallery({ images, hotelName }: ImageGalleryProps) {
         </Button>
       </div>
 
-      {/* Lightbox */}
       {lightboxIndex !== null && (
         <div
-          className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center"
+          className="fixed inset-0 z-50 flex flex-col"
           onClick={closeLightbox}
         >
+          <div className="absolute inset-0 bg-black/95 backdrop-blur-sm" />
+
           <div
-            className="relative w-full max-w-5xl max-h-[90vh] px-4"
+            className="relative z-10 flex items-center justify-between px-5 py-4"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="relative aspect-4/3 w-full">
+            <p className="text-sm font-medium text-white/80">{hotelName}</p>
+            <div className="flex items-center gap-3">
+              <span className="text-xs text-white/40 tabular-nums">
+                {lightboxIndex + 1} / {images.length}
+              </span>
+              <button
+                onClick={closeLightbox}
+                className="flex items-center justify-center w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 transition-colors text-white"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+
+          <div
+            className="relative z-10 flex-1 flex items-center justify-center px-14 pb-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={prev}
+              disabled={lightboxIndex === 0}
+              className="absolute left-4 flex items-center justify-center w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 disabled:opacity-20 disabled:cursor-not-allowed transition-colors text-white"
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </button>
+
+            <div className="relative w-full h-full max-h-[70vh]">
               <Image
                 src={images[lightboxIndex].url}
                 alt={images[lightboxIndex].alt ?? hotelName}
                 fill
                 className="object-contain"
+                sizes="(max-width: 768px) 100vw, 90vw"
               />
             </div>
 
-            <div className="absolute top-1/2 -translate-y-1/2 left-2">
-              <Button
-                variant="secondary"
-                size="icon"
-                className="rounded-full h-9 w-9 shadow"
-                onClick={prev}
-                disabled={lightboxIndex === 0}
-              >
-                <ChevronLeft className="w-4 h-4" />
-              </Button>
-            </div>
-            <div className="absolute top-1/2 -translate-y-1/2 right-2">
-              <Button
-                variant="secondary"
-                size="icon"
-                className="rounded-full h-9 w-9 shadow"
-                onClick={next}
-                disabled={lightboxIndex === images.length - 1}
-              >
-                <ChevronRight className="w-4 h-4" />
-              </Button>
-            </div>
-
-            <Button
-              variant="secondary"
-              size="icon"
-              className="absolute top-2 right-2 rounded-full h-8 w-8"
-              onClick={closeLightbox}
+            <button
+              onClick={next}
+              disabled={lightboxIndex === images.length - 1}
+              className="absolute right-4 flex items-center justify-center w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 disabled:opacity-20 disabled:cursor-not-allowed transition-colors text-white"
             >
-              <X className="w-4 h-4" />
-            </Button>
+              <ChevronRight className="w-5 h-5" />
+            </button>
+          </div>
 
-            <p className="text-center text-white/60 text-xs mt-2">
-              {lightboxIndex + 1} / {images.length}
-            </p>
+          <div
+            className="relative z-10 flex justify-center gap-2 px-4 pb-5 overflow-x-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {images.map((img, i) => (
+              <button
+                key={i}
+                onClick={() => setLightboxIndex(i)}
+                className={`relative shrink-0 w-14 h-10 rounded-md overflow-hidden transition-all duration-150 ${
+                  i === lightboxIndex
+                    ? "ring-2 ring-white opacity-100"
+                    : "opacity-40 hover:opacity-70"
+                }`}
+              >
+                <Image
+                  src={img.url}
+                  alt=""
+                  fill
+                  className="object-cover"
+                  sizes="56px"
+                />
+              </button>
+            ))}
           </div>
         </div>
       )}
     </>
   );
-}
+};

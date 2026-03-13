@@ -141,7 +141,7 @@ export const hotelRouter = createTRPCRouter({
           cur.setDate(cur.getDate() + 1);
         }
         roomWhere.availability = {
-          some: { date: { in: dates }, status: "AVAILABLE" },
+          every: { date: { in: dates }, status: "AVAILABLE" },
         };
       }
 
@@ -266,14 +266,6 @@ export const hotelRouter = createTRPCRouter({
                       },
                     }
                   : undefined,
-            },
-          },
-          reviews: {
-            where: { status: "APPROVED" },
-            take: 5,
-            orderBy: { createdAt: "desc" },
-            include: {
-              user: { select: { name: true, image: true } },
             },
           },
           _count: { select: { reviews: { where: { status: "APPROVED" } } } },

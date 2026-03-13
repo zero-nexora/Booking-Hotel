@@ -9,7 +9,7 @@ const AdminLayout = async ({ children }: { children: React.ReactNode }) => {
   try {
     session = await requireAdmin();
   } catch {
-    redirect("/sign-in");
+    redirect("/");
   }
 
   return <AdminShell user={session.user}>{children}</AdminShell>;

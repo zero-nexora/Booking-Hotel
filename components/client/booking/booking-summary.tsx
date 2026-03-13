@@ -6,6 +6,7 @@ import { vi } from "date-fns/locale";
 import { Building2, Users, CalendarDays, Clock } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
+import { formatCurrencyUSD, formatDateShort } from "@/lib/utils";
 
 interface BookingSummaryProps {
   hotelName: string;
@@ -43,7 +44,6 @@ export function BookingSummary({
 
   return (
     <div className="rounded-2xl border bg-card overflow-hidden shadow-sm">
-      {/* Hotel image + names */}
       <div className="relative h-36 bg-muted">
         {hotelImage ? (
           <Image
@@ -77,15 +77,12 @@ export function BookingSummary({
       </div>
 
       <div className="p-4 space-y-4">
-        {/* Dates */}
         <div className="grid grid-cols-2 gap-2">
           <div className="rounded-xl bg-muted/50 p-3">
             <p className="text-[10px] text-muted-foreground uppercase tracking-wide font-medium mb-0.5">
               Nhận phòng
             </p>
-            <p className="text-sm font-semibold">
-              {format(checkIn, "dd/MM/yyyy")}
-            </p>
+            <p className="text-sm font-semibold">{formatDateShort(checkIn)}</p>
             {checkInTime && (
               <p className="text-xs text-muted-foreground">{checkInTime}</p>
             )}
@@ -94,9 +91,7 @@ export function BookingSummary({
             <p className="text-[10px] text-muted-foreground uppercase tracking-wide font-medium mb-0.5">
               Trả phòng
             </p>
-            <p className="text-sm font-semibold">
-              {format(checkOut, "dd/MM/yyyy")}
-            </p>
+            <p className="text-sm font-semibold">{formatDateShort(checkOut)}</p>
             {checkOutTime && (
               <p className="text-xs text-muted-foreground">{checkOutTime}</p>
             )}
@@ -125,23 +120,21 @@ export function BookingSummary({
 
         <Separator />
 
-        {/* Price breakdown */}
         <div className="space-y-2 text-sm">
           <div className="flex justify-between text-muted-foreground">
             <span>
-              ${pricePerNight} × {nights} đêm
+              {formatCurrencyUSD(pricePerNight)} x {nights} đêm
             </span>
-            <span>${total}</span>
+            <span>{formatCurrencyUSD(total)}</span>
           </div>
           <div className="flex justify-between font-semibold text-base">
             <span>Tổng cộng</span>
             <span className="text-primary">
-              ${total} {currency}
+              {formatCurrencyUSD(total)} {currency}
             </span>
           </div>
         </div>
 
-        {/* Expiry warning */}
         {expiresAt && (
           <>
             <Separator />

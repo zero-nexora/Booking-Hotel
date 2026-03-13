@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useCallback } from "react";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import listPlugin from "@fullcalendar/list";
@@ -191,8 +191,59 @@ export const BookingListClient = () => {
     extendedProps: { bookingId: b.id },
   }));
 
-  const handleEventClick = (arg: EventClickArg) =>
-    router.push(`/admin/bookings/${arg.event.extendedProps.bookingId}`);
+  const handleEventClick = useCallback(
+    (arg: EventClickArg) =>
+      router.push(`/admin/bookings/${arg.event.extendedProps.bookingId}`),
+    [router],
+  );
+
+  const handleRowClick = useCallback(
+    (id: string) => router.push(`/admin/bookings/${id}`),
+    [router],
+  );
+
+  const handleSearchChange = useCallback(
+    (v: string) => setParams({ search: v, page: 1 }),
+    [setParams],
+  );
+
+  const handleStatusChange = useCallback(
+    (v: string) =>
+      setParams({
+        status: v === "all" ? null : (v as BookingStatus),
+        page: 1,
+      }),
+    [setParams],
+  );
+
+  const handlePaymentStatusChange = useCallback(
+    (v: string) =>
+      setParams({
+        paymentStatus: v === "all" ? null : (v as PaymentStatus),
+        page: 1,
+      }),
+    [setParams],
+  );
+
+  const handleSetListView = useCallback(
+    () => setView({ view: "list" }),
+    [setView],
+  );
+
+  const handleSetCalendarView = useCallback(
+    () => setView({ view: "calendar" }),
+    [setView],
+  );
+
+  const handlePageChange = useCallback(
+    (p: number) => setParams({ page: p }),
+    [setParams],
+  );
+
+  const handleLimitChange = useCallback(
+    (l: number) => setParams({ limit: l, page: 1 }),
+    [setParams],
+  );
 
   return (
     <div className="space-y-4">
@@ -200,18 +251,13 @@ export const BookingListClient = () => {
         <div className="flex gap-2 items-center flex-wrap">
           <SearchInput
             value={params.search}
-            onChange={(v) => void setParams({ search: v, page: 1 })}
+            onChange={handleSearchChange}
             placeholder="Tìm mã, tên, email..."
             className="w-64"
           />
           <Select
             value={params.status ?? "all"}
-            onValueChange={(v) =>
-              void setParams({
-                status: v === "all" ? null : (v as BookingStatus),
-                page: 1,
-              })
-            }
+            onValueChange={handleStatusChange}
           >
             <SelectTrigger className="w-44">
               <SelectValue placeholder="Trạng thái" />
@@ -227,12 +273,7 @@ export const BookingListClient = () => {
           </Select>
           <Select
             value={params.paymentStatus ?? "all"}
-            onValueChange={(v) =>
-              void setParams({
-                paymentStatus: v === "all" ? null : (v as PaymentStatus),
-                page: 1,
-              })
-            }
+            onValueChange={handlePaymentStatusChange}
           >
             <SelectTrigger className="w-44">
               <SelectValue placeholder="Thanh toán" />
@@ -252,7 +293,7 @@ export const BookingListClient = () => {
               variant={view === "list" ? "default" : "ghost"}
               size="sm"
               className="h-7 px-2.5 rounded-md"
-              onClick={() => void setView({ view: "list" })}
+              onClick={handleSetListView}
             >
               <List className="w-3.5 h-3.5" />
             </Button>
@@ -260,7 +301,7 @@ export const BookingListClient = () => {
               variant={view === "calendar" ? "default" : "ghost"}
               size="sm"
               className="h-7 px-2.5 rounded-md"
-              onClick={() => void setView({ view: "calendar" })}
+              onClick={handleSetCalendarView}
             >
               <Calendar className="w-3.5 h-3.5" />
             </Button>
@@ -314,7 +355,7 @@ export const BookingListClient = () => {
                     <BookingRow
                       key={booking.id}
                       booking={booking}
-                      onClick={(id) => router.push(`/admin/bookings/${id}`)}
+                      onClick={handleRowClick}
                     />
                   ))
                 )}
@@ -327,8 +368,8 @@ export const BookingListClient = () => {
               totalPages={data.totalPages}
               total={data.total}
               limit={params.limit}
-              onPageChange={(p) => void setParams({ page: p })}
-              onLimitChange={(l) => void setParams({ limit: l, page: 1 })}
+              onPageChange={handlePageChange}
+              onLimitChange={handleLimitChange}
             />
           )}
         </Card>
