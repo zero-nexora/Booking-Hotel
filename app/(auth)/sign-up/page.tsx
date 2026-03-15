@@ -49,6 +49,11 @@ const schema = z
   });
 type Values = z.infer<typeof schema>;
 
+const inputCls =
+  "bg-secondary/40 border-border focus-visible:ring-1 focus-visible:ring-primary/40 focus-visible:border-primary placeholder:text-muted-foreground/50";
+const labelCls =
+  "text-xs font-medium uppercase tracking-wide text-foreground/70";
+
 const SignUpPage = () => {
   const router = useRouter();
   const form = useForm<Values>({
@@ -61,7 +66,6 @@ const SignUpPage = () => {
       confirmPassword: "",
     },
   });
-
   const isLoading = form.formState.isSubmitting;
   const watchedPassword = form.watch("password");
 
@@ -75,12 +79,9 @@ const SignUpPage = () => {
           callbackURL: "/verify-email",
         },
         {
-          onSuccess: () => {
-            router.push("/verify-email");
-          },
-          onError: () => {
-            toast.error("Đăng ký thất bại. Email có thể đã được sử dụng.");
-          },
+          onSuccess: () => router.push("/verify-email"),
+          onError: () =>
+            void toast.error("Đăng ký thất bại. Email có thể đã được sử dụng."),
         },
       );
     } catch {
@@ -90,8 +91,10 @@ const SignUpPage = () => {
 
   return (
     <div className="space-y-6">
-      <div className="space-y-1.5 text-center">
-        <h1 className="text-2xl font-bold tracking-tight">Tạo tài khoản mới</h1>
+      <div className="space-y-1.5">
+        <h1 className="text-2xl font-semibold tracking-tight text-foreground">
+          Tạo tài khoản mới
+        </h1>
         <p className="text-sm text-muted-foreground">
           Đăng ký để bắt đầu trải nghiệm đặt phòng cao cấp
         </p>
@@ -108,12 +111,13 @@ const SignUpPage = () => {
             name="fullName"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Họ và tên</FormLabel>
+                <FormLabel className={labelCls}>Họ và tên</FormLabel>
                 <FormControl>
                   <Input
                     placeholder="Nguyễn Văn A"
                     autoComplete="name"
                     disabled={isLoading}
+                    className={inputCls}
                     {...field}
                   />
                 </FormControl>
@@ -128,13 +132,14 @@ const SignUpPage = () => {
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Email</FormLabel>
+                  <FormLabel className={labelCls}>Email</FormLabel>
                   <FormControl>
                     <Input
                       type="email"
                       placeholder="you@example.com"
                       autoComplete="email"
                       disabled={isLoading}
+                      className={inputCls}
                       {...field}
                     />
                   </FormControl>
@@ -147,9 +152,9 @@ const SignUpPage = () => {
               name="phone"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>
+                  <FormLabel className={labelCls}>
                     Điện thoại{" "}
-                    <span className="text-muted-foreground font-normal text-xs">
+                    <span className="normal-case text-muted-foreground/60 font-normal">
                       (tuỳ chọn)
                     </span>
                   </FormLabel>
@@ -159,6 +164,7 @@ const SignUpPage = () => {
                       placeholder="0912 345 678"
                       autoComplete="tel"
                       disabled={isLoading}
+                      className={inputCls}
                       {...field}
                     />
                   </FormControl>
@@ -173,17 +179,18 @@ const SignUpPage = () => {
             name="password"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Mật khẩu</FormLabel>
+                <FormLabel className={labelCls}>Mật khẩu</FormLabel>
                 <FormControl>
                   <PasswordInput
                     placeholder="••••••••"
                     autoComplete="new-password"
                     disabled={isLoading}
+                    className={inputCls}
                     {...field}
                   />
                 </FormControl>
                 <PasswordStrengthBar password={watchedPassword} />
-                <FormDescription className="text-xs">
+                <FormDescription className="text-xs text-muted-foreground/70">
                   Tối thiểu 8 ký tự, gồm chữ hoa và chữ số
                 </FormDescription>
                 <FormMessage />
@@ -196,12 +203,13 @@ const SignUpPage = () => {
             name="confirmPassword"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Xác nhận mật khẩu</FormLabel>
+                <FormLabel className={labelCls}>Xác nhận mật khẩu</FormLabel>
                 <FormControl>
                   <PasswordInput
                     placeholder="••••••••"
                     autoComplete="new-password"
                     disabled={isLoading}
+                    className={inputCls}
                     {...field}
                   />
                 </FormControl>
@@ -210,25 +218,29 @@ const SignUpPage = () => {
             )}
           />
 
-          <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          <Button
+            type="submit"
+            className="w-full h-10 font-medium"
+            disabled={isLoading}
+          >
+            {isLoading && <Loader2 className="size-4 animate-spin" />}
             Tạo tài khoản
           </Button>
         </form>
       </Form>
 
-      <p className="text-xs text-center text-muted-foreground">
+      <p className="text-center text-xs text-muted-foreground leading-relaxed">
         Bằng cách đăng ký, bạn đồng ý với{" "}
         <Link
           href="/terms"
-          className="underline underline-offset-4 hover:text-foreground"
+          className="text-foreground/80 hover:text-foreground underline underline-offset-2"
         >
           Điều khoản dịch vụ
         </Link>{" "}
         và{" "}
         <Link
           href="/privacy"
-          className="underline underline-offset-4 hover:text-foreground"
+          className="text-foreground/80 hover:text-foreground underline underline-offset-2"
         >
           Chính sách bảo mật
         </Link>
@@ -238,7 +250,7 @@ const SignUpPage = () => {
         Đã có tài khoản?{" "}
         <Link
           href="/sign-in"
-          className="font-medium text-primary hover:underline underline-offset-4"
+          className="text-primary hover:text-primary/80 font-medium"
         >
           Đăng nhập
         </Link>

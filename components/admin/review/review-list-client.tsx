@@ -278,7 +278,7 @@ export const ReviewListClient = () => {
                     <Button
                       size="sm"
                       variant="outline"
-                      className="text-emerald-600 border-emerald-200 hover:bg-emerald-50"
+                      className="text-emerald-600 border-emerald-200 hover:text-emerald-500 hover:border-emerald-200"
                       disabled={updateStatus.isPending}
                       onClick={() => {
                         updateStatus.mutate({
@@ -294,7 +294,7 @@ export const ReviewListClient = () => {
                     <Button
                       size="sm"
                       variant="outline"
-                      className="text-destructive border-destructive/30 hover:bg-destructive/10"
+                      className="text-destructive border-destructive/30 hover:bg-destructive/10 hover:text-destructive hover:border-destructive/30"
                       disabled={updateStatus.isPending}
                       onClick={() => {
                         updateStatus.mutate({

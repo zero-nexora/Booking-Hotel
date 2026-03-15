@@ -12,6 +12,7 @@ import {
 } from "@/hooks/admin/use-admin-bookings";
 import { ArrowLeft } from "lucide-react";
 import { RouterOutput } from "@/trpc/client";
+import { formatDateShort } from "@/lib/utils";
 
 type BookingDetail = RouterOutput["admin"]["booking"]["detail"];
 type BookingStatus =
@@ -128,7 +129,7 @@ const BookingHeader = ({
           </div>
           <p className="text-sm text-muted-foreground mt-1">
             {booking.hotel.name} · Tạo{" "}
-            {format(new Date(booking.createdAt), "dd/MM/yyyy HH:mm")}
+            {formatDateShort(booking.createdAt)}
           </p>
         </div>
       </div>

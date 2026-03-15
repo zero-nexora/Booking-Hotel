@@ -4,17 +4,14 @@ interface AuthDividerProps {
   label?: string;
 }
 
-export function AuthDivider({ label = "hoặc" }: AuthDividerProps) {
+export const AuthDivider = ({ label = "hoặc" }: AuthDividerProps) => {
   return (
-    <div className="relative">
-      <div className="absolute inset-0 flex items-center">
-        <Separator />
-      </div>
-      <div className="relative flex justify-center text-xs uppercase">
-        <span className="bg-background px-2 text-muted-foreground">
-          {label}
-        </span>
-      </div>
+    <div className="relative flex items-center gap-3 my-1">
+      <Separator className="flex-1 bg-border" />
+      <span className="text-xs font-medium text-muted-foreground shrink-0 px-1 select-none">
+        {label}
+      </span>
+      <Separator className="flex-1 bg-border" />
     </div>
   );
-}
+};

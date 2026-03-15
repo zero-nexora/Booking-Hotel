@@ -19,14 +19,14 @@ interface PaginationProps {
   onLimitChange?: (limit: number) => void;
 }
 
-export function Pagination({
+export const Pagination = ({
   page,
   totalPages,
   total,
   limit,
   onPageChange,
   onLimitChange,
-}: PaginationProps) {
+}: PaginationProps) => {
   const from = (page - 1) * limit + 1;
   const to = Math.min(page * limit, total);
 
@@ -62,7 +62,7 @@ export function Pagination({
           <Button
             variant="outline"
             size="icon"
-            className="h-8 w-8"
+            className="h-8 w-8 hover:bg-accent hover:text-secondary-foreground"
             disabled={page <= 1}
             onClick={() => onPageChange(page - 1)}
           >
@@ -80,7 +80,7 @@ export function Pagination({
                   key={p}
                   variant={p === page ? "default" : "outline"}
                   size="icon"
-                  className="h-8 w-8"
+                  className="h-8 w-8 hover:bg-accent hover:text-secondary-foreground"
                   onClick={() => onPageChange(p)}
                 >
                   {p}
@@ -91,7 +91,7 @@ export function Pagination({
           <Button
             variant="outline"
             size="icon"
-            className="h-8 w-8"
+            className="h-8 w-8 hover:bg-accent hover:text-secondary-foreground"
             disabled={page >= totalPages}
             onClick={() => onPageChange(page + 1)}
           >
@@ -101,4 +101,4 @@ export function Pagination({
       </div>
     </div>
   );
-}
+};

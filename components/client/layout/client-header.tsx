@@ -3,7 +3,15 @@
 import Link from "next/link";
 import { usePathname, useSearchParams, useRouter } from "next/navigation";
 import { useState } from "react";
-import { Menu, User, BookOpen, Star, LogOut, ChevronDown } from "lucide-react";
+import {
+  Menu,
+  User,
+  BookOpen,
+  Star,
+  LogOut,
+  ChevronDown,
+  LayoutDashboard,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -27,10 +35,10 @@ const navLinks = [
 
 const navItemClass = (active: boolean) =>
   cn(
-    "px-3 py-1.5 rounded-lg text-sm font-medium transition-colors block",
+    "text-sm font-medium px-1 py-0.5 border-b-2",
     active
-      ? "bg-primary/10 text-primary"
-      : "text-muted-foreground hover:text-foreground hover:bg-muted",
+      ? "text-foreground border-primary"
+      : "text-muted-foreground border-transparent hover:text-foreground hover:border-border",
   );
 
 export const ClientHeader = () => {
@@ -45,18 +53,17 @@ export const ClientHeader = () => {
 
   const handleSignOut = async () => {
     await authClient.signOut();
-    router.push("/");
-    router.refresh();
+    router.push("/sign-in");
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur-sm">
-      <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between gap-4">
-        <Link href="/" className="flex items-center gap-2 shrink-0">
+    <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/80">
+      <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:px-6">
+        <Link href="/" className="shrink-0">
           <Logo />
         </Link>
 
-        <nav className="items-center gap-1 box-hidden">
+        <nav className="box-hidden items-center gap-6">
           {navLinks.map((link) => (
             <Link
               key={link.href}
@@ -74,57 +81,77 @@ export const ClientHeader = () => {
           {user ? (
             <DropdownMenu modal={false}>
               <DropdownMenuTrigger asChild>
-                <button className="flex items-center gap-2 rounded-xl px-2 py-1 hover:bg-muted transition-colors">
-                  <Avatar className="w-7 h-7">
+                <button className="box-hidden items-center gap-2 rounded-lg px-2 py-1.5 text-sm font-medium text-foreground hover:bg-accent hover:text-accent-foreground">
+                  <Avatar className="size-7">
                     <AvatarImage src={user.image ?? undefined} />
-                    <AvatarFallback className="text-xs bg-primary/10 text-primary">
+                    <AvatarFallback className="bg-primary/10 text-primary text-xs font-semibold">
                       {user.name?.charAt(0).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
-                  <span className="text-sm font-medium box-hidden">
-                    {user.name}
-                  </span>
-                  <ChevronDown className="w-3.5 h-3.5 text-muted-foreground box-hidden" />
+                  <span className="max-w-32 truncate">{user.name}</span>
+                  <ChevronDown className="size-3.5 text-muted-foreground" />
                 </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuContent
+                align="end"
+                className="w-52 bg-popover border-border text-popover-foreground"
+              >
                 <DropdownMenuItem asChild>
-                  <Link href="/account" className="flex items-center gap-2">
-                    <User className="w-4 h-4" />
+                  <Link
+                    href="/account"
+                    className="flex items-center gap-2 cursor-pointer hover:bg-accent hover:text-accent-foreground"
+                  >
+                    <User className="size-4" />
                     Tài khoản
                   </Link>
                 </DropdownMenuItem>
+                {user.role === "ADMIN" && (
+                  <DropdownMenuItem asChild>
+                    <Link
+                      href="/admin"
+                      className="flex items-center gap-2 cursor-pointer hover:bg-accent hover:text-accent-foreground"
+                    >
+                      <LayoutDashboard className="size-4" />
+                      Trang quản trị
+                    </Link>
+                  </DropdownMenuItem>
+                )}
                 <DropdownMenuItem asChild>
                   <Link
                     href="/account/bookings"
-                    className="flex items-center gap-2"
+                    className="flex items-center gap-2 cursor-pointer hover:bg-accent hover:text-accent-foreground"
                   >
-                    <BookOpen className="w-4 h-4" />
+                    <BookOpen className="size-4" />
                     Đặt phòng của tôi
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <Link
                     href="/account/reviews"
-                    className="flex items-center gap-2"
+                    className="flex items-center gap-2 cursor-pointer hover:bg-accent hover:text-accent-foreground"
                   >
-                    <Star className="w-4 h-4" />
+                    <Star className="size-4" />
                     Đánh giá của tôi
                   </Link>
                 </DropdownMenuItem>
-                <DropdownMenuSeparator />
+                <DropdownMenuSeparator className="bg-border" />
                 <DropdownMenuItem
-                  className="text-destructive focus:text-destructive gap-2"
+                  className="flex items-center gap-2 cursor-pointer text-destructive hover:bg-destructive/10 hover:text-destructive focus:bg-destructive/10 focus:text-destructive"
                   onClick={handleSignOut}
                 >
-                  <LogOut className="w-4 h-4" />
+                  <LogOut className="size-4" />
                   Đăng xuất
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
-            <div className="flex items-center gap-2">
-              <Button variant="ghost" size="sm" asChild>
+            <div className="box-hidden items-center gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-muted-foreground hover:text-foreground hover:bg-accent"
+                asChild
+              >
                 <Link href="/sign-in">Đăng nhập</Link>
               </Button>
               <Button size="sm" asChild>
@@ -135,31 +162,45 @@ export const ClientHeader = () => {
 
           <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="md:hidden h-8 w-8">
-                <Menu className="w-4 h-4" />
+              <Button
+                variant="ghost"
+                size="icon"
+                className="md:hidden size-9 text-muted-foreground hover:text-foreground hover:bg-accent"
+              >
+                <Menu className="size-4" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="w-64 p-0">
-              <div className="flex items-center justify-between px-4 h-14 border-b">
-                <span className="font-semibold text-sm">Menu</span>
+            <SheetContent
+              side="right"
+              className="w-72 bg-background border-border p-0"
+            >
+              <div className="flex items-center h-14 px-4 border-b border-border">
+                <span className="text-sm font-semibold text-foreground">
+                  Menu
+                </span>
               </div>
-              <nav className="p-4 space-y-1">
+              <nav className="flex flex-col p-4 gap-1">
                 {navLinks.map((link) => (
                   <Link
                     key={link.href}
                     href={link.href}
                     onClick={() => setMobileOpen(false)}
-                    className={navItemClass(currentUrl === link.href)}
+                    className={cn(
+                      "flex items-center h-10 px-3 rounded-lg text-sm font-medium",
+                      currentUrl === link.href
+                        ? "bg-primary/10 text-primary"
+                        : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+                    )}
                   >
                     {link.label}
                   </Link>
                 ))}
                 {!user && (
-                  <div className="pt-3 border-t mt-3 space-y-2">
+                  <div className="flex flex-col gap-2 mt-4 pt-4 border-t border-border">
                     <Button
                       variant="outline"
                       size="sm"
-                      className="w-full"
+                      className="w-full border-border bg-background text-foreground hover:bg-accent hover:text-accent-foreground"
                       asChild
                     >
                       <Link

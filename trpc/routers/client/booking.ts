@@ -10,6 +10,7 @@ import {
   buildCursorWhere,
 } from "@/lib/utils";
 import { Prisma } from "@/generated/prisma/client";
+import { calcRefundAmount, calcRefundPolicy } from "@/lib/refund-policy";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
@@ -313,7 +314,20 @@ export const bookingRouter = createTRPCRouter({
           id: true,
           userId: true,
           status: true,
-          items: { select: { id: true } },
+          checkIn: true,
+          checkOut: true,
+          totalAmount: true,
+          currency: true,
+          guestName: true,
+          guestEmail: true,
+          createdAt: true,
+          hotel: { select: { name: true } },
+          items: {
+            select: {
+              id: true,
+              room: { select: { name: true } },
+            },
+          },
           payments: {
             where: { status: "PAID", type: "CHARGE" },
             select: {
@@ -336,33 +350,47 @@ export const bookingRouter = createTRPCRouter({
         });
       }
 
-      const bookingItemIds = booking.items.map((i) => i.id);
-      const hasPaidPayments = booking.payments.length > 0;
-
-      const refunds = await Promise.all(
-        booking.payments
-          .filter((p) => p.stripePaymentIntentId)
-          .map(async (payment) => {
-            try {
-              const refund = await stripe.refunds.create({
-                payment_intent: payment.stripePaymentIntentId!,
-              });
-              return {
-                paymentId: payment.id,
-                stripeRefundId: refund.id,
-                amount: payment.amount,
-                currency: payment.currency,
-              };
-            } catch {
-              throw new TRPCError({
-                code: "INTERNAL_SERVER_ERROR",
-                message: "Hoàn tiền thất bại. Vui lòng liên hệ hỗ trợ.",
-              });
-            }
-          }),
-      );
-
       const now = new Date();
+      const bookingItemIds = booking.items.map((i) => i.id);
+
+      const policy = calcRefundPolicy(booking.checkIn, booking.createdAt, now);
+      const refundPercent =
+        booking.payments.length > 0 ? policy.refundPercent : 0;
+
+      const refunds: {
+        stripeRefundId: string;
+        amount: Prisma.Decimal;
+        refundAmount: number;
+        currency: string;
+      }[] = [];
+
+      for (const payment of booking.payments) {
+        if (!payment.stripePaymentIntentId) continue;
+        if (refundPercent === 0) break;
+
+        const refundAmount = calcRefundAmount(payment.amount, refundPercent);
+        if (refundAmount <= 0) break;
+
+        try {
+          const refund = await stripe.refunds.create({
+            payment_intent: payment.stripePaymentIntentId,
+            amount: Math.round(refundAmount * 100),
+          });
+          refunds.push({
+            stripeRefundId: refund.id,
+            amount: payment.amount,
+            refundAmount,
+            currency: payment.currency,
+          });
+        } catch {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Hoàn tiền thất bại. Vui lòng liên hệ hỗ trợ.",
+          });
+        }
+      }
+
+      const hasRefund = refunds.length > 0;
 
       await ctx.db.$transaction([
         ctx.db.booking.update({
@@ -371,7 +399,7 @@ export const bookingRouter = createTRPCRouter({
             status: "CANCELLED",
             cancelledAt: now,
             cancelReason: input.cancelReason ?? null,
-            ...(hasPaidPayments && { paymentStatus: "REFUNDED" }),
+            ...(hasRefund && { paymentStatus: "REFUNDED" }),
           },
         }),
         ctx.db.bookingItem.updateMany({
@@ -394,7 +422,7 @@ export const bookingRouter = createTRPCRouter({
               userId: ctx.user.id,
               type: "REFUND",
               status: "REFUNDED",
-              amount: r.amount,
+              amount: new Prisma.Decimal(r.refundAmount),
               currency: r.currency,
               stripeRefundId: r.stripeRefundId,
               refundedAt: now,
@@ -403,7 +431,12 @@ export const bookingRouter = createTRPCRouter({
         ),
       ]);
 
-      return { success: true, refunded: refunds.length > 0 };
+      return {
+        success: true,
+        refunded: hasRefund,
+        refundPercent,
+        refundPolicy: policy.label,
+      };
     }),
 
   quickStats: protectedProcedure.query(async ({ ctx }) => {

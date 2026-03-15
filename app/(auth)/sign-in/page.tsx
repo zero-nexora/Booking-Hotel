@@ -32,12 +32,10 @@ type Values = z.infer<typeof schema>;
 
 const SignInPage = () => {
   const router = useRouter();
-
   const form = useForm<Values>({
     resolver: zodResolver(schema),
     defaultValues: { email: "", password: "", rememberMe: false },
   });
-
   const isLoading = form.formState.isSubmitting;
 
   const onSubmit = async (values: Values) => {
@@ -57,15 +55,17 @@ const SignInPage = () => {
 
   return (
     <div className="space-y-6">
-      <div className="space-y-1.5 text-center">
-        <h1 className="text-2xl font-bold tracking-tight">Chào mừng trở lại</h1>
+      <div className="space-y-1.5">
+        <h1 className="text-2xl font-semibold tracking-tight text-foreground">
+          Chào mừng trở lại
+        </h1>
         <p className="text-sm text-muted-foreground">
           Đăng nhập để tiếp tục trải nghiệm
         </p>
       </div>
 
       <GoogleButton label="Đăng nhập với Google" disabled={isLoading} />
-      
+
       <AuthDivider />
 
       <Form {...form}>
@@ -75,13 +75,16 @@ const SignInPage = () => {
             name="email"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Email</FormLabel>
+                <FormLabel className="text-xs font-medium uppercase tracking-wide text-foreground/70">
+                  Email
+                </FormLabel>
                 <FormControl>
                   <Input
                     type="email"
                     placeholder="you@example.com"
                     autoComplete="email"
                     disabled={isLoading}
+                    className="bg-secondary/40 border-border focus-visible:ring-1 focus-visible:ring-primary/40 focus-visible:border-primary placeholder:text-muted-foreground/50"
                     {...field}
                   />
                 </FormControl>
@@ -96,10 +99,12 @@ const SignInPage = () => {
             render={({ field }) => (
               <FormItem>
                 <div className="flex items-center justify-between">
-                  <FormLabel>Mật khẩu</FormLabel>
+                  <FormLabel className="text-xs font-medium uppercase tracking-wide text-foreground/70">
+                    Mật khẩu
+                  </FormLabel>
                   <Link
                     href="/forgot-password"
-                    className="text-xs text-primary hover:underline underline-offset-4"
+                    className="text-xs text-primary hover:text-primary/80 font-medium"
                   >
                     Quên mật khẩu?
                   </Link>
@@ -109,6 +114,7 @@ const SignInPage = () => {
                     placeholder="••••••••"
                     autoComplete="current-password"
                     disabled={isLoading}
+                    className="bg-secondary/40 border-border focus-visible:ring-1 focus-visible:ring-primary/40 focus-visible:border-primary placeholder:text-muted-foreground/50"
                     {...field}
                   />
                 </FormControl>
@@ -121,23 +127,28 @@ const SignInPage = () => {
             control={form.control}
             name="rememberMe"
             render={({ field }) => (
-              <FormItem className="flex items-center space-x-2 space-y-0">
+              <FormItem className="flex items-center gap-2.5">
                 <FormControl>
                   <Checkbox
                     checked={field.value}
                     onCheckedChange={field.onChange}
                     disabled={isLoading}
+                    className="border-border data-[state=checked]:bg-primary data-[state=checked]:border-primary"
                   />
                 </FormControl>
-                <FormLabel className="text-sm font-normal cursor-pointer">
+                <FormLabel className="text-sm text-muted-foreground font-normal cursor-pointer">
                   Ghi nhớ đăng nhập
                 </FormLabel>
               </FormItem>
             )}
           />
 
-          <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          <Button
+            type="submit"
+            className="w-full h-10 font-medium"
+            disabled={isLoading}
+          >
+            {isLoading && <Loader2 className="size-4 animate-spin" />}
             Đăng nhập
           </Button>
         </form>
@@ -147,7 +158,7 @@ const SignInPage = () => {
         Chưa có tài khoản?{" "}
         <Link
           href="/sign-up"
-          className="font-medium text-primary hover:underline underline-offset-4"
+          className="text-primary hover:text-primary/80 font-medium"
         >
           Đăng ký ngay
         </Link>

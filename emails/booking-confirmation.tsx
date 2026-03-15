@@ -11,6 +11,9 @@ import { EmailLayout } from "./components/email-layout";
 import { EmailButton } from "./components/email-button";
 import { InfoRow } from "./components/info-row";
 
+const GOLD = "#C9A96E";
+const DARK = "#1A1612";
+
 interface BookingConfirmationEmailProps {
   name: string;
   bookingRef: string;
@@ -117,7 +120,8 @@ BookingConfirmationEmail.PreviewProps = {
 };
 
 const successBadge: React.CSSProperties = {
-  backgroundColor: "#f0fdf4",
+  backgroundColor: "#EAF0E8",
+  border: "1px solid #C6D9C0",
   borderRadius: "6px",
   padding: "8px 16px",
   marginBottom: "20px",
@@ -125,83 +129,99 @@ const successBadge: React.CSSProperties = {
 };
 const successText: React.CSSProperties = {
   fontSize: "13px",
-  color: "#16a34a",
+  color: "#3A6B35",
   fontWeight: 600,
   margin: 0,
+  fontFamily: "'Nunito Sans', sans-serif",
+  letterSpacing: "0.03em",
 };
 const h1: React.CSSProperties = {
-  fontSize: "22px",
-  fontWeight: 700,
-  color: "#0f172a",
+  fontSize: "26px",
+  fontWeight: 400,
+  color: DARK,
   margin: "0 0 8px",
+  fontFamily: "'Cormorant Garamond', Georgia, serif",
+  letterSpacing: "0.02em",
 };
 const body: React.CSSProperties = {
   fontSize: "14px",
-  color: "#475569",
-  lineHeight: "1.6",
+  color: "#4A4035",
+  lineHeight: "1.7",
   margin: "0 0 12px",
+  fontFamily: "'Nunito Sans', sans-serif",
 };
 const refBox: React.CSSProperties = {
-  backgroundColor: "#f8fafc",
+  backgroundColor: "#EDE8DC",
+  border: "1px solid #DDD6C4",
+  borderLeft: `3px solid ${GOLD}`,
   borderRadius: "8px",
   padding: "14px 20px",
   marginBottom: "20px",
   textAlign: "center",
 };
 const refLabel: React.CSSProperties = {
-  fontSize: "11px",
-  color: "#94a3b8",
+  fontSize: "10px",
+  color: "#7A6F5E",
   textTransform: "uppercase",
-  letterSpacing: "0.1em",
+  letterSpacing: "0.12em",
   margin: "0 0 4px",
   fontWeight: 600,
+  fontFamily: "'Nunito Sans', sans-serif",
 };
 const refValue: React.CSSProperties = {
   fontSize: "20px",
   fontWeight: 700,
-  color: "#0f172a",
+  color: DARK,
   margin: 0,
-  letterSpacing: "0.05em",
+  letterSpacing: "0.06em",
   fontFamily: "monospace",
 };
 const detailBox: React.CSSProperties = {
-  border: "1px solid #e2e8f0",
+  border: "1px solid #DDD6C4",
   borderRadius: "10px",
   padding: "20px 24px",
   marginBottom: "20px",
+  backgroundColor: "#FAF7F2",
 };
 const sectionTitle: React.CSSProperties = {
-  fontSize: "15px",
-  fontWeight: 700,
-  color: "#0f172a",
+  fontSize: "16px",
+  fontWeight: 400,
+  color: DARK,
   margin: "0 0 4px",
+  fontFamily: "'Cormorant Garamond', Georgia, serif",
+  letterSpacing: "0.02em",
 };
 const subtext: React.CSSProperties = {
   fontSize: "12px",
-  color: "#94a3b8",
+  color: "#7A6F5E",
   margin: "0 0 12px",
+  fontFamily: "'Nunito Sans', sans-serif",
 };
-const hrThin: React.CSSProperties = { borderColor: "#f1f5f9", margin: "8px 0" };
+const hrThin: React.CSSProperties = { borderColor: "#E8E0CF", margin: "8px 0" };
 const totalLabel: React.CSSProperties = {
   fontSize: "14px",
-  color: "#0f172a",
+  color: DARK,
   fontWeight: 700,
   margin: 0,
+  fontFamily: "'Nunito Sans', sans-serif",
 };
 const totalValue: React.CSSProperties = {
   fontSize: "16px",
-  color: "#C9A84C",
+  color: GOLD,
   fontWeight: 700,
   margin: 0,
+  fontFamily: "'Cormorant Garamond', Georgia, serif",
+  letterSpacing: "0.04em",
 };
-const hr: React.CSSProperties = { borderColor: "#e2e8f0", margin: "24px 0" };
+const hr: React.CSSProperties = { borderColor: "#DDD6C4", margin: "24px 0" };
 const small: React.CSSProperties = {
   fontSize: "12px",
-  color: "#94a3b8",
-  lineHeight: "1.5",
+  color: "#7A6F5E",
+  lineHeight: "1.6",
   margin: 0,
+  fontFamily: "'Nunito Sans', sans-serif",
 };
 const link: React.CSSProperties = {
-  color: "#0f172a",
+  color: DARK,
   textDecoration: "underline",
 };

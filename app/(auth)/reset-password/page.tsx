@@ -36,22 +36,24 @@ const schema = z
     path: ["confirmPassword"],
   });
 type Values = z.infer<typeof schema>;
-
 type PageState = "idle" | "invalid" | "success";
 
-const ResetPasswordPage = () => {
-  return (
-    <Suspense
-      fallback={
-        <div className="flex justify-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-        </div>
-      }
-    >
-      <ResetPasswordContent />
-    </Suspense>
-  );
-};
+const inputCls =
+  "bg-secondary/40 border-border focus-visible:ring-1 focus-visible:ring-primary/40 focus-visible:border-primary placeholder:text-muted-foreground/50";
+const labelCls =
+  "text-xs font-medium uppercase tracking-wide text-foreground/70";
+
+const ResetPasswordPage = () => (
+  <Suspense
+    fallback={
+      <div className="flex justify-center py-12">
+        <Loader2 className="size-5 animate-spin text-muted-foreground" />
+      </div>
+    }
+  >
+    <ResetPasswordContent />
+  </Suspense>
+);
 
 export default ResetPasswordPage;
 
@@ -59,12 +61,10 @@ const ResetPasswordContent = () => {
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
   const [state, setState] = useState<PageState>(token ? "idle" : "invalid");
-
   const form = useForm<Values>({
     resolver: zodResolver(schema),
     defaultValues: { password: "", confirmPassword: "" },
   });
-
   const isLoading = form.formState.isSubmitting;
   const watchedPassword = form.watch("password");
 
@@ -77,65 +77,71 @@ const ResetPasswordContent = () => {
       if (
         error?.message?.includes("expired") ||
         error?.message?.includes("invalid")
-      ) {
+      )
         setState("invalid");
-      } else {
-        toast.error("Đặt lại mật khẩu thất bại. Vui lòng thử lại.");
-      }
+      else toast.error("Đặt lại mật khẩu thất bại. Vui lòng thử lại.");
     }
   };
 
-  if (state === "invalid") {
+  if (state === "invalid")
     return (
-      <div className="flex flex-col items-center text-center space-y-5">
-        <div className="w-16 h-16 rounded-full bg-destructive/10 flex items-center justify-center">
-          <AlertTriangle className="h-8 w-8 text-destructive" />
+      <div className="space-y-6 text-center">
+        <div className="mx-auto flex size-14 items-center justify-center rounded-2xl bg-orange-400/10 text-orange-400">
+          <AlertTriangle className="size-6" />
         </div>
-        <div className="space-y-2">
-          <h1 className="text-2xl font-bold">Link không hợp lệ</h1>
+        <div className="space-y-1.5">
+          <h1 className="text-xl font-semibold text-foreground">
+            Link không hợp lệ
+          </h1>
           <p className="text-sm text-muted-foreground leading-relaxed">
             Link đặt lại mật khẩu đã hết hạn hoặc không hợp lệ. Link chỉ có hiệu
             lực trong vòng 1 giờ và chỉ dùng được một lần.
           </p>
         </div>
-        <div className="w-full space-y-2.5">
-          <Button asChild className="w-full">
+        <div className="space-y-2">
+          <Button asChild className="w-full h-10 font-medium">
             <Link href="/forgot-password">Yêu cầu link mới</Link>
           </Button>
-          <Button variant="ghost" asChild className="w-full">
+          <Button
+            variant="ghost"
+            asChild
+            className="w-full h-10 text-muted-foreground hover:text-foreground"
+          >
             <Link href="/sign-in">Quay lại đăng nhập</Link>
           </Button>
         </div>
       </div>
     );
-  }
 
-  if (state === "success") {
+  if (state === "success")
     return (
-      <div className="flex flex-col items-center text-center space-y-5">
-        <div className="w-16 h-16 rounded-full bg-emerald-500/10 flex items-center justify-center">
-          <CheckCircle2 className="h-8 w-8 text-emerald-500" />
+      <div className="space-y-6 text-center">
+        <div className="mx-auto flex size-14 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-500">
+          <CheckCircle2 className="size-6" />
         </div>
-        <div className="space-y-2">
-          <h1 className="text-2xl font-bold">Mật khẩu đã được đặt lại!</h1>
+        <div className="space-y-1.5">
+          <h1 className="text-xl font-semibold text-foreground">
+            Mật khẩu đã được đặt lại!
+          </h1>
           <p className="text-sm text-muted-foreground">
             Mật khẩu của bạn đã được cập nhật thành công.
           </p>
         </div>
-        <Button asChild className="w-full">
+        <Button asChild className="w-full h-10 font-medium">
           <Link href="/sign-in">Đăng nhập ngay</Link>
         </Button>
       </div>
     );
-  }
 
   return (
     <div className="space-y-6">
-      <div className="space-y-1.5 text-center">
-        <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4 m-auto">
-          <KeyRound className="h-6 w-6 text-primary" />
+      <div className="space-y-1.5">
+        <div className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary mb-3">
+          <KeyRound className="size-5" />
         </div>
-        <h1 className="text-2xl font-bold tracking-tight">Đặt mật khẩu mới</h1>
+        <h1 className="text-2xl font-semibold tracking-tight text-foreground">
+          Đặt mật khẩu mới
+        </h1>
         <p className="text-sm text-muted-foreground">
           Mật khẩu mới phải khác với mật khẩu trước đó.
         </p>
@@ -148,18 +154,19 @@ const ResetPasswordContent = () => {
             name="password"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Mật khẩu mới</FormLabel>
+                <FormLabel className={labelCls}>Mật khẩu mới</FormLabel>
                 <FormControl>
                   <PasswordInput
                     placeholder="••••••••"
                     autoComplete="new-password"
                     autoFocus
                     disabled={isLoading}
+                    className={inputCls}
                     {...field}
                   />
                 </FormControl>
                 <PasswordStrengthBar password={watchedPassword} />
-                <FormDescription className="text-xs">
+                <FormDescription className="text-xs text-muted-foreground/70">
                   Tối thiểu 8 ký tự, gồm chữ hoa và chữ số
                 </FormDescription>
                 <FormMessage />
@@ -171,12 +178,13 @@ const ResetPasswordContent = () => {
             name="confirmPassword"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Xác nhận mật khẩu</FormLabel>
+                <FormLabel className={labelCls}>Xác nhận mật khẩu</FormLabel>
                 <FormControl>
                   <PasswordInput
                     placeholder="••••••••"
                     autoComplete="new-password"
                     disabled={isLoading}
+                    className={inputCls}
                     {...field}
                   />
                 </FormControl>
@@ -184,21 +192,23 @@ const ResetPasswordContent = () => {
               </FormItem>
             )}
           />
-          <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          <Button
+            type="submit"
+            className="w-full h-10 font-medium"
+            disabled={isLoading}
+          >
+            {isLoading && <Loader2 className="size-4 animate-spin" />}
             Đặt lại mật khẩu
           </Button>
         </form>
       </Form>
 
-      <p className="text-center text-sm text-muted-foreground">
-        <Link
-          href="/sign-in"
-          className="text-primary hover:underline underline-offset-4"
-        >
-          ← Quay lại đăng nhập
-        </Link>
-      </p>
+      <Link
+        href="/sign-in"
+        className="block text-center text-sm text-muted-foreground hover:text-foreground font-medium"
+      >
+        ← Quay lại đăng nhập
+      </Link>
     </div>
   );
 };

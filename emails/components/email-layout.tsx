@@ -11,8 +11,9 @@ import {
 } from "@react-email/components";
 import * as React from "react";
 
-const GOLD = "#C9A84C";
-const DARK = "#0f172a";
+const GOLD = "#C9A96E";
+const DARK = "#1A1612";
+const CREAM = "#F5F0E8";
 
 interface EmailLayoutProps {
   children: React.ReactNode;
@@ -21,10 +22,15 @@ interface EmailLayoutProps {
 
 export const EmailLayout = ({ children, preview }: EmailLayoutProps) => (
   <Html lang="vi">
-    <Head />
+    <Head>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Nunito+Sans:wght@300;400;500;600&display=swap');
+      `}</style>
+    </Head>
     <Preview>{preview}</Preview>
     <Body style={body}>
       <Container style={container}>
+        {/* Header */}
         <Section style={header}>
           <Row>
             <Column align="center">
@@ -49,7 +55,7 @@ export const EmailLayout = ({ children, preview }: EmailLayoutProps) => (
                         height="18"
                         rx="1"
                         fill={GOLD}
-                        fillOpacity="0.15"
+                        fillOpacity="0.18"
                         stroke={GOLD}
                         strokeWidth="1.5"
                       />
@@ -60,7 +66,7 @@ export const EmailLayout = ({ children, preview }: EmailLayoutProps) => (
                         height="8"
                         rx="0.5"
                         fill={GOLD}
-                        fillOpacity="0.25"
+                        fillOpacity="0.28"
                         stroke={GOLD}
                         strokeWidth="1.5"
                       />
@@ -135,7 +141,8 @@ export const EmailLayout = ({ children, preview }: EmailLayoutProps) => (
                         fontSize: "20px",
                         fontWeight: 700,
                         letterSpacing: "0.08em",
-                        color: "#ffffff",
+                        color: CREAM,
+                        fontFamily: "'Cormorant Garamond', Georgia, serif",
                       }}
                     >
                       Stay<span style={{ color: GOLD }}>wise</span>
@@ -147,8 +154,10 @@ export const EmailLayout = ({ children, preview }: EmailLayoutProps) => (
           </Row>
         </Section>
 
+        {/* Card */}
         <Section style={card}>{children}</Section>
 
+        {/* Footer */}
         <Section style={footer}>
           <Text style={footerText}>
             © {new Date().getFullYear()} Staywise. All rights reserved.
@@ -173,9 +182,8 @@ export const EmailLayout = ({ children, preview }: EmailLayoutProps) => (
 );
 
 const body: React.CSSProperties = {
-  backgroundColor: "#f1f5f9",
-  fontFamily:
-    "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+  backgroundColor: "#EDE8DC",
+  fontFamily: "'Nunito Sans', -apple-system, BlinkMacSystemFont, sans-serif",
   padding: "40px 0",
 };
 
@@ -187,14 +195,17 @@ const container: React.CSSProperties = {
 const header: React.CSSProperties = {
   backgroundColor: DARK,
   borderRadius: "12px 12px 0 0",
-  padding: "20px 32px",
+  padding: "22px 32px",
   textAlign: "center",
+  borderBottom: `1px solid rgba(201,169,110,0.25)`,
 };
 
 const card: React.CSSProperties = {
-  backgroundColor: "#ffffff",
-  padding: "32px 40px",
+  backgroundColor: "#F5F0E8",
+  padding: "36px 44px",
   borderRadius: "0 0 12px 12px",
+  border: "1px solid #DDD6C4",
+  borderTop: "none",
 };
 
 const footer: React.CSSProperties = {
@@ -204,17 +215,19 @@ const footer: React.CSSProperties = {
 
 const footerText: React.CSSProperties = {
   fontSize: "12px",
-  color: "#94a3b8",
+  color: "#7A6F5E",
   margin: "0 0 6px",
+  fontFamily: "'Nunito Sans', sans-serif",
 };
 
 const footerLinks: React.CSSProperties = {
   fontSize: "12px",
-  color: "#94a3b8",
+  color: "#7A6F5E",
   margin: 0,
+  fontFamily: "'Nunito Sans', sans-serif",
 };
 
 const footerLink: React.CSSProperties = {
-  color: "#94a3b8",
+  color: "#7A6F5E",
   textDecoration: "underline",
 };

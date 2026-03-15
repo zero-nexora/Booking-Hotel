@@ -193,7 +193,7 @@ export const AccountBookingsClient = () => {
                       <Button
                         size="sm"
                         variant="outline"
-                        className="rounded-lg text-xs h-7 gap-1"
+                        className="rounded-lg text-xs h-7 gap-1 hover:text-primary"
                         asChild
                       >
                         <Link

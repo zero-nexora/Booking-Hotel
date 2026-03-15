@@ -4,6 +4,8 @@ import { EmailLayout } from "./components/email-layout";
 import { EmailButton } from "./components/email-button";
 import { InfoRow } from "./components/info-row";
 
+const DARK = "#1A1612";
+
 interface PaymentFailedEmailProps {
   name: string;
   bookingRef: string;
@@ -83,7 +85,8 @@ PaymentFailedEmail.PreviewProps = {
 };
 
 const failBadge: React.CSSProperties = {
-  backgroundColor: "#fef2f2",
+  backgroundColor: "#F9ECEC",
+  border: "1px solid #E8CACA",
   borderRadius: "6px",
   padding: "8px 16px",
   marginBottom: "20px",
@@ -91,36 +94,43 @@ const failBadge: React.CSSProperties = {
 };
 const failText: React.CSSProperties = {
   fontSize: "13px",
-  color: "#dc2626",
+  color: "#8B2E2E",
   fontWeight: 600,
   margin: 0,
+  fontFamily: "'Nunito Sans', sans-serif",
+  letterSpacing: "0.03em",
 };
 const h1: React.CSSProperties = {
-  fontSize: "22px",
-  fontWeight: 700,
-  color: "#0f172a",
+  fontSize: "26px",
+  fontWeight: 400,
+  color: DARK,
   margin: "0 0 8px",
+  fontFamily: "'Cormorant Garamond', Georgia, serif",
+  letterSpacing: "0.02em",
 };
 const body: React.CSSProperties = {
   fontSize: "14px",
-  color: "#475569",
-  lineHeight: "1.6",
+  color: "#4A4035",
+  lineHeight: "1.7",
   margin: "0 0 12px",
+  fontFamily: "'Nunito Sans', sans-serif",
 };
 const detailBox: React.CSSProperties = {
-  border: "1px solid #e2e8f0",
+  border: "1px solid #DDD6C4",
   borderRadius: "10px",
   padding: "20px 24px",
   marginBottom: "20px",
+  backgroundColor: "#FAF7F2",
 };
-const hr: React.CSSProperties = { borderColor: "#e2e8f0", margin: "24px 0" };
+const hr: React.CSSProperties = { borderColor: "#DDD6C4", margin: "24px 0" };
 const small: React.CSSProperties = {
   fontSize: "12px",
-  color: "#94a3b8",
-  lineHeight: "1.5",
+  color: "#7A6F5E",
+  lineHeight: "1.6",
   margin: 0,
+  fontFamily: "'Nunito Sans', sans-serif",
 };
 const link: React.CSSProperties = {
-  color: "#0f172a",
+  color: DARK,
   textDecoration: "underline",
 };

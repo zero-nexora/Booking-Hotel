@@ -53,10 +53,9 @@ export const HeroSearch = () => {
             </div>
           </div>
 
-          {/* Check-in */}
           <Popover>
             <PopoverTrigger asChild>
-              <button className="flex items-center gap-3 px-4 py-3.5 border-b sm:border-b-0 sm:border-r border-border/60 hover:bg-muted/50 transition-colors text-left min-w-[140px]">
+              <button className="flex items-center gap-3 px-4 py-3.5 border-b sm:border-b-0 sm:border-r border-border/60 hover:bg-muted/50 transition-colors text-left min-w-35">
                 <Calendar className="w-4 h-4 text-primary shrink-0" />
                 <div>
                   <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide mb-0.5">
@@ -73,7 +72,7 @@ export const HeroSearch = () => {
                 </div>
               </button>
             </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
+            <PopoverContent className="w-auto p-0" align="start" side="top">
               <CalendarUI
                 mode="single"
                 selected={checkIn}
@@ -84,10 +83,9 @@ export const HeroSearch = () => {
             </PopoverContent>
           </Popover>
 
-          {/* Check-out */}
           <Popover>
             <PopoverTrigger asChild>
-              <button className="flex items-center gap-3 px-4 py-3.5 border-b sm:border-b-0 sm:border-r border-border/60 hover:bg-muted/50 transition-colors text-left min-w-[140px]">
+              <button className="flex items-center gap-3 px-4 py-3.5 border-b sm:border-b-0 sm:border-r border-border/60 hover:bg-muted/50 transition-colors text-left min-w-35">
                 <Calendar className="w-4 h-4 text-primary shrink-0" />
                 <div>
                   <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide mb-0.5">
@@ -104,7 +102,7 @@ export const HeroSearch = () => {
                 </div>
               </button>
             </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
+            <PopoverContent className="w-auto p-0" align="start" side="bottom">
               <CalendarUI
                 mode="single"
                 selected={checkOut}
@@ -115,10 +113,9 @@ export const HeroSearch = () => {
             </PopoverContent>
           </Popover>
 
-          {/* Guests */}
           <Popover open={guestOpen} onOpenChange={setGuestOpen}>
             <PopoverTrigger asChild>
-              <button className="flex items-center gap-3 px-4 py-3.5 border-b sm:border-b-0 hover:bg-muted/50 transition-colors text-left min-w-[130px]">
+              <button className="flex items-center gap-3 px-4 py-3.5 border-b sm:border-b-0 hover:bg-muted/50 transition-colors text-left min-w-32.5">
                 <Users className="w-4 h-4 text-primary shrink-0" />
                 <div>
                   <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide mb-0.5">
@@ -130,7 +127,7 @@ export const HeroSearch = () => {
                 </div>
               </button>
             </PopoverTrigger>
-            <PopoverContent className="w-60 p-4" align="end">
+            <PopoverContent className="w-60 p-4" align="start" side="bottom">
               <div className="space-y-3">
                 <GuestCounter
                   label="Người lớn"

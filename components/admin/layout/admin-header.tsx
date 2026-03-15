@@ -9,6 +9,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { AdminBreadcrumb } from "./admin-breadcrumb";
 import { useAdminUI } from "@/store/admin-ui";
+import { ThemeToggle } from "@/components/common/theme-toggle";
 
 export const AdminHeader = () => {
   const { collapsed, toggleCollapsed, setMobileOpen } = useAdminUI();
@@ -40,6 +41,7 @@ export const AdminHeader = () => {
       <AdminBreadcrumb />
 
       <div className="ml-auto flex items-center gap-2">
+        <ThemeToggle />
         <Button variant="ghost" size="icon" className="relative">
           <Bell className="w-4 h-4" />
           <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-destructive rounded-full" />

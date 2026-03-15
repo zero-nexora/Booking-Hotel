@@ -1,6 +1,8 @@
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { adminProcedure, createTRPCRouter } from "@/trpc/init";
+import { Prisma } from "@/generated/prisma/client";
+import { stripe } from "@/lib/stripe";
 
 const VALID_TRANSITIONS: Record<string, string[]> = {
   PENDING: ["CONFIRMED", "CANCELLED"],
@@ -190,16 +192,39 @@ export const adminBookingRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const booking = await ctx.db.booking.findUnique({
         where: { id: input.id },
-        include: { items: true },
+        select: {
+          id: true,
+          status: true,
+          checkIn: true,
+          checkOut: true,
+          totalAmount: true,
+          currency: true,
+          guestName: true,
+          guestEmail: true,
+          createdAt: true,
+          items: { select: { id: true, room: { select: { name: true } } } },
+          hotel: { select: { name: true } },
+          payments: {
+            where: { status: "PAID", type: "CHARGE" },
+            select: {
+              id: true,
+              amount: true,
+              currency: true,
+              stripePaymentIntentId: true,
+            },
+          },
+        },
       });
+
       if (!booking) throw new TRPCError({ code: "NOT_FOUND" });
 
       const allowed = VALID_TRANSITIONS[booking.status] ?? [];
-      if (!allowed.includes(input.status))
+      if (!allowed.includes(input.status)) {
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: `Không thể chuyển từ ${booking.status} sang ${input.status}`,
         });
+      }
 
       const isCancelling =
         input.status === "CANCELLED" || input.status === "NO_SHOW";
@@ -212,35 +237,85 @@ export const adminBookingRouter = createTRPCRouter({
         NO_SHOW: "CANCELLED",
       };
 
-      await ctx.db.$transaction(async (tx) => {
-        await tx.booking.update({
+      const bookingItemIds = booking.items.map((i) => i.id);
+      const now = new Date();
+
+      const refunds: {
+        stripeRefundId: string;
+        amount: Prisma.Decimal;
+        currency: string;
+        refundAmount: number;
+      }[] = [];
+
+      if (isCancelling && booking.payments.length > 0) {
+        for (const payment of booking.payments) {
+          if (!payment.stripePaymentIntentId) continue;
+          try {
+            const refund = await stripe.refunds.create({
+              payment_intent: payment.stripePaymentIntentId,
+            });
+            refunds.push({
+              stripeRefundId: refund.id,
+              amount: payment.amount,
+              currency: payment.currency,
+              refundAmount: Number(payment.amount),
+            });
+          } catch {
+            throw new TRPCError({
+              code: "INTERNAL_SERVER_ERROR",
+              message:
+                "Hoàn tiền thất bại. Vui lòng kiểm tra Stripe dashboard.",
+            });
+          }
+        }
+      }
+
+      const hasPaidPayments = refunds.length > 0;
+
+      await ctx.db.$transaction([
+        ctx.db.booking.update({
           where: { id: input.id },
           data: {
             status: input.status,
             ...(isCancelling && {
-              cancelledAt: new Date(),
+              cancelledAt: now,
               cancelReason: input.cancelReason,
+              ...(hasPaidPayments && { paymentStatus: "REFUNDED" }),
             }),
           },
-        });
-
-        await tx.bookingItem.updateMany({
+        }),
+        ctx.db.bookingItem.updateMany({
           where: { bookingId: input.id },
           data: { status: itemStatusMap[input.status] as any },
-        });
-
-        if (isCancelling) {
-          await tx.roomAvailability.updateMany({
-            where: { bookingItemId: { in: booking.items.map((i) => i.id) } },
+        }),
+        ...(isCancelling
+          ? [
+              ctx.db.roomAvailability.updateMany({
+                where: { bookingItemId: { in: bookingItemIds } },
+                data: {
+                  status: "AVAILABLE",
+                  bookingItemId: null,
+                  lockToken: null,
+                  lockExpiresAt: null,
+                },
+              }),
+            ]
+          : []),
+        ...refunds.map((r) =>
+          ctx.db.payment.create({
             data: {
-              status: "AVAILABLE",
-              bookingItemId: null,
-              lockToken: null,
-              lockExpiresAt: null,
+              bookingId: booking.id,
+              userId: booking.id,
+              type: "REFUND",
+              status: "REFUNDED",
+              amount: r.amount,
+              currency: r.currency,
+              stripeRefundId: r.stripeRefundId,
+              refundedAt: now,
             },
-          });
-        }
-      });
+          }),
+        ),
+      ]);
 
       return { success: true };
     }),

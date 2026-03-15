@@ -3,6 +3,9 @@ import * as React from "react";
 import { EmailLayout } from "./components/email-layout";
 import { EmailButton } from "./components/email-button";
 
+const GOLD = "#C9A96E";
+const DARK = "#1A1612";
+
 interface ReviewRequestEmailProps {
   name: string;
   hotelName: string;
@@ -70,46 +73,53 @@ ReviewRequestEmail.PreviewProps = {
 };
 
 const stars: React.CSSProperties = {
-  fontSize: "28px",
-  color: "#C9A84C",
+  fontSize: "26px",
+  color: GOLD,
   margin: 0,
-  letterSpacing: "4px",
+  letterSpacing: "6px",
+  fontFamily: "serif",
 };
 const h1: React.CSSProperties = {
-  fontSize: "22px",
-  fontWeight: 700,
-  color: "#0f172a",
+  fontSize: "26px",
+  fontWeight: 400,
+  color: DARK,
   margin: "0 0 8px",
+  fontFamily: "'Cormorant Garamond', Georgia, serif",
+  letterSpacing: "0.02em",
 };
 const body: React.CSSProperties = {
   fontSize: "14px",
-  color: "#475569",
-  lineHeight: "1.6",
+  color: "#4A4035",
+  lineHeight: "1.7",
   margin: "0 0 12px",
+  fontFamily: "'Nunito Sans', sans-serif",
 };
 const ctaSection: React.CSSProperties = {
   textAlign: "center",
   margin: "8px 0 20px",
 };
 const noteBox: React.CSSProperties = {
-  backgroundColor: "#f8fafc",
+  backgroundColor: "#EDE8DC",
+  border: "1px solid #DDD6C4",
   borderRadius: "8px",
   padding: "12px 20px",
 };
 const noteText: React.CSSProperties = {
   fontSize: "12px",
-  color: "#64748b",
-  lineHeight: "1.5",
+  color: "#7A6F5E",
+  lineHeight: "1.6",
   margin: 0,
+  fontFamily: "'Nunito Sans', sans-serif",
 };
-const hr: React.CSSProperties = { borderColor: "#e2e8f0", margin: "24px 0" };
+const hr: React.CSSProperties = { borderColor: "#DDD6C4", margin: "24px 0" };
 const small: React.CSSProperties = {
   fontSize: "12px",
-  color: "#94a3b8",
-  lineHeight: "1.5",
+  color: "#7A6F5E",
+  lineHeight: "1.6",
   margin: 0,
+  fontFamily: "'Nunito Sans', sans-serif",
 };
 const link: React.CSSProperties = {
-  color: "#0f172a",
+  color: DARK,
   textDecoration: "underline",
 };

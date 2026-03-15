@@ -1,0 +1,101 @@
+<svg viewBox="0 0 480 640" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="480" height="640" fill="#EDE8DC"/>
+
+  <!-- Subtle grid -->
+  <line x1="0" y1="80" x2="480" y2="80" stroke="#DDD6C4" stroke-width=".4"/>
+  <line x1="0" y1="560" x2="480" y2="560" stroke="#DDD6C4" stroke-width=".4"/>
+  <line x1="80" y1="0" x2="80" y2="640" stroke="#DDD6C4" stroke-width=".4"/>
+  <line x1="400" y1="0" x2="400" y2="640" stroke="#DDD6C4" stroke-width=".4"/>
+
+  <!-- Corner ornaments top -->
+  <line x1="80" y1="80" x2="110" y2="80" stroke="#C9A96E" stroke-width=".8"/>
+  <line x1="80" y1="80" x2="80" y2="110" stroke="#C9A96E" stroke-width=".8"/>
+  <line x1="400" y1="80" x2="370" y2="80" stroke="#C9A96E" stroke-width=".8"/>
+  <line x1="400" y1="80" x2="400" y2="110" stroke="#C9A96E" stroke-width=".8"/>
+  <!-- Corner ornaments bottom -->
+  <line x1="80" y1="560" x2="110" y2="560" stroke="#C9A96E" stroke-width=".8"/>
+  <line x1="80" y1="560" x2="80" y2="530" stroke="#C9A96E" stroke-width=".8"/>
+  <line x1="400" y1="560" x2="370" y2="560" stroke="#C9A96E" stroke-width=".8"/>
+  <line x1="400" y1="560" x2="400" y2="530" stroke="#C9A96E" stroke-width=".8"/>
+
+  <!-- Base platform -->
+  <rect x="100" y="520" width="280" height="8" rx="2" fill="#C9A96E" fill-opacity=".15"/>
+  <rect x="115" y="514" width="250" height="6" rx="1" fill="#C9A96E" fill-opacity=".1"/>
+  <rect x="130" y="509" width="220" height="5" rx="1" fill="#C9A96E" fill-opacity=".07"/>
+
+  <!-- Wide wing left -->
+  <rect x="100" y="360" width="48" height="160" fill="#E8E0CF" stroke="#DDD6C4" stroke-width=".6"/>
+  <!-- Wing windows left -->
+  <rect x="112" y="378" width="22" height="30" rx="1" fill="#C9A96E" fill-opacity=".1" stroke="#C9A96E" stroke-width=".4"/>
+  <rect x="112" y="418" width="22" height="30" rx="1" fill="#C9A96E" fill-opacity=".18" stroke="#C9A96E" stroke-width=".4"/>
+  <rect x="112" y="458" width="22" height="30" rx="1" fill="#C9A96E" fill-opacity=".08" stroke="#C9A96E" stroke-width=".4"/>
+
+  <!-- Wide wing right -->
+  <rect x="332" y="360" width="48" height="160" fill="#E8E0CF" stroke="#DDD6C4" stroke-width=".6"/>
+  <!-- Wing windows right -->
+  <rect x="346" y="378" width="22" height="30" rx="1" fill="#C9A96E" fill-opacity=".16" stroke="#C9A96E" stroke-width=".4"/>
+  <rect x="346" y="418" width="22" height="30" rx="1" fill="#C9A96E" fill-opacity=".08" stroke="#C9A96E" stroke-width=".4"/>
+  <rect x="346" y="458" width="22" height="30" rx="1" fill="#C9A96E" fill-opacity=".22" stroke="#C9A96E" stroke-width=".4"/>
+
+  <!-- Main tower body -->
+  <rect x="148" y="200" width="184" height="320" fill="#E8E0CF" stroke="#DDD6C4" stroke-width=".7"/>
+
+  <!-- Tower window grid — col 1 -->
+  <rect x="167" y="222" width="28" height="38" rx="2" fill="#C9A96E" fill-opacity=".12" stroke="#C9A96E" stroke-width=".5"/>
+  <rect x="167" y="272" width="28" height="38" rx="2" fill="#C9A96E" fill-opacity=".22" stroke="#C9A96E" stroke-width=".5"/>
+  <rect x="167" y="322" width="28" height="38" rx="2" fill="#C9A96E" fill-opacity=".08" stroke="#C9A96E" stroke-width=".5"/>
+  <rect x="167" y="372" width="28" height="38" rx="2" fill="#C9A96E" fill-opacity=".18" stroke="#C9A96E" stroke-width=".5"/>
+  <rect x="167" y="422" width="28" height="38" rx="2" fill="#C9A96E" fill-opacity=".28" stroke="#C9A96E" stroke-width=".5"/>
+
+  <!-- Tower window grid — col 2 -->
+  <rect x="226" y="222" width="28" height="38" rx="2" fill="#C9A96E" fill-opacity=".28" stroke="#C9A96E" stroke-width=".5"/>
+  <rect x="226" y="272" width="28" height="38" rx="2" fill="#C9A96E" fill-opacity=".1" stroke="#C9A96E" stroke-width=".5"/>
+  <rect x="226" y="322" width="28" height="38" rx="2" fill="#C9A96E" fill-opacity=".32" stroke="#C9A96E" stroke-width=".5"/>
+  <rect x="226" y="372" width="28" height="38" rx="2" fill="#C9A96E" fill-opacity=".14" stroke="#C9A96E" stroke-width=".5"/>
+  <rect x="226" y="422" width="28" height="38" rx="2" fill="#C9A96E" fill-opacity=".24" stroke="#C9A96E" stroke-width=".5"/>
+
+  <!-- Tower window grid — col 3 -->
+  <rect x="285" y="222" width="28" height="38" rx="2" fill="#C9A96E" fill-opacity=".08" stroke="#C9A96E" stroke-width=".5"/>
+  <rect x="285" y="272" width="28" height="38" rx="2" fill="#C9A96E" fill-opacity=".2" stroke="#C9A96E" stroke-width=".5"/>
+  <rect x="285" y="322" width="28" height="38" rx="2" fill="#C9A96E" fill-opacity=".14" stroke="#C9A96E" stroke-width=".5"/>
+  <rect x="285" y="372" width="28" height="38" rx="2" fill="#C9A96E" fill-opacity=".3" stroke="#C9A96E" stroke-width=".5"/>
+  <rect x="285" y="422" width="28" height="38" rx="2" fill="#C9A96E" fill-opacity=".1" stroke="#C9A96E" stroke-width=".5"/>
+
+  <!-- Roof crown (triangle) -->
+  <polygon points="240,90 148,200 332,200" fill="#EDE8DC" stroke="#C9A96E" stroke-width=".8"/>
+  <!-- Crown inner detail line -->
+  <polygon points="240,120 168,200 312,200" fill="none" stroke="#C9A96E" stroke-width=".3" opacity=".4"/>
+
+  <!-- Finial pole -->
+  <line x1="240" y1="50" x2="240" y2="90" stroke="#C9A96E" stroke-width="1.5" stroke-linecap="round"/>
+  <!-- Finial top ornament -->
+  <circle cx="240" cy="44" r="7" fill="#EDE8DC" stroke="#C9A96E" stroke-width="1"/>
+  <circle cx="240" cy="44" r="3" fill="#C9A96E" fill-opacity=".5"/>
+
+  <!-- Entrance arch -->
+  <rect x="212" y="468" width="56" height="52" rx="0" fill="#EDE8DC"/>
+  <path d="M212,496 A28,28 0 0,1 268,496" fill="#EDE8DC" stroke="#C9A96E" stroke-width=".8"/>
+  <rect x="216" y="496" width="48" height="24" fill="#EDE8DC"/>
+  <!-- Arch side pillars -->
+  <rect x="208" y="490" width="8" height="30" fill="#E8E0CF" stroke="#DDD6C4" stroke-width=".4"/>
+  <rect x="264" y="490" width="8" height="30" fill="#E8E0CF" stroke="#DDD6C4" stroke-width=".4"/>
+
+  <!-- Horizontal belt line on tower -->
+  <line x1="148" y1="470" x2="332" y2="470" stroke="#C9A96E" stroke-width=".5" opacity=".3"/>
+  <line x1="148" y1="210" x2="332" y2="210" stroke="#C9A96E" stroke-width=".4" opacity=".25"/>
+
+  <!-- Decorative dots on grid intersections -->
+  <circle cx="80" cy="80" r="2" fill="#C9A96E" fill-opacity=".4"/>
+  <circle cx="400" cy="80" r="2" fill="#C9A96E" fill-opacity=".4"/>
+  <circle cx="80" cy="560" r="2" fill="#C9A96E" fill-opacity=".4"/>
+  <circle cx="400" cy="560" r="2" fill="#C9A96E" fill-opacity=".4"/>
+  <circle cx="240" cy="80" r="3" fill="#C9A96E" fill-opacity=".5"/>
+  <circle cx="240" cy="560" r="3" fill="#C9A96E" fill-opacity=".5"/>
+
+  <!-- Subtle horizontal rules top/bottom -->
+  <line x1="110" y1="90" x2="200" y2="90" stroke="#C9A96E" stroke-width=".4" opacity=".35"/>
+  <line x1="280" y1="90" x2="370" y2="90" stroke="#C9A96E" stroke-width=".4" opacity=".35"/>
+  <line x1="110" y1="548" x2="200" y2="548" stroke="#C9A96E" stroke-width=".4" opacity=".35"/>
+  <line x1="280" y1="548" x2="370" y2="548" stroke="#C9A96E" stroke-width=".4" opacity=".35"/>
+</svg>

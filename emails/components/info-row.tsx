@@ -10,7 +10,7 @@ interface InfoRowProps {
 export const InfoRow = ({ label, value, last = false }: InfoRowProps) => (
   <Row
     style={{
-      borderBottom: last ? "none" : "1px solid #f1f5f9",
+      borderBottom: last ? "none" : "1px solid #E8E0CF",
       padding: "10px 0",
     }}
   >
@@ -25,14 +25,16 @@ export const InfoRow = ({ label, value, last = false }: InfoRowProps) => (
 
 const labelStyle: React.CSSProperties = {
   fontSize: "13px",
-  color: "#64748b",
+  color: "#7A6F5E",
   margin: 0,
   fontWeight: 500,
+  fontFamily: "'Nunito Sans', -apple-system, sans-serif",
 };
 
 const valueStyle: React.CSSProperties = {
   fontSize: "13px",
-  color: "#0f172a",
+  color: "#1A1612",
   margin: 0,
   fontWeight: 600,
+  fontFamily: "'Nunito Sans', -apple-system, sans-serif",
 };

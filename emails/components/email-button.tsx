@@ -1,7 +1,8 @@
 import { Button } from "@react-email/components";
 import * as React from "react";
 
-const DARK = "#0f172a";
+const GOLD = "#C9A96E";
+const DARK = "#1A1612";
 
 interface EmailButtonProps {
   href: string;
@@ -21,25 +22,30 @@ export const EmailButton = ({
 
 const primaryBtn: React.CSSProperties = {
   backgroundColor: DARK,
-  color: "#ffffff",
+  color: "#F5F0E8",
   borderRadius: "8px",
-  padding: "12px 28px",
-  fontSize: "14px",
+  padding: "13px 32px",
+  fontSize: "13px",
   fontWeight: 600,
+  letterSpacing: "0.06em",
   textDecoration: "none",
   display: "inline-block",
   marginTop: "8px",
+  fontFamily: "'Nunito Sans', -apple-system, sans-serif",
+  border: `1px solid rgba(201,169,110,0.3)`,
 };
 
 const outlineBtn: React.CSSProperties = {
   backgroundColor: "transparent",
   color: DARK,
-  border: `1.5px solid #e2e8f0`,
+  border: `1.5px solid #C9A96E`,
   borderRadius: "8px",
-  padding: "12px 28px",
-  fontSize: "14px",
+  padding: "13px 32px",
+  fontSize: "13px",
   fontWeight: 600,
+  letterSpacing: "0.06em",
   textDecoration: "none",
   display: "inline-block",
   marginTop: "8px",
+  fontFamily: "'Nunito Sans', -apple-system, sans-serif",
 };

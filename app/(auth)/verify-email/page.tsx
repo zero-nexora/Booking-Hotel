@@ -16,19 +16,39 @@ import { toast } from "sonner";
 
 type VerifyState = "pending" | "verifying" | "success" | "error";
 
-const VerifyEmailPage = () => {
+const StatusIcon = ({
+  children,
+  variant,
+}: {
+  children: React.ReactNode;
+  variant: "default" | "success" | "error" | "warning";
+}) => {
+  const cls = {
+    default: "bg-primary/10 text-primary",
+    success: "bg-emerald-500/10 text-emerald-500",
+    error: "bg-destructive/10 text-destructive",
+    warning: "bg-orange-400/10 text-orange-400",
+  }[variant];
   return (
-    <Suspense
-      fallback={
-        <div className="flex justify-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-        </div>
-      }
+    <div
+      className={`mx-auto flex size-14 items-center justify-center rounded-2xl ${cls}`}
     >
-      <VerifyEmailContent />
-    </Suspense>
+      {children}
+    </div>
   );
 };
+
+const VerifyEmailPage = () => (
+  <Suspense
+    fallback={
+      <div className="flex justify-center py-12">
+        <Loader2 className="size-5 animate-spin text-muted-foreground" />
+      </div>
+    }
+  >
+    <VerifyEmailContent />
+  </Suspense>
+);
 
 export default VerifyEmailPage;
 
@@ -36,7 +56,6 @@ const VerifyEmailContent = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
-
   const [state, setState] = useState<VerifyState>(
     token ? "verifying" : "pending",
   );
@@ -77,130 +96,137 @@ const VerifyEmailContent = () => {
     }
   };
 
-  if (state === "verifying") {
+  if (state === "verifying")
     return (
-      <div className="flex flex-col items-center text-center space-y-4">
-        <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
-          <Loader2 className="h-8 w-8 text-primary animate-spin" />
-        </div>
-        <h1 className="text-2xl font-bold">Đang xác thực...</h1>
+      <div className="space-y-4 text-center">
+        <StatusIcon variant="default">
+          <Loader2 className="size-6 animate-spin" />
+        </StatusIcon>
+        <h1 className="text-xl font-semibold text-foreground">
+          Đang xác thực...
+        </h1>
         <p className="text-sm text-muted-foreground">
           Vui lòng chờ trong giây lát
         </p>
       </div>
     );
-  }
 
-  if (state === "success") {
+  if (state === "success")
     return (
-      <div className="flex flex-col items-center text-center space-y-4">
-        <div className="w-16 h-16 rounded-full bg-emerald-500/10 flex items-center justify-center">
-          <CheckCircle2 className="h-8 w-8 text-emerald-500" />
+      <div className="space-y-6 text-center">
+        <StatusIcon variant="success">
+          <CheckCircle2 className="size-6" />
+        </StatusIcon>
+        <div className="space-y-1.5">
+          <h1 className="text-xl font-semibold text-foreground">
+            Xác thực thành công!
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            Email của bạn đã được xác thực. Đang chuyển hướng về trang chủ...
+          </p>
         </div>
-        <h1 className="text-2xl font-bold">Xác thực thành công!</h1>
-        <p className="text-sm text-muted-foreground">
-          Email của bạn đã được xác thực. Đang chuyển hướng về trang chủ...
-        </p>
-        <Button asChild className="mt-2 w-full">
+        <Button asChild className="w-full h-10 font-medium">
           <Link href="/">Về trang chủ</Link>
         </Button>
       </div>
     );
-  }
 
-  if (state === "error") {
+  if (state === "error")
     return (
-      <div className="flex flex-col items-center text-center space-y-4">
-        <div className="w-16 h-16 rounded-full bg-destructive/10 flex items-center justify-center">
-          <XCircle className="h-8 w-8 text-destructive" />
+      <div className="space-y-6 text-center">
+        <StatusIcon variant="error">
+          <XCircle className="size-6" />
+        </StatusIcon>
+        <div className="space-y-1.5">
+          <h1 className="text-xl font-semibold text-foreground">
+            Link đã hết hạn
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            Link xác thực không hợp lệ hoặc đã hết hạn. Vui lòng yêu cầu gửi lại
+            email.
+          </p>
         </div>
-        <h1 className="text-2xl font-bold">Link đã hết hạn</h1>
-        <p className="text-sm text-muted-foreground">
-          Link xác thực không hợp lệ hoặc đã hết hạn. Vui lòng yêu cầu gửi lại
-          email.
-        </p>
-        <div className="flex flex-col w-full gap-2.5 pt-2">
-          <Button onClick={handleResend} disabled={isResending || cooldown > 0}>
+        <div className="space-y-2">
+          <Button
+            className="w-full h-10 font-medium gap-2"
+            onClick={handleResend}
+            disabled={isResending || cooldown > 0}
+          >
             {isResending ? (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              <Loader2 className="size-4 animate-spin" />
             ) : (
-              <RefreshCw className="mr-2 h-4 w-4" />
+              <RefreshCw className="size-4" />
             )}
             {cooldown > 0
               ? `Gửi lại sau ${cooldown}s`
               : "Gửi lại email xác thực"}
           </Button>
-          <Button variant="ghost" asChild>
+          <Button
+            variant="ghost"
+            asChild
+            className="w-full h-10 text-muted-foreground hover:text-foreground"
+          >
             <Link href="/sign-in">Quay lại đăng nhập</Link>
           </Button>
         </div>
       </div>
     );
-  }
 
   return (
-    <div className="flex flex-col items-center text-center space-y-6">
-      <div className="relative">
-        <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center">
-          <MailCheck className="h-10 w-10 text-primary" />
+    <div className="space-y-6">
+      <div className="text-center space-y-4">
+        <div className="relative mx-auto size-14">
+          <div className="flex size-14 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+            <MailCheck className="size-6" />
+          </div>
         </div>
-        <span className="absolute -top-1 -right-1 flex h-5 w-5">
-          <span className="animate-ping absolute inline-flex inset-0 rounded-full bg-primary opacity-30" />
-          <span className="relative inline-flex rounded-full h-5 w-5 bg-primary/50" />
-        </span>
+        <div className="space-y-1.5">
+          <h1 className="text-xl font-semibold text-foreground">
+            Kiểm tra email của bạn
+          </h1>
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            Chúng tôi đã gửi link xác thực đến email của bạn. Vui lòng kiểm tra
+            hộp thư (và thư mục spam) rồi nhấn vào link để kích hoạt tài khoản.
+          </p>
+        </div>
       </div>
 
-      <div className="space-y-2">
-        <h1 className="text-2xl font-bold tracking-tight">
-          Kiểm tra email của bạn
-        </h1>
-        <p className="text-sm text-muted-foreground leading-relaxed max-w-sm">
-          Chúng tôi đã gửi link xác thực đến email của bạn. Vui lòng kiểm tra
-          hộp thư (và thư mục spam) rồi nhấn vào link để kích hoạt tài khoản.
-        </p>
-      </div>
-
-      <div className="w-full rounded-xl border bg-muted/40 p-4 text-left space-y-2">
+      <div className="rounded-xl border border-border bg-secondary/30 divide-y divide-border">
         {[
           "Mở ứng dụng email của bạn",
           'Tìm email từ "Staywise"',
           'Nhấn vào nút "Xác thực email"',
         ].map((step, i) => (
-          <div
-            key={i}
-            className="flex items-center gap-3 text-sm text-muted-foreground"
-          >
-            <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border text-xs font-medium">
+          <div key={i} className="flex items-center gap-3 px-4 py-3">
+            <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-primary/15 text-primary text-xs font-semibold">
               {i + 1}
             </span>
-            {step}
+            <span className="text-sm text-foreground/80">{step}</span>
           </div>
         ))}
       </div>
 
-      <div className="w-full space-y-2.5">
+      <div className="space-y-3 text-center">
         <p className="text-xs text-muted-foreground">Không nhận được email?</p>
         <Button
           variant="outline"
-          className="w-full"
+          className="w-full h-10 gap-2 border-border bg-background text-foreground hover:bg-accent hover:text-secondary-foreground font-medium"
           onClick={handleResend}
           disabled={isResending || cooldown > 0}
         >
           {isResending ? (
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            <Loader2 className="size-4 animate-spin" />
           ) : (
-            <RefreshCw className="mr-2 h-4 w-4" />
+            <RefreshCw className="size-4" />
           )}
           {cooldown > 0 ? `Gửi lại sau ${cooldown}s` : "Gửi lại email xác thực"}
         </Button>
-        <p className="text-center text-sm">
-          <Link
-            href="/sign-in"
-            className="text-primary hover:underline underline-offset-4"
-          >
-            ← Quay lại đăng nhập
-          </Link>
-        </p>
+        <Link
+          href="/sign-in"
+          className="block text-sm text-muted-foreground hover:text-foreground font-medium"
+        >
+          ← Quay lại đăng nhập
+        </Link>
       </div>
     </div>
   );

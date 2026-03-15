@@ -252,7 +252,15 @@ export const hotelRouter = createTRPCRouter({
           policy: true,
           amenities: { include: { amenity: true } },
           rooms: {
-            where: { isActive: true },
+            where: {
+              isActive: true,
+              availability: {
+                every: {
+                  date: { gte: input.checkIn, lte: input.checkOut },
+                  status: "AVAILABLE",
+                },
+              },
+            },
             include: {
               roomType: true,
               images: { where: { isPrimary: true }, take: 1 },

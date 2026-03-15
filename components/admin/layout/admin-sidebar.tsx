@@ -25,7 +25,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { signOut } from "@/lib/auth-client";
+import { authClient } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
 import { Logo } from "@/components/common/logo";
 import Image from "next/image";
@@ -71,8 +71,9 @@ export const AdminSidebar = ({
     exact ? pathname === href : pathname.startsWith(href);
 
   const handleSignOut = async () => {
-    await signOut();
-    router.push("/login");
+    await authClient.signOut();
+    router.push("/");
+    router.refresh();
   };
 
   const initials = user.name
