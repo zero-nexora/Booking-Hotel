@@ -15,25 +15,20 @@ export const SheetDialog = () => {
 
   const { title, content, onClose } = sheetDialog;
 
-  function handleClose() {
+  const handleClose = () => {
     onClose?.();
     closeSheet();
-  }
+  };
 
   return (
     <Sheet open onOpenChange={(open) => !open && handleClose()}>
-      <SheetContent className="w-full sm:max-w-2xl overflow-y-auto p-0">
-        
-        <SheetHeader className="px-6 py-4 border-b">
-          <SheetTitle className="text-lg font-semibold">
+      <SheetContent className="w-full sm:max-w-2xl overflow-y-auto p-0 bg-card border-border">
+        <SheetHeader className="px-6 py-4 border-b border-border">
+          <SheetTitle className="text-lg font-semibold text-foreground">
             {title}
           </SheetTitle>
         </SheetHeader>
-
-        <div className="px-6 pb-6 space-y-6">
-          {content}
-        </div>
-
+        <div className="px-6 pb-6 space-y-6">{content}</div>
       </SheetContent>
     </Sheet>
   );

@@ -30,6 +30,7 @@ import { useRouter } from "next/navigation";
 import { Logo } from "@/components/common/logo";
 import Image from "next/image";
 import hotelIcon from "../../../public/images/hotel-icon.png";
+import { useConfirmDialogStore } from "@/store/confirm-dialog-store";
 
 const navItems = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
@@ -64,6 +65,7 @@ export const AdminSidebar = ({
   onMobileClose,
   user,
 }: AdminSidebarProps) => {
+  const { openConfirm } = useConfirmDialogStore();
   const pathname = usePathname();
   const router = useRouter();
 
@@ -72,8 +74,15 @@ export const AdminSidebar = ({
 
   const handleSignOut = async () => {
     await authClient.signOut();
-    router.push("/");
-    router.refresh();
+    router.push("/sign-in");
+  };
+
+  const handleOpenConfirmLogout = async () => {
+    openConfirm({
+      title: "Đăng xuất",
+      description: "Bạn có chắc chắn muốn đăng xuất không?",
+      onConfirm: handleSignOut,
+    });
   };
 
   const initials = user.name
@@ -87,7 +96,7 @@ export const AdminSidebar = ({
     <TooltipProvider delayDuration={0}>
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-30 flex flex-col bg-card border-r",
+          "fixed inset-y-0 left-0 z-30 flex flex-col bg-card border-r border-border",
           collapsed ? "w-16" : "w-64",
           "lg:relative lg:translate-x-0",
           mobileOpen
@@ -97,8 +106,8 @@ export const AdminSidebar = ({
       >
         <div
           className={cn(
-            "flex items-center justify-center h-16 px-4 border-b gap-3 cursor-pointer",
-            collapsed && " px-0",
+            "flex items-center justify-center h-16 px-4 border-b border-border gap-3 cursor-pointer",
+            collapsed && "px-0",
           )}
           onClick={() => router.push("/")}
         >
@@ -147,14 +156,14 @@ export const AdminSidebar = ({
           })}
         </nav>
 
-        <div className={cn("p-4 border-t", collapsed && "px-2")}>
+        <div className={cn("p-4 border-t border-border", collapsed && "px-2")}>
           {collapsed ? (
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="w-10 h-10 mx-auto flex"
+                  className="w-10 h-10 mx-auto flex text-muted-foreground hover:text-foreground hover:bg-muted"
                   onClick={handleSignOut}
                 >
                   <LogOut className="w-4 h-4" />
@@ -171,7 +180,9 @@ export const AdminSidebar = ({
                 </AvatarFallback>
               </Avatar>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium truncate">{user.name}</p>
+                <p className="text-sm font-medium text-foreground truncate">
+                  {user.name}
+                </p>
                 <p className="text-xs text-muted-foreground truncate">
                   {user.email}
                 </p>
@@ -179,8 +190,8 @@ export const AdminSidebar = ({
               <Button
                 variant="ghost"
                 size="icon"
-                className="w-8 h-8 shrink-0"
-                onClick={handleSignOut}
+                className="w-8 h-8 shrink-0 text-muted-foreground hover:text-foreground hover:bg-muted"
+                onClick={handleOpenConfirmLogout}
               >
                 <LogOut className="w-4 h-4" />
               </Button>

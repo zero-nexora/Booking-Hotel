@@ -65,30 +65,28 @@ const ForgotPasswordPage = () => {
           </div>
         </div>
 
-        <div className="rounded-xl border border-border bg-secondary/30 p-4 space-y-2">
-          <p className="text-xs font-medium uppercase tracking-wide text-foreground/60">
+        <div className="rounded-xl border border-border bg-card p-4 space-y-2">
+          <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
             Lưu ý
           </p>
           <ul className="space-y-1.5 text-sm text-muted-foreground">
-            <li className="flex items-center gap-2">
-              <span className="size-1 rounded-full bg-muted-foreground/50 shrink-0" />
-              Kiểm tra cả thư mục Spam / Junk
-            </li>
-            <li className="flex items-center gap-2">
-              <span className="size-1 rounded-full bg-muted-foreground/50 shrink-0" />
-              Link có hiệu lực trong 1 giờ
-            </li>
-            <li className="flex items-center gap-2">
-              <span className="size-1 rounded-full bg-muted-foreground/50 shrink-0" />
-              Chỉ dùng được một lần
-            </li>
+            {[
+              "Kiểm tra cả thư mục Spam / Junk",
+              "Link có hiệu lực trong 1 giờ",
+              "Chỉ dùng được một lần",
+            ].map((note) => (
+              <li key={note} className="flex items-center gap-2">
+                <span className="size-1 rounded-full bg-muted-foreground/50 shrink-0" />
+                {note}
+              </li>
+            ))}
           </ul>
         </div>
 
         <div className="space-y-2">
           <Button
             variant="outline"
-            className="w-full h-10 border-border bg-background text-foreground hover:bg-accent hover:text-accent-foreground font-medium"
+            className="w-full h-10 border-border bg-background text-foreground hover:bg-muted hover:text-foreground font-medium"
             onClick={() => {
               setIsSuccess(false);
               form.reset();
@@ -99,7 +97,7 @@ const ForgotPasswordPage = () => {
           <Button
             variant="ghost"
             asChild
-            className="w-full h-10 text-muted-foreground hover:text-foreground gap-2"
+            className="w-full h-10 text-muted-foreground hover:text-foreground hover:bg-muted gap-2"
           >
             <Link href="/sign-in">
               <ArrowLeft className="size-4" />
@@ -131,7 +129,7 @@ const ForgotPasswordPage = () => {
             name="email"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-xs font-medium uppercase tracking-wide text-foreground/70">
+                <FormLabel className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                   Email
                 </FormLabel>
                 <FormControl>
@@ -141,17 +139,17 @@ const ForgotPasswordPage = () => {
                     autoComplete="email"
                     autoFocus
                     disabled={isLoading}
-                    className="bg-secondary/40 border-border focus-visible:ring-1 focus-visible:ring-primary/40 focus-visible:border-primary placeholder:text-muted-foreground/50"
+                    className="bg-background border-border text-foreground placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-primary/50 focus-visible:border-primary"
                     {...field}
                   />
                 </FormControl>
-                <FormMessage />
+                <FormMessage className="text-destructive" />
               </FormItem>
             )}
           />
           <Button
             type="submit"
-            className="w-full h-10 font-medium"
+            className="w-full h-10 font-medium bg-primary text-primary-foreground hover:bg-primary/90"
             disabled={isLoading}
           >
             {isLoading && <Loader2 className="size-4 animate-spin" />}
@@ -163,7 +161,7 @@ const ForgotPasswordPage = () => {
       <Button
         variant="ghost"
         asChild
-        className="w-full h-10 text-muted-foreground hover:text-foreground gap-2"
+        className="w-full h-10 text-muted-foreground hover:text-foreground hover:bg-muted gap-2"
       >
         <Link href="/sign-in">
           <ArrowLeft className="size-4" />

@@ -55,7 +55,7 @@ export const CancelSection = ({ bookingRef }: CancelSectionProps) => {
               khoản tiền sẽ được hoàn trả theo chính sách.
             </p>
             <div className="space-y-1.5">
-              <Label className="text-xs font-medium">
+              <Label className="text-xs font-medium text-foreground">
                 Lý do huỷ{" "}
                 <span className="text-muted-foreground font-normal">
                   (tuỳ chọn)
@@ -66,14 +66,14 @@ export const CancelSection = ({ bookingRef }: CancelSectionProps) => {
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
                 rows={3}
-                className="resize-none text-sm"
+                className="resize-none text-sm bg-background border-border text-foreground placeholder:text-muted-foreground focus-visible:ring-primary"
               />
             </div>
             <div className="flex gap-2">
               <Button
                 variant="destructive"
                 size="sm"
-                className="rounded-xl"
+                className="rounded-xl bg-destructive text-destructive-foreground hover:bg-destructive/90"
                 disabled={cancel.isPending}
                 onClick={handleCancel}
               >
@@ -82,7 +82,7 @@ export const CancelSection = ({ bookingRef }: CancelSectionProps) => {
               <Button
                 variant="ghost"
                 size="sm"
-                className="rounded-xl"
+                className="rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted"
                 onClick={() => setOpen(false)}
               >
                 Đóng

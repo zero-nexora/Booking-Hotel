@@ -61,11 +61,17 @@ export const CityForm = ({
           name="name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Tên thành phố</FormLabel>
+              <FormLabel className="text-foreground font-medium">
+                Tên thành phố
+              </FormLabel>
               <FormControl>
-                <Input {...field} placeholder="Hà Nội, Tokyo..." />
+                <Input
+                  {...field}
+                  placeholder="Hà Nội, Tokyo..."
+                  className="bg-background border-border text-foreground placeholder:text-muted-foreground focus-visible:ring-primary"
+                />
               </FormControl>
-              <FormMessage />
+              <FormMessage className="text-destructive" />
             </FormItem>
           )}
         />
@@ -74,22 +80,28 @@ export const CityForm = ({
           name="countryId"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Quốc gia</FormLabel>
+              <FormLabel className="text-foreground font-medium">
+                Quốc gia
+              </FormLabel>
               <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl>
-                  <SelectTrigger>
+                  <SelectTrigger className="bg-background border-border text-foreground">
                     <SelectValue placeholder="Chọn quốc gia" />
                   </SelectTrigger>
                 </FormControl>
-                <SelectContent>
+                <SelectContent className="bg-card border-border">
                   {countries.map((c) => (
-                    <SelectItem key={c.id} value={c.id}>
+                    <SelectItem
+                      key={c.id}
+                      value={c.id}
+                      className="text-foreground hover:bg-muted"
+                    >
                       {c.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
-              <FormMessage />
+              <FormMessage className="text-destructive" />
             </FormItem>
           )}
         />

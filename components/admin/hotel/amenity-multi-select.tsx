@@ -43,28 +43,37 @@ export const AmenityMultiSelect = ({
         <PopoverTrigger asChild>
           <Button
             variant="outline"
-            className="w-full justify-between font-normal"
+            className="w-full justify-between font-normal border-border bg-background text-foreground hover:bg-muted hover:text-foreground"
           >
             {selected.length > 0
               ? `${selected.length} tiện nghi đã chọn`
               : "Chọn tiện nghi..."}
-            <ChevronsUpDown className="w-4 h-4 ml-2 opacity-50" />
+            <ChevronsUpDown className="w-4 h-4 ml-2 text-muted-foreground" />
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-full p-0" align="start">
-          <Command>
-            <CommandInput placeholder="Tìm tiện nghi..." />
+        <PopoverContent
+          className="w-full p-0 bg-card border-border"
+          align="start"
+        >
+          <Command className="bg-card">
+            <CommandInput
+              placeholder="Tìm tiện nghi..."
+              className="text-foreground placeholder:text-muted-foreground border-border"
+            />
             <CommandList>
-              <CommandEmpty>Không tìm thấy tiện nghi</CommandEmpty>
+              <CommandEmpty className="text-muted-foreground text-sm py-4 text-center">
+                Không tìm thấy tiện nghi
+              </CommandEmpty>
               <CommandGroup>
                 {data?.map((amenity) => (
                   <CommandItem
                     key={amenity.id}
                     onSelect={() => toggle(amenity.id)}
+                    className="text-foreground hover:bg-muted cursor-pointer"
                   >
                     <Check
                       className={cn(
-                        "mr-2 h-4 w-4",
+                        "mr-2 h-4 w-4 text-primary",
                         value.includes(amenity.id)
                           ? "opacity-100"
                           : "opacity-0",
@@ -85,12 +94,16 @@ export const AmenityMultiSelect = ({
       {selected.length > 0 && (
         <div className="flex flex-wrap gap-1.5">
           {selected.map((a) => (
-            <Badge key={a.id} variant="secondary" className="gap-1">
+            <Badge
+              key={a.id}
+              variant="outline"
+              className="gap-1 bg-muted text-muted-foreground border-border"
+            >
               {a.icon && <span>{a.icon}</span>}
               {a.name}
               <button
                 onClick={() => toggle(a.id)}
-                className="hover:text-foreground"
+                className="text-muted-foreground hover:text-foreground"
               >
                 <X className="w-3 h-3" />
               </button>

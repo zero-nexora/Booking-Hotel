@@ -22,7 +22,7 @@ export const AdminShell = ({
   const { collapsed, mobileOpen, setMobileOpen } = useAdminUI();
 
   return (
-    <div className="flex h-screen bg-muted/30 overflow-hidden">
+    <div className="flex h-screen bg-background overflow-hidden">
       <AdminSidebar
         collapsed={collapsed}
         mobileOpen={mobileOpen}
@@ -31,13 +31,15 @@ export const AdminShell = ({
       />
       {mobileOpen && (
         <div
-          className="fixed inset-0 z-20 bg-black/50 lg:hidden"
+          className="fixed inset-0 z-20 bg-foreground/40 lg:hidden"
           onClick={() => setMobileOpen(false)}
         />
       )}
       <div className="flex flex-col flex-1 min-w-0">
         <AdminHeader />
-        <main className="flex-1 overflow-y-auto p-6">{children}</main>
+        <main className="flex-1 overflow-y-auto p-6 bg-muted/20">
+          {children}
+        </main>
       </div>
     </div>
   );

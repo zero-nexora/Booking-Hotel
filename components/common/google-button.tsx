@@ -32,7 +32,7 @@ export const GoogleButton = ({
   return (
     <Button
       variant="outline"
-      className="w-full h-10 gap-2.5 border-border bg-background text-foreground hover:bg-accent hover:text-secondary-foreground font-medium text-sm"
+      className="w-full h-10 gap-2.5 border-border bg-background text-foreground hover:bg-muted hover:text-foreground font-medium text-sm"
       onClick={handleClick}
       disabled={disabled || loading}
       type="button"

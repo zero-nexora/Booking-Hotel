@@ -16,18 +16,17 @@ import { toast } from "sonner";
 
 type VerifyState = "pending" | "verifying" | "success" | "error";
 
-const StatusIcon = ({
-  children,
-  variant,
-}: {
+interface StatusIconProps {
   children: React.ReactNode;
   variant: "default" | "success" | "error" | "warning";
-}) => {
+}
+
+const StatusIcon = ({ children, variant }: StatusIconProps) => {
   const cls = {
     default: "bg-primary/10 text-primary",
-    success: "bg-emerald-500/10 text-emerald-500",
+    success: "bg-primary/15 text-primary",
     error: "bg-destructive/10 text-destructive",
-    warning: "bg-orange-400/10 text-orange-400",
+    warning: "bg-secondary text-secondary-foreground",
   }[variant];
   return (
     <div
@@ -125,7 +124,10 @@ const VerifyEmailContent = () => {
             Email của bạn đã được xác thực. Đang chuyển hướng về trang chủ...
           </p>
         </div>
-        <Button asChild className="w-full h-10 font-medium">
+        <Button
+          asChild
+          className="w-full h-10 font-medium bg-primary text-primary-foreground hover:bg-primary/90"
+        >
           <Link href="/">Về trang chủ</Link>
         </Button>
       </div>
@@ -148,7 +150,7 @@ const VerifyEmailContent = () => {
         </div>
         <div className="space-y-2">
           <Button
-            className="w-full h-10 font-medium gap-2"
+            className="w-full h-10 font-medium gap-2 bg-primary text-primary-foreground hover:bg-primary/90"
             onClick={handleResend}
             disabled={isResending || cooldown > 0}
           >
@@ -164,7 +166,7 @@ const VerifyEmailContent = () => {
           <Button
             variant="ghost"
             asChild
-            className="w-full h-10 text-muted-foreground hover:text-foreground"
+            className="w-full h-10 text-muted-foreground hover:text-foreground hover:bg-muted"
           >
             <Link href="/sign-in">Quay lại đăng nhập</Link>
           </Button>
@@ -175,10 +177,8 @@ const VerifyEmailContent = () => {
   return (
     <div className="space-y-6">
       <div className="text-center space-y-4">
-        <div className="relative mx-auto size-14">
-          <div className="flex size-14 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-            <MailCheck className="size-6" />
-          </div>
+        <div className="flex size-14 items-center justify-center rounded-2xl bg-primary/10 text-primary mx-auto">
+          <MailCheck className="size-6" />
         </div>
         <div className="space-y-1.5">
           <h1 className="text-xl font-semibold text-foreground">
@@ -191,7 +191,7 @@ const VerifyEmailContent = () => {
         </div>
       </div>
 
-      <div className="rounded-xl border border-border bg-secondary/30 divide-y divide-border">
+      <div className="rounded-xl border border-border bg-card divide-y divide-border">
         {[
           "Mở ứng dụng email của bạn",
           'Tìm email từ "Staywise"',
@@ -201,7 +201,7 @@ const VerifyEmailContent = () => {
             <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-primary/15 text-primary text-xs font-semibold">
               {i + 1}
             </span>
-            <span className="text-sm text-foreground/80">{step}</span>
+            <span className="text-sm text-foreground">{step}</span>
           </div>
         ))}
       </div>
@@ -210,7 +210,7 @@ const VerifyEmailContent = () => {
         <p className="text-xs text-muted-foreground">Không nhận được email?</p>
         <Button
           variant="outline"
-          className="w-full h-10 gap-2 border-border bg-background text-foreground hover:bg-accent hover:text-secondary-foreground font-medium"
+          className="w-full h-10 gap-2 border-border bg-background text-foreground hover:bg-muted hover:text-foreground font-medium"
           onClick={handleResend}
           disabled={isResending || cooldown > 0}
         >

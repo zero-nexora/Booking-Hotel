@@ -11,7 +11,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { LayoutGrid, List, Map } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { DEFAULT_PAGE } from "@/lib/constants";
 import { hotelSearchParsers } from "@/lib/search-params/hotel-search";
 
 const sortOptions = [
@@ -25,7 +24,7 @@ interface HotelsSortBarProps {
   total?: number;
 }
 
-export function HotelsSortBar({ total }: HotelsSortBarProps) {
+export const HotelsSortBar = ({ total }: HotelsSortBarProps) => {
   const [params, setParams] = useQueryStates(hotelSearchParsers);
 
   return (
@@ -44,19 +43,23 @@ export function HotelsSortBar({ total }: HotelsSortBarProps) {
           value={params.sort}
           onValueChange={(v) => setParams({ sort: v as never })}
         >
-          <SelectTrigger className="h-8 text-xs w-44">
+          <SelectTrigger className="h-8 text-xs w-44 border-border bg-background text-foreground">
             <SelectValue />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="bg-card border-border">
             {sortOptions.map((o) => (
-              <SelectItem key={o.value} value={o.value} className="text-xs">
+              <SelectItem
+                key={o.value}
+                value={o.value}
+                className="text-xs text-foreground hover:bg-muted"
+              >
                 {o.label}
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
 
-        <div className="flex rounded-lg border overflow-hidden">
+        <div className="flex rounded-lg border border-border overflow-hidden">
           {(
             [
               { value: "list", icon: List },
@@ -69,9 +72,9 @@ export function HotelsSortBar({ total }: HotelsSortBarProps) {
               variant="ghost"
               size="icon"
               className={cn(
-                "h-8 w-8 rounded-none border-0",
-                i > 0 && "border-l",
-                params.view === value && "bg-muted",
+                "h-8 w-8 rounded-none border-0 text-muted-foreground hover:text-foreground hover:bg-muted",
+                i > 0 && "border-l border-border",
+                params.view === value && "bg-muted text-foreground",
               )}
               onClick={() => setParams({ view: value })}
             >
@@ -82,4 +85,4 @@ export function HotelsSortBar({ total }: HotelsSortBarProps) {
       </div>
     </div>
   );
-}
+};

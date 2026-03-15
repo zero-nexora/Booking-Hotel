@@ -8,7 +8,6 @@ import interactionPlugin from "@fullcalendar/interaction";
 import type { EventClickArg } from "@fullcalendar/core";
 import { useRouter } from "next/navigation";
 import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -27,6 +26,7 @@ import {
 } from "@/components/ui/table";
 import { Pagination } from "@/components/shared/pagination";
 import { SearchInput } from "@/components/shared/search-input";
+import { StatusBadge } from "@/components/shared/status-badge";
 import {
   useAdminBookingList,
   useAdminBookingCalendar,
@@ -34,7 +34,7 @@ import {
 import { Calendar, List } from "lucide-react";
 import { RouterOutput } from "@/trpc/client";
 import { adminBookingParsers } from "@/lib/search-params/admin-bookings";
-import { parseAsString, useQueryStates } from "nuqs";
+import { useQueryStates } from "nuqs";
 import { BookingStatus, PaymentStatus } from "@/generated/prisma/enums";
 import { ListHeader } from "@/components/shared/list-header";
 import { TableSkeleton } from "@/components/shared/table-skeleton";
@@ -68,46 +68,6 @@ const BOOKING_STATUS_COLOR: Record<string, string> = {
   NO_SHOW: "#dc2626",
 };
 
-const BOOKING_STATUS_VARIANT: Record<
-  string,
-  "default" | "secondary" | "destructive" | "outline"
-> = {
-  PENDING: "secondary",
-  CONFIRMED: "default",
-  CHECKED_IN: "default",
-  CHECKED_OUT: "outline",
-  CANCELLED: "destructive",
-  NO_SHOW: "destructive",
-};
-
-const BOOKING_STATUS_LABEL: Record<string, string> = {
-  PENDING: "Chờ xác nhận",
-  CONFIRMED: "Đã xác nhận",
-  CHECKED_IN: "Đã check-in",
-  CHECKED_OUT: "Đã check-out",
-  CANCELLED: "Đã hủy",
-  NO_SHOW: "Không đến",
-};
-
-const PAYMENT_STATUS_VARIANT: Record<
-  string,
-  "default" | "secondary" | "destructive" | "outline"
-> = {
-  UNPAID: "secondary",
-  PENDING: "secondary",
-  PAID: "default",
-  REFUNDED: "outline",
-  FAILED: "destructive",
-};
-
-const PAYMENT_STATUS_LABEL: Record<string, string> = {
-  UNPAID: "Chưa TT",
-  PENDING: "Đang xử lý",
-  PAID: "Đã TT",
-  REFUNDED: "Hoàn tiền",
-  FAILED: "Thất bại",
-};
-
 const BookingRow = ({
   booking,
   onClick,
@@ -116,7 +76,7 @@ const BookingRow = ({
   onClick: (id: string) => void;
 }) => (
   <TableRow
-    className="cursor-pointer hover:bg-muted/40"
+    className="border-border hover:bg-muted/40 cursor-pointer"
     onClick={() => onClick(booking.id)}
   >
     <TableCell>
@@ -125,13 +85,17 @@ const BookingRow = ({
       </span>
     </TableCell>
     <TableCell>
-      <p className="text-sm font-medium leading-tight">{booking.guestName}</p>
+      <p className="text-sm font-medium text-foreground leading-tight">
+        {booking.guestName}
+      </p>
       <p className="text-xs text-muted-foreground mt-0.5">
         {booking.guestEmail}
       </p>
     </TableCell>
     <TableCell>
-      <p className="text-sm leading-tight">{booking.hotel.name}</p>
+      <p className="text-sm text-foreground leading-tight">
+        {booking.hotel.name}
+      </p>
       <p className="text-xs text-muted-foreground mt-0.5">
         {booking.items.map((i) => i.room.name).join(", ")}
       </p>
@@ -142,23 +106,13 @@ const BookingRow = ({
       </span>
     </TableCell>
     <TableCell>
-      <Badge
-        variant={BOOKING_STATUS_VARIANT[booking.status]}
-        className="text-xs"
-      >
-        {BOOKING_STATUS_LABEL[booking.status]}
-      </Badge>
+      <StatusBadge status={booking.status} type="booking" />
     </TableCell>
     <TableCell>
-      <Badge
-        variant={PAYMENT_STATUS_VARIANT[booking.paymentStatus]}
-        className="text-xs"
-      >
-        {PAYMENT_STATUS_LABEL[booking.paymentStatus]}
-      </Badge>
+      <StatusBadge status={booking.paymentStatus} type="payment" />
     </TableCell>
     <TableCell className="text-right">
-      <span className="text-sm font-medium tabular-nums">
+      <span className="text-sm font-medium tabular-nums text-foreground">
         {formatCurrencyUSD(Number(booking.totalAmount))}
       </span>
     </TableCell>
@@ -169,9 +123,8 @@ export const BookingListClient = () => {
   const router = useRouter();
   const calendarRef = useRef<FullCalendar>(null);
   const [params, setParams] = useQueryStates(adminBookingParsers);
-  const [{ view }, setView] = useQueryStates({
-    view: parseAsString.withDefault("list"),
-  });
+
+  const currentView = params.view ?? "list";
 
   const { data, isLoading } = useAdminBookingList(params);
   const { data: calendarData } = useAdminBookingCalendar({
@@ -209,10 +162,7 @@ export const BookingListClient = () => {
 
   const handleStatusChange = useCallback(
     (v: string) =>
-      setParams({
-        status: v === "all" ? null : (v as BookingStatus),
-        page: 1,
-      }),
+      setParams({ status: v === "all" ? null : (v as BookingStatus), page: 1 }),
     [setParams],
   );
 
@@ -223,16 +173,6 @@ export const BookingListClient = () => {
         page: 1,
       }),
     [setParams],
-  );
-
-  const handleSetListView = useCallback(
-    () => setView({ view: "list" }),
-    [setView],
-  );
-
-  const handleSetCalendarView = useCallback(
-    () => setView({ view: "calendar" }),
-    [setView],
   );
 
   const handlePageChange = useCallback(
@@ -259,13 +199,22 @@ export const BookingListClient = () => {
             value={params.status ?? "all"}
             onValueChange={handleStatusChange}
           >
-            <SelectTrigger className="w-44">
+            <SelectTrigger className="w-44 border-border bg-background text-foreground">
               <SelectValue placeholder="Trạng thái" />
             </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Tất cả trạng thái</SelectItem>
+            <SelectContent className="bg-card border-border">
+              <SelectItem
+                value="all"
+                className="text-foreground hover:bg-muted"
+              >
+                Tất cả trạng thái
+              </SelectItem>
               {BOOKING_STATUS_OPTIONS.map((o) => (
-                <SelectItem key={o.value} value={o.value}>
+                <SelectItem
+                  key={o.value}
+                  value={o.value}
+                  className="text-foreground hover:bg-muted"
+                >
                   {o.label}
                 </SelectItem>
               ))}
@@ -275,13 +224,22 @@ export const BookingListClient = () => {
             value={params.paymentStatus ?? "all"}
             onValueChange={handlePaymentStatusChange}
           >
-            <SelectTrigger className="w-44">
+            <SelectTrigger className="w-44 border-border bg-background text-foreground">
               <SelectValue placeholder="Thanh toán" />
             </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Tất cả TT</SelectItem>
+            <SelectContent className="bg-card border-border">
+              <SelectItem
+                value="all"
+                className="text-foreground hover:bg-muted"
+              >
+                Tất cả TT
+              </SelectItem>
               {PAYMENT_STATUS_OPTIONS.map((o) => (
-                <SelectItem key={o.value} value={o.value}>
+                <SelectItem
+                  key={o.value}
+                  value={o.value}
+                  className="text-foreground hover:bg-muted"
+                >
                   {o.label}
                 </SelectItem>
               ))}
@@ -290,18 +248,28 @@ export const BookingListClient = () => {
 
           <div className="ml-auto flex gap-0.5 border border-border rounded-lg p-0.5 bg-muted/40">
             <Button
-              variant={view === "list" ? "default" : "ghost"}
+              variant={currentView === "list" ? "default" : "ghost"}
               size="sm"
-              className="h-7 px-2.5 rounded-md"
-              onClick={handleSetListView}
+              className={
+                currentView === "list"
+                  ? "h-7 px-2.5 rounded-md bg-primary text-primary-foreground hover:bg-primary/90"
+                  : "h-7 px-2.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted"
+              }
+              onClick={() => setParams({ ...params, view: "list" } as never)}
             >
               <List className="w-3.5 h-3.5" />
             </Button>
             <Button
-              variant={view === "calendar" ? "default" : "ghost"}
+              variant={currentView === "calendar" ? "default" : "ghost"}
               size="sm"
-              className="h-7 px-2.5 rounded-md"
-              onClick={handleSetCalendarView}
+              className={
+                currentView === "calendar"
+                  ? "h-7 px-2.5 rounded-md bg-primary text-primary-foreground hover:bg-primary/90"
+                  : "h-7 px-2.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted"
+              }
+              onClick={() =>
+                setParams({ ...params, view: "calendar" } as never)
+              }
             >
               <Calendar className="w-3.5 h-3.5" />
             </Button>
@@ -309,11 +277,11 @@ export const BookingListClient = () => {
         </div>
       </ListHeader>
 
-      {view === "list" ? (
-        <Card className="overflow-hidden">
+      {currentView === "list" ? (
+        <Card className="bg-card border-border shadow-none overflow-hidden">
           <Table>
             <TableHeader>
-              <TableRow className="bg-muted/50 hover:bg-muted/50">
+              <TableRow className="border-border hover:bg-transparent bg-muted/30">
                 <TableHead className="text-xs font-semibold text-muted-foreground uppercase tracking-wide w-28">
                   Mã
                 </TableHead>
@@ -374,7 +342,7 @@ export const BookingListClient = () => {
           )}
         </Card>
       ) : (
-        <Card className="p-5">
+        <Card className="bg-card border-border shadow-none p-5">
           <FullCalendar
             ref={calendarRef}
             plugins={[dayGridPlugin, listPlugin, interactionPlugin]}

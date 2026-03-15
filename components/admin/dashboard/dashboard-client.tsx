@@ -1,8 +1,6 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { format } from "date-fns";
-import { vi } from "date-fns/locale";
 import {
   AreaChart,
   Area,
@@ -17,7 +15,6 @@ import {
   Legend,
 } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
@@ -34,6 +31,7 @@ import {
   useDashboardTopHotels,
   useDashboardRecentBookings,
 } from "@/hooks/admin/use-admin-dashboard";
+import { StatusBadge } from "@/components/shared/status-badge";
 import {
   Hotel,
   Users,
@@ -45,66 +43,16 @@ import {
   Star,
   DoorOpen,
 } from "lucide-react";
-
-// ─── Constants ────────────────────────────────────────────────────────────────
-
-const BOOKING_STATUS_VARIANT: Record<
-  string,
-  "default" | "secondary" | "destructive" | "outline"
-> = {
-  PENDING: "secondary",
-  CONFIRMED: "default",
-  CHECKED_IN: "default",
-  CHECKED_OUT: "outline",
-  CANCELLED: "destructive",
-  NO_SHOW: "destructive",
-};
-
-const BOOKING_STATUS_LABEL: Record<string, string> = {
-  PENDING: "Chờ xác nhận",
-  CONFIRMED: "Đã xác nhận",
-  CHECKED_IN: "Đã check-in",
-  CHECKED_OUT: "Đã check-out",
-  CANCELLED: "Đã hủy",
-  NO_SHOW: "Không đến",
-};
-
-const PAYMENT_STATUS_VARIANT: Record<
-  string,
-  "default" | "secondary" | "destructive" | "outline"
-> = {
-  UNPAID: "secondary",
-  PENDING: "secondary",
-  PAID: "default",
-  REFUNDED: "outline",
-  FAILED: "destructive",
-};
-
-const PAYMENT_STATUS_LABEL: Record<string, string> = {
-  UNPAID: "Chưa TT",
-  PENDING: "Đang xử lý",
-  PAID: "Đã TT",
-  REFUNDED: "Hoàn tiền",
-  FAILED: "Thất bại",
-};
+import { formatDatetime, formatCurrencyUSD, formatDateFull } from "@/lib/utils";
 
 const PIE_COLORS = [
-  "#f59e0b",
-  "#10b981",
-  "#3b82f6",
-  "#6b7280",
-  "#ef4444",
-  "#8b5cf6",
+  "var(--chart-1)",
+  "var(--chart-2)",
+  "var(--chart-3)",
+  "var(--chart-4)",
+  "var(--chart-5)",
+  "var(--destructive)",
 ];
-
-const fmt = (n: number) =>
-  new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    maximumFractionDigits: 0,
-  }).format(n);
-
-// ─── Sub-components ───────────────────────────────────────────────────────────
 
 interface GrowthBadgeProps {
   value: number | null;
@@ -117,7 +65,7 @@ const GrowthBadge = ({ value }: GrowthBadgeProps) => {
   return (
     <span
       className={`inline-flex items-center gap-1 text-xs font-medium ${
-        positive ? "text-emerald-600" : "text-destructive"
+        positive ? "text-primary" : "text-destructive"
       }`}
     >
       <Icon className="w-3 h-3" />
@@ -131,25 +79,20 @@ interface StatCardProps {
   value: React.ReactNode;
   sub?: React.ReactNode;
   icon: React.ElementType;
-  iconClass?: string;
 }
 
-const StatCard = ({
-  title,
-  value,
-  sub,
-  icon: Icon,
-  iconClass = "text-muted-foreground",
-}: StatCardProps) => (
-  <Card>
+const StatCard = ({ title, value, sub, icon: Icon }: StatCardProps) => (
+  <Card className="bg-card border-border shadow-none">
     <CardContent className="pt-6">
       <div className="flex items-start justify-between">
         <div className="space-y-1">
           <p className="text-sm text-muted-foreground">{title}</p>
-          <p className="text-2xl font-bold tracking-tight">{value}</p>
+          <p className="text-2xl font-bold tracking-tight text-foreground">
+            {value}
+          </p>
           {sub && <div className="text-xs text-muted-foreground">{sub}</div>}
         </div>
-        <div className={`p-2 rounded-lg bg-muted ${iconClass}`}>
+        <div className="p-2 rounded-lg bg-primary/10 text-primary">
           <Icon className="w-5 h-5" />
         </div>
       </div>
@@ -158,16 +101,14 @@ const StatCard = ({
 );
 
 const StatCardSkeleton = () => (
-  <Card>
+  <Card className="bg-card border-border shadow-none">
     <CardContent className="pt-6 space-y-3">
-      <Skeleton className="h-4 w-28" />
-      <Skeleton className="h-8 w-24" />
-      <Skeleton className="h-3 w-36" />
+      <Skeleton className="h-4 w-28 bg-muted" />
+      <Skeleton className="h-8 w-24 bg-muted" />
+      <Skeleton className="h-3 w-36 bg-muted" />
     </CardContent>
   </Card>
 );
-
-// ─── Sections ─────────────────────────────────────────────────────────────────
 
 const StatsSection = () => {
   const { data, isLoading } = useDashboardStats();
@@ -188,75 +129,77 @@ const StatsSection = () => {
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
       <StatCard
         title="Doanh thu tháng này"
-        value={fmt(data.revenueMonth)}
+        value={formatCurrencyUSD(data.revenueMonth)}
         sub={<GrowthBadge value={data.revenueGrowth} />}
         icon={TrendingUp}
-        iconClass="text-emerald-600"
       />
       <StatCard
         title="Booking tháng này"
         value={data.totalBookingsMonth.toLocaleString()}
         sub={<GrowthBadge value={data.bookingGrowth} />}
         icon={CalendarCheck}
-        iconClass="text-blue-600"
       />
       <StatCard
         title="Booking hôm nay"
         value={data.bookingsToday}
         sub={`${data.pendingBookings} đang chờ xác nhận`}
         icon={Clock}
-        iconClass="text-amber-600"
       />
       <StatCard
         title="Đang check-in"
         value={data.checkedInToday}
         sub="phòng đang có khách"
         icon={DoorOpen}
-        iconClass="text-violet-600"
       />
       <StatCard
         title="Khách sạn"
         value={data.totalHotels}
         sub={`${data.activeHotels} đang hoạt động`}
         icon={Hotel}
-        iconClass="text-indigo-600"
       />
       <StatCard
         title="Người dùng"
         value={data.totalUsers.toLocaleString()}
         sub={`+${data.newUsersThisMonth} tháng này`}
         icon={Users}
-        iconClass="text-rose-600"
       />
       <StatCard
         title="Đánh giá chờ duyệt"
         value={data.pendingReviews}
         sub={data.pendingReviews > 0 ? "cần xem xét" : "Đã xử lý hết"}
         icon={Star}
-        iconClass="text-amber-500"
       />
       <StatCard
         title="Booking chờ xác nhận"
         value={data.pendingBookings}
         sub={data.pendingBookings > 0 ? "cần xử lý" : "Đã xử lý hết"}
         icon={CalendarCheck}
-        iconClass="text-orange-500"
       />
     </div>
   );
+};
+
+const CHART_TOOLTIP_STYLE: React.CSSProperties = {
+  fontSize: 12,
+  borderRadius: 8,
+  backgroundColor: "var(--card)",
+  border: "1px solid var(--border)",
+  color: "var(--foreground)",
 };
 
 const RevenueChartSection = () => {
   const { data, isLoading } = useDashboardRevenueChart();
 
   return (
-    <Card>
+    <Card className="bg-card border-border shadow-none">
       <CardHeader>
-        <CardTitle className="text-base">Doanh thu 30 ngày qua</CardTitle>
+        <CardTitle className="text-base text-foreground">
+          Doanh thu 30 ngày qua
+        </CardTitle>
       </CardHeader>
       <CardContent>
         {isLoading ? (
-          <Skeleton className="h-64 w-full" />
+          <Skeleton className="h-64 w-full bg-muted" />
         ) : (
           <ResponsiveContainer width="100%" height={256}>
             <AreaChart
@@ -271,41 +214,56 @@ const RevenueChartSection = () => {
                   x2="0"
                   y2="1"
                 >
-                  <stop offset="5%" stopColor="#10b981" stopOpacity={0.2} />
-                  <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
+                  <stop
+                    offset="5%"
+                    stopColor="var(--chart-1)"
+                    stopOpacity={0.25}
+                  />
+                  <stop
+                    offset="95%"
+                    stopColor="var(--chart-1)"
+                    stopOpacity={0}
+                  />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
               <XAxis
                 dataKey="date"
-                tickFormatter={(v) =>
-                  format(new Date(v), "dd/MM", { locale: vi })
-                }
-                tick={{ fontSize: 11 }}
+                tickFormatter={(v) => {
+                  const d = new Date(v);
+                  return `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}`;
+                }}
+                tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
                 tickLine={false}
                 axisLine={false}
                 interval={4}
               />
               <YAxis
                 tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`}
-                tick={{ fontSize: 11 }}
+                tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
                 tickLine={false}
                 axisLine={false}
                 width={48}
               />
               <Tooltip
-                formatter={(v?: number) => [fmt(v ?? 0), "Doanh thu"]}
-                labelFormatter={(l) =>
-                  format(new Date(l), "dd/MM/yyyy", { locale: vi })
-                }
-                contentStyle={{ fontSize: 12, borderRadius: 8 }}
+                formatter={(v?: number) => [
+                  formatCurrencyUSD(v ?? 0),
+                  "Doanh thu",
+                ]}
+                labelFormatter={(l) => {
+                  const d = new Date(l);
+                  return `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}/${d.getFullYear()}`;
+                }}
+                contentStyle={CHART_TOOLTIP_STYLE}
               />
               <Area
                 type="monotone"
                 dataKey="revenue"
-                stroke="#10b981"
+                stroke="var(--chart-1)"
                 strokeWidth={2}
                 fill="url(#revenueGradient)"
+                dot={false}
+                activeDot={{ r: 4, fill: "var(--chart-1)", strokeWidth: 0 }}
               />
             </AreaChart>
           </ResponsiveContainer>
@@ -319,15 +277,15 @@ const BookingStatusChartSection = () => {
   const { data, isLoading } = useDashboardBookingStatusChart();
 
   return (
-    <Card>
+    <Card className="bg-card border-border shadow-none">
       <CardHeader>
-        <CardTitle className="text-base">
+        <CardTitle className="text-base text-foreground">
           Booking theo trạng thái (tháng này)
         </CardTitle>
       </CardHeader>
       <CardContent>
         {isLoading ? (
-          <Skeleton className="h-64 w-full" />
+          <Skeleton className="h-64 w-full bg-muted" />
         ) : !data?.length ? (
           <div className="h-64 flex items-center justify-center text-sm text-muted-foreground">
             Chưa có dữ liệu
@@ -344,18 +302,26 @@ const BookingStatusChartSection = () => {
                 innerRadius={60}
                 outerRadius={90}
                 paddingAngle={3}
+                strokeWidth={0}
               >
                 {data.map((_, i) => (
                   <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
                 ))}
               </Pie>
               <Legend
-                formatter={(v) => <span className="text-xs">{v}</span>}
-                iconSize={10}
+                formatter={(v) => (
+                  <span
+                    style={{ fontSize: 11, color: "var(--muted-foreground)" }}
+                  >
+                    {v}
+                  </span>
+                )}
+                iconSize={8}
+                iconType="circle"
               />
               <Tooltip
                 formatter={(v, name) => [v, name]}
-                contentStyle={{ fontSize: 12, borderRadius: 8 }}
+                contentStyle={CHART_TOOLTIP_STYLE}
               />
             </PieChart>
           </ResponsiveContainer>
@@ -370,27 +336,37 @@ const TopHotelsSection = () => {
   const router = useRouter();
 
   return (
-    <Card>
+    <Card className="bg-card border-border shadow-none">
       <CardHeader>
-        <CardTitle className="text-base">Top khách sạn (tháng này)</CardTitle>
+        <CardTitle className="text-base text-foreground">
+          Top khách sạn (tháng này)
+        </CardTitle>
       </CardHeader>
       <CardContent className="p-0">
         <Table>
           <TableHeader>
-            <TableRow>
-              <TableHead>#</TableHead>
-              <TableHead>Khách sạn</TableHead>
-              <TableHead className="text-center">Booking</TableHead>
-              <TableHead className="text-right">Doanh thu</TableHead>
+            <TableRow className="border-border hover:bg-transparent">
+              <TableHead className="text-muted-foreground font-medium">
+                #
+              </TableHead>
+              <TableHead className="text-muted-foreground font-medium">
+                Khách sạn
+              </TableHead>
+              <TableHead className="text-center text-muted-foreground font-medium">
+                Booking
+              </TableHead>
+              <TableHead className="text-right text-muted-foreground font-medium">
+                Doanh thu
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading ? (
               Array.from({ length: 5 }).map((_, i) => (
-                <TableRow key={i}>
+                <TableRow key={i} className="border-border">
                   {Array.from({ length: 4 }).map((_, j) => (
                     <TableCell key={j}>
-                      <Skeleton className="h-4" />
+                      <Skeleton className="h-4 bg-muted" />
                     </TableCell>
                   ))}
                 </TableRow>
@@ -408,20 +384,20 @@ const TopHotelsSection = () => {
               data.map((hotel, i) => (
                 <TableRow
                   key={hotel.hotelId}
-                  className="cursor-pointer"
+                  className="border-border hover:bg-muted/40 cursor-pointer"
                   onClick={() => router.push(`/admin/hotels/${hotel.hotelId}`)}
                 >
                   <TableCell className="text-muted-foreground text-sm w-8">
                     {i + 1}
                   </TableCell>
-                  <TableCell className="font-medium text-sm">
+                  <TableCell className="font-medium text-sm text-foreground">
                     {hotel.name}
                   </TableCell>
-                  <TableCell className="text-center text-sm">
+                  <TableCell className="text-center text-sm text-muted-foreground">
                     {hotel.bookings}
                   </TableCell>
-                  <TableCell className="text-right text-sm font-medium">
-                    {fmt(hotel.revenue)}
+                  <TableCell className="text-right text-sm font-medium text-foreground">
+                    {formatCurrencyUSD(hotel.revenue)}
                   </TableCell>
                 </TableRow>
               ))
@@ -438,30 +414,46 @@ const RecentBookingsSection = () => {
   const router = useRouter();
 
   return (
-    <Card>
+    <Card className="bg-card border-border shadow-none">
       <CardHeader>
-        <CardTitle className="text-base">Booking gần đây</CardTitle>
+        <CardTitle className="text-base text-foreground">
+          Booking gần đây
+        </CardTitle>
       </CardHeader>
       <CardContent className="p-0">
         <Table>
           <TableHeader>
-            <TableRow>
-              <TableHead>Mã</TableHead>
-              <TableHead>Khách</TableHead>
-              <TableHead>Khách sạn</TableHead>
-              <TableHead>Ngày tạo</TableHead>
-              <TableHead>Trạng thái</TableHead>
-              <TableHead>Thanh toán</TableHead>
-              <TableHead className="text-right">Tổng tiền</TableHead>
+            <TableRow className="border-border hover:bg-transparent">
+              <TableHead className="text-muted-foreground font-medium">
+                Mã
+              </TableHead>
+              <TableHead className="text-muted-foreground font-medium">
+                Khách
+              </TableHead>
+              <TableHead className="text-muted-foreground font-medium">
+                Khách sạn
+              </TableHead>
+              <TableHead className="text-muted-foreground font-medium">
+                Ngày tạo
+              </TableHead>
+              <TableHead className="text-muted-foreground font-medium">
+                Trạng thái
+              </TableHead>
+              <TableHead className="text-muted-foreground font-medium">
+                Thanh toán
+              </TableHead>
+              <TableHead className="text-right text-muted-foreground font-medium">
+                Tổng tiền
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading ? (
               Array.from({ length: 8 }).map((_, i) => (
-                <TableRow key={i}>
+                <TableRow key={i} className="border-border">
                   {Array.from({ length: 7 }).map((_, j) => (
                     <TableCell key={j}>
-                      <Skeleton className="h-4" />
+                      <Skeleton className="h-4 bg-muted" />
                     </TableCell>
                   ))}
                 </TableRow>
@@ -479,40 +471,37 @@ const RecentBookingsSection = () => {
               data.map((booking) => (
                 <TableRow
                   key={booking.id}
-                  className="cursor-pointer"
+                  className="border-border hover:bg-muted/40 cursor-pointer"
                   onClick={() => router.push(`/admin/bookings/${booking.id}`)}
                 >
-                  <TableCell className="font-mono text-xs">
+                  <TableCell className="font-mono text-xs text-muted-foreground">
                     {booking.bookingRef.slice(0, 8).toUpperCase()}
                   </TableCell>
                   <TableCell>
-                    <p className="text-sm font-medium">{booking.guestName}</p>
+                    <p className="text-sm font-medium text-foreground">
+                      {booking.guestName}
+                    </p>
                     <p className="text-xs text-muted-foreground">
                       {booking.guestEmail}
                     </p>
                   </TableCell>
-                  <TableCell className="text-sm">
+                  <TableCell className="text-sm text-foreground">
                     {booking.hotel.name}
                   </TableCell>
                   <TableCell className="text-sm text-muted-foreground">
-                    {format(new Date(booking.createdAt), "dd/MM HH:mm", {
-                      locale: vi,
-                    })}
+                    {formatDatetime(booking.createdAt)}
                   </TableCell>
                   <TableCell>
-                    <Badge variant={BOOKING_STATUS_VARIANT[booking.status]}>
-                      {BOOKING_STATUS_LABEL[booking.status]}
-                    </Badge>
+                    <StatusBadge status={booking.status} type="booking" />
                   </TableCell>
                   <TableCell>
-                    <Badge
-                      variant={PAYMENT_STATUS_VARIANT[booking.paymentStatus]}
-                    >
-                      {PAYMENT_STATUS_LABEL[booking.paymentStatus]}
-                    </Badge>
+                    <StatusBadge
+                      status={booking.paymentStatus}
+                      type="payment"
+                    />
                   </TableCell>
-                  <TableCell className="text-sm text-right font-medium">
-                    {fmt(Number(booking.totalAmount))}
+                  <TableCell className="text-sm text-right font-medium text-foreground">
+                    {formatCurrencyUSD(Number(booking.totalAmount))}
                   </TableCell>
                 </TableRow>
               ))
@@ -524,17 +513,15 @@ const RecentBookingsSection = () => {
   );
 };
 
-// ─── Main ─────────────────────────────────────────────────────────────────────
-
 export const DashboardClient = () => {
   const now = new Date();
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
-        <p className="text-sm text-muted-foreground">
-          {format(now, "EEEE, dd MMMM yyyy", { locale: vi })}
-        </p>
+        <h1 className="text-2xl font-bold tracking-tight text-foreground">
+          Dashboard
+        </h1>
+        <p className="text-sm text-muted-foreground">{formatDateFull(now)}</p>
       </div>
 
       <StatsSection />

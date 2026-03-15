@@ -10,28 +10,13 @@ import {
   Building2,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useMe } from "@/hooks/client/use-user";
 import { useQuickStats, useRecentBookings } from "@/hooks/client/use-booking";
-import { formatDateShort } from "@/lib/utils";
+import { formatDateShort, formatCurrencyUSD } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
-
-const BOOKING_STATUS_MAP: Record<
-  string,
-  {
-    label: string;
-    variant: "default" | "secondary" | "destructive" | "outline";
-  }
-> = {
-  PENDING: { label: "Chờ xác nhận", variant: "secondary" },
-  CONFIRMED: { label: "Đã xác nhận", variant: "default" },
-  CHECKED_IN: { label: "Đã check-in", variant: "default" },
-  CHECKED_OUT: { label: "Hoàn thành", variant: "outline" },
-  CANCELLED: { label: "Đã huỷ", variant: "destructive" },
-  NO_SHOW: { label: "Không đến", variant: "destructive" },
-};
+import { StatusBadge } from "@/components/shared/status-badge";
 
 export const AccountOverviewClient = () => {
   const { data: user, isLoading: userLoading } = useMe();
@@ -40,13 +25,13 @@ export const AccountOverviewClient = () => {
 
   return (
     <div className="space-y-6">
-      <div className="rounded-2xl border bg-card p-5">
+      <div className="rounded-2xl border border-border bg-card p-5 shadow-none">
         {userLoading ? (
           <div className="flex items-center gap-4">
-            <Skeleton className="w-14 h-14 rounded-full" />
+            <Skeleton className="w-14 h-14 rounded-full bg-muted" />
             <div className="space-y-2">
-              <Skeleton className="h-5 w-32" />
-              <Skeleton className="h-4 w-48" />
+              <Skeleton className="h-5 w-32 bg-muted" />
+              <Skeleton className="h-4 w-48 bg-muted" />
             </div>
           </div>
         ) : (
@@ -59,7 +44,9 @@ export const AccountOverviewClient = () => {
                 </AvatarFallback>
               </Avatar>
               <div>
-                <p className="font-semibold text-base">{user?.name}</p>
+                <p className="font-semibold text-base text-foreground">
+                  {user?.name}
+                </p>
                 <p className="text-sm text-muted-foreground">{user?.email}</p>
                 {user?.createdAt && (
                   <p className="text-xs text-muted-foreground mt-0.5">
@@ -68,7 +55,12 @@ export const AccountOverviewClient = () => {
                 )}
               </div>
             </div>
-            <Button variant="outline" size="sm" className="rounded-xl" asChild>
+            <Button
+              variant="outline"
+              size="sm"
+              className="rounded-xl border-border text-foreground hover:bg-muted hover:text-foreground"
+              asChild
+            >
               <Link href="/account/profile">Chỉnh sửa hồ sơ</Link>
             </Button>
           </div>
@@ -78,7 +70,7 @@ export const AccountOverviewClient = () => {
       <div className="grid grid-cols-3 gap-3">
         {statsLoading ? (
           Array.from({ length: 3 }).map((_, i) => (
-            <Skeleton key={i} className="h-20 rounded-2xl" />
+            <Skeleton key={i} className="h-20 rounded-2xl bg-muted" />
           ))
         ) : (
           <>
@@ -88,26 +80,28 @@ export const AccountOverviewClient = () => {
               value={stats?.bookingCount ?? 0}
             />
             <StatCard
-              icon={<Star className="w-4 h-4 text-amber-500" />}
+              icon={<Star className="w-4 h-4 text-primary" />}
               label="Đánh giá"
               value={stats?.reviewCount ?? 0}
             />
             <StatCard
-              icon={<DollarSign className="w-4 h-4 text-emerald-500" />}
+              icon={<DollarSign className="w-4 h-4 text-primary" />}
               label="Đã chi"
-              value={`$${Number(stats?.totalSpent ?? 0).toLocaleString()}`}
+              value={formatCurrencyUSD(Number(stats?.totalSpent ?? 0))}
             />
           </>
         )}
       </div>
 
-      <Card className="rounded-2xl border bg-card">
-        <div className="flex items-center justify-between px-5 pb-4 border-b">
-          <h2 className="font-semibold text-sm">Đặt phòng gần đây</h2>
+      <Card className="rounded-2xl border border-border bg-card shadow-none overflow-hidden">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-border">
+          <h2 className="font-semibold text-sm text-foreground">
+            Đặt phòng gần đây
+          </h2>
           <Button
             variant="ghost"
             size="sm"
-            className="gap-1 text-primary text-xs h-7"
+            className="gap-1 text-primary text-xs h-7 hover:text-primary hover:bg-primary/10"
             asChild
           >
             <Link href="/account/bookings">
@@ -117,15 +111,15 @@ export const AccountOverviewClient = () => {
         </div>
 
         {recentLoading ? (
-          <div className="divide-y">
+          <div className="divide-y divide-border">
             {Array.from({ length: 3 }).map((_, i) => (
               <div key={i} className="p-4 flex items-center gap-3">
-                <Skeleton className="w-10 h-10 rounded-xl" />
+                <Skeleton className="w-10 h-10 rounded-xl bg-muted" />
                 <div className="flex-1 space-y-1.5">
-                  <Skeleton className="h-4 w-40" />
-                  <Skeleton className="h-3 w-28" />
+                  <Skeleton className="h-4 w-40 bg-muted" />
+                  <Skeleton className="h-3 w-28 bg-muted" />
                 </div>
-                <Skeleton className="h-5 w-20 rounded-full" />
+                <Skeleton className="h-5 w-20 rounded-full bg-muted" />
               </div>
             ))}
           </div>
@@ -134,28 +128,29 @@ export const AccountOverviewClient = () => {
             <p className="text-sm text-muted-foreground">
               Bạn chưa có đặt phòng nào.
             </p>
-            <Button size="sm" className="mt-3 rounded-xl" asChild>
+            <Button
+              size="sm"
+              className="mt-3 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90"
+              asChild
+            >
               <Link href="/hotels">Tìm khách sạn</Link>
             </Button>
           </div>
         ) : (
-          <div className="divide-y">
+          <div className="divide-y divide-border">
             {recent.map((booking) => {
-              const status =
-                BOOKING_STATUS_MAP[booking.status] ??
-                BOOKING_STATUS_MAP.PENDING;
               const item = booking.items[0];
               return (
                 <Link
                   key={booking.id}
                   href={`/account/bookings/${booking.bookingRef}`}
-                  className="flex items-center gap-3 px-5 py-3.5 hover:bg-muted/50 transition-colors"
+                  className="flex items-center gap-3 px-5 py-3.5 hover:bg-muted/40"
                 >
                   <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center shrink-0">
                     <Building2 className="w-4 h-4 text-muted-foreground" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate">
+                    <p className="text-sm font-medium truncate text-foreground">
                       {booking.hotel.name}
                     </p>
                     {item && (
@@ -168,9 +163,7 @@ export const AccountOverviewClient = () => {
                       </div>
                     )}
                   </div>
-                  <Badge variant={status.variant} className="text-xs shrink-0">
-                    {status.label}
-                  </Badge>
+                  <StatusBadge status={booking.status} type="booking" />
                 </Link>
               );
             })}
@@ -189,16 +182,14 @@ const StatCard = ({
   icon: React.ReactNode;
   label: string;
   value: string | number;
-}) => {
-  return (
-    <Card className="rounded-2xl p-4 flex flex-col gap-3">
-      <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center">
-        {icon}
-      </div>
-      <div>
-        <p className="text-lg font-bold leading-none">{value}</p>
-        <p className="text-xs text-muted-foreground mt-0.5">{label}</p>
-      </div>
-    </Card>
-  );
-};
+}) => (
+  <Card className="rounded-2xl border border-border bg-card shadow-none p-4 flex flex-col gap-3">
+    <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+      {icon}
+    </div>
+    <div>
+      <p className="text-lg font-bold leading-none text-foreground">{value}</p>
+      <p className="text-xs text-muted-foreground mt-0.5">{label}</p>
+    </div>
+  </Card>
+);

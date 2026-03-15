@@ -19,7 +19,6 @@ import {
 } from "@/components/ui/table";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { CheckCircle2, XCircle } from "lucide-react";
-import { format } from "date-fns";
 import { useQueryStates } from "nuqs";
 import { useConfirmDialogStore } from "@/store/confirm-dialog-store";
 import { adminUserParsers } from "@/lib/search-params/admin-users";
@@ -36,6 +35,7 @@ import {
 import { ListHeader } from "@/components/shared/list-header";
 import { TableSkeleton } from "@/components/shared/table-skeleton";
 import { DEFAULT_PAGE } from "@/lib/constants";
+import { formatDateShort } from "@/lib/utils";
 
 type User = RouterOutput["admin"]["user"]["list"]["items"][number];
 
@@ -94,29 +94,58 @@ export const UserListClient = () => {
             className="w-64"
           />
           <Select value={params.role ?? "all"} onValueChange={handleRoleChange}>
-            <SelectTrigger className="w-40">
+            <SelectTrigger className="w-40 border-border bg-background text-foreground">
               <SelectValue placeholder="Role" />
             </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Tất cả</SelectItem>
-              <SelectItem value="ADMIN">Admin</SelectItem>
-              <SelectItem value="CUSTOMER">Customer</SelectItem>
+            <SelectContent className="bg-card border-border">
+              <SelectItem
+                value="all"
+                className="text-foreground hover:bg-muted"
+              >
+                Tất cả
+              </SelectItem>
+              <SelectItem
+                value="ADMIN"
+                className="text-foreground hover:bg-muted"
+              >
+                Admin
+              </SelectItem>
+              <SelectItem
+                value="CUSTOMER"
+                className="text-foreground hover:bg-muted"
+              >
+                Customer
+              </SelectItem>
             </SelectContent>
           </Select>
         </div>
       </ListHeader>
 
-      <Card>
+      <Card className="bg-card border-border shadow-none">
         <Table>
           <TableHeader>
-            <TableRow>
-              <TableHead>Người dùng</TableHead>
-              <TableHead>Điện thoại</TableHead>
-              <TableHead>Role</TableHead>
-              <TableHead className="text-center">Email xác thực</TableHead>
-              <TableHead className="text-center">Booking</TableHead>
-              <TableHead className="text-center">Review</TableHead>
-              <TableHead>Ngày tạo</TableHead>
+            <TableRow className="border-border hover:bg-transparent">
+              <TableHead className="text-muted-foreground font-medium">
+                Người dùng
+              </TableHead>
+              <TableHead className="text-muted-foreground font-medium">
+                Điện thoại
+              </TableHead>
+              <TableHead className="text-muted-foreground font-medium">
+                Role
+              </TableHead>
+              <TableHead className="text-center text-muted-foreground font-medium">
+                Email xác thực
+              </TableHead>
+              <TableHead className="text-center text-muted-foreground font-medium">
+                Booking
+              </TableHead>
+              <TableHead className="text-center text-muted-foreground font-medium">
+                Review
+              </TableHead>
+              <TableHead className="text-muted-foreground font-medium">
+                Ngày tạo
+              </TableHead>
               <TableHead />
             </TableRow>
           </TableHeader>
@@ -157,33 +186,37 @@ interface UserRowProps {
 }
 
 const UserRow = ({ user, currentUserId, onChangeRole }: UserRowProps) => (
-  <TableRow>
+  <TableRow className="border-border hover:bg-muted/40">
     <TableCell>
       <div className="flex items-center gap-3">
         <UserAvatar name={user.name} image={user.image} />
         <div>
-          <p className="text-sm font-medium">{user.name}</p>
+          <p className="text-sm font-medium text-foreground">{user.name}</p>
           <p className="text-xs text-muted-foreground">{user.email}</p>
         </div>
       </div>
     </TableCell>
-    <TableCell className="text-sm">{user.phone ?? "—"}</TableCell>
+    <TableCell className="text-sm text-foreground">
+      {user.phone ?? "—"}
+    </TableCell>
     <TableCell>
       <StatusBadge status={user.role} type="role" />
     </TableCell>
     <TableCell className="text-center">
       {user.emailVerified ? (
-        <CheckCircle2 className="w-4 h-4 text-emerald-500 mx-auto" />
+        <CheckCircle2 className="w-4 h-4 text-primary mx-auto" />
       ) : (
         <XCircle className="w-4 h-4 text-muted-foreground mx-auto" />
       )}
     </TableCell>
-    <TableCell className="text-center text-sm">
+    <TableCell className="text-center text-sm text-muted-foreground">
       {user._count.bookings}
     </TableCell>
-    <TableCell className="text-center text-sm">{user._count.reviews}</TableCell>
+    <TableCell className="text-center text-sm text-muted-foreground">
+      {user._count.reviews}
+    </TableCell>
     <TableCell className="text-sm text-muted-foreground">
-      {format(new Date(user.createdAt), "dd/MM/yyyy")}
+      {formatDateShort(user.createdAt)}
     </TableCell>
     <TableCell>
       <UserRoleSelect
@@ -211,12 +244,16 @@ const UserRoleSelect = ({
     onValueChange={(role) => onChangeRole(user.id, user.name, role as UserRole)}
     disabled={user.id === currentUserId}
   >
-    <SelectTrigger className="h-8 w-32">
+    <SelectTrigger className="h-8 w-32 border-border bg-background text-foreground disabled:opacity-50">
       <SelectValue />
     </SelectTrigger>
-    <SelectContent>
-      <SelectItem value="ADMIN">Admin</SelectItem>
-      <SelectItem value="CUSTOMER">Customer</SelectItem>
+    <SelectContent className="bg-card border-border">
+      <SelectItem value="ADMIN" className="text-foreground hover:bg-muted">
+        Admin
+      </SelectItem>
+      <SelectItem value="CUSTOMER" className="text-foreground hover:bg-muted">
+        Customer
+      </SelectItem>
     </SelectContent>
   </Select>
 );
@@ -229,7 +266,7 @@ interface UserAvatarProps {
 const UserAvatar = ({ name, image }: UserAvatarProps) => (
   <Avatar className="w-8 h-8">
     <AvatarImage src={image ?? ""} />
-    <AvatarFallback className="text-xs">
+    <AvatarFallback className="bg-muted text-muted-foreground text-xs">
       {name.slice(0, 2).toUpperCase()}
     </AvatarFallback>
   </Avatar>

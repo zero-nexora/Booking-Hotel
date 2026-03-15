@@ -11,47 +11,45 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 export const ThemeToggle = () => {
-  const { setTheme, theme } = useTheme();
+  const { setTheme, resolvedTheme } = useTheme();
 
   return (
     <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
         <Button
-          variant="outline"
+          variant="ghost"
           size="icon"
-          className="size-9 border-border bg-background text-foreground hover:bg-accent hover:text-secondary-foreground"
+          className="size-9 text-muted-foreground hover:text-foreground hover:bg-muted"
         >
-          {theme === "light" ? (
+          {resolvedTheme === "light" ? (
             <Sun className="size-4" />
-          ) : theme === "dark" ? (
-            <Moon className="size-4" />
           ) : (
-            <Monitor className="size-4" />
+            <Moon className="size-4" />
           )}
           <span className="sr-only">Toggle theme</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent
         align="end"
-        className="min-w-36 bg-popover border-border text-popover-foreground"
+        className="min-w-36 bg-card border-border text-foreground"
       >
         <DropdownMenuItem
           onClick={() => setTheme("light")}
-          className="gap-2 text-sm cursor-pointer hover:bg-accent hover:text-accent-foreground"
+          className="gap-2 text-sm cursor-pointer text-foreground hover:bg-muted hover:text-foreground"
         >
           <Sun className="size-4 shrink-0" />
           Light
         </DropdownMenuItem>
         <DropdownMenuItem
           onClick={() => setTheme("dark")}
-          className="gap-2 text-sm cursor-pointer hover:bg-accent hover:text-accent-foreground"
+          className="gap-2 text-sm cursor-pointer text-foreground hover:bg-muted hover:text-foreground"
         >
           <Moon className="size-4 shrink-0" />
           Dark
         </DropdownMenuItem>
         <DropdownMenuItem
           onClick={() => setTheme("system")}
-          className="gap-2 text-sm cursor-pointer hover:bg-accent hover:text-accent-foreground"
+          className="gap-2 text-sm cursor-pointer text-foreground hover:bg-muted hover:text-foreground"
         >
           <Monitor className="size-4 shrink-0" />
           System

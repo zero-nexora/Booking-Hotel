@@ -23,19 +23,17 @@ interface LocationMapInnerProps {
   hotelName: string;
 }
 
-function LocationMapInner({
+const LocationMapInner = ({
   latitude,
   longitude,
   hotelName,
-}: LocationMapInnerProps) {
-  return (
-    <BaseMap center={[latitude, longitude]} zoom={15}>
-      <Marker position={[latitude, longitude]} icon={markerIcon}>
-        <Popup>{hotelName}</Popup>
-      </Marker>
-    </BaseMap>
-  );
-}
+}: LocationMapInnerProps) => (
+  <BaseMap center={[latitude, longitude]} zoom={15}>
+    <Marker position={[latitude, longitude]} icon={markerIcon}>
+      <Popup>{hotelName}</Popup>
+    </Marker>
+  </BaseMap>
+);
 
 const LocationMapLazy = dynamic(() => Promise.resolve(LocationMapInner), {
   ssr: false,
@@ -49,12 +47,12 @@ interface LocationMapProps {
   hotelName: string;
 }
 
-export function LocationMap({
+export const LocationMap = ({
   latitude,
   longitude,
   address,
   hotelName,
-}: LocationMapProps) {
+}: LocationMapProps) => {
   if (!latitude || !longitude) return null;
 
   return (
@@ -64,7 +62,12 @@ export function LocationMap({
           <MapPin className="w-3.5 h-3.5 shrink-0" />
           {address}
         </div>
-        <Button variant="ghost" size="sm" className="gap-1.5 text-xs" asChild>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="gap-1.5 text-xs text-muted-foreground hover:text-foreground hover:bg-muted"
+          asChild
+        >
           <a
             href={`https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`}
             target="_blank"
@@ -75,7 +78,7 @@ export function LocationMap({
           </a>
         </Button>
       </div>
-      <div className="rounded-2xl overflow-hidden border h-64">
+      <div className="rounded-2xl overflow-hidden border border-border h-64">
         <LocationMapLazy
           latitude={latitude}
           longitude={longitude}
@@ -84,4 +87,4 @@ export function LocationMap({
       </div>
     </div>
   );
-}
+};

@@ -18,8 +18,8 @@ export const HotelsClient = () => {
     : undefined;
 
   return (
-    <div className="min-h-screen">
-      <div className="sticky top-14 z-40 bg-background/95 backdrop-blur-sm border-b">
+    <div className="min-h-screen bg-background">
+      <div className="sticky top-14 z-40 bg-background/95 backdrop-blur-sm border-b border-border">
         <div className="max-w-6xl mx-auto px-4 py-3">
           <HotelsSearchBar />
         </div>
@@ -40,7 +40,6 @@ export const HotelsClient = () => {
                 <HotelsSortBar total={totalCount} />
               </div>
             </div>
-
             <HotelsList />
           </div>
         </div>

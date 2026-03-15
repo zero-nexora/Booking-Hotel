@@ -49,11 +49,17 @@ export const AmenityForm = ({
           name="name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Tên tiện nghi</FormLabel>
+              <FormLabel className="text-foreground font-medium">
+                Tên tiện nghi
+              </FormLabel>
               <FormControl>
-                <Input {...field} placeholder="WiFi, Bể bơi..." />
+                <Input
+                  {...field}
+                  placeholder="WiFi, Bể bơi..."
+                  className="bg-background border-border text-foreground placeholder:text-muted-foreground focus-visible:ring-primary"
+                />
               </FormControl>
-              <FormMessage />
+              <FormMessage className="text-destructive" />
             </FormItem>
           )}
         />
@@ -62,11 +68,17 @@ export const AmenityForm = ({
           name="icon"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Icon (emoji)</FormLabel>
+              <FormLabel className="text-foreground font-medium">
+                Icon (emoji)
+              </FormLabel>
               <FormControl>
-                <Input {...field} placeholder="🏊" />
+                <Input
+                  {...field}
+                  placeholder="🏊"
+                  className="bg-background border-border text-foreground placeholder:text-muted-foreground focus-visible:ring-primary"
+                />
               </FormControl>
-              <FormMessage />
+              <FormMessage className="text-destructive" />
             </FormItem>
           )}
         />

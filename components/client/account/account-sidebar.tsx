@@ -8,6 +8,7 @@ import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import { useMe } from "@/hooks/client/use-user";
 import { authClient } from "@/lib/auth-client";
+import { useConfirmDialogStore } from "@/store/confirm-dialog-store";
 
 const navLinks = [
   { href: "/account", label: "Tổng quan", icon: LayoutDashboard },
@@ -17,14 +18,24 @@ const navLinks = [
 ];
 
 export const AccountSidebar = () => {
+  const { openConfirm } = useConfirmDialogStore();
+
   const pathname = usePathname();
   const router = useRouter();
   const { data: user } = useMe();
 
   const handleSignOut = async () => {
     await authClient.signOut();
-    router.push("/");
+    router.push("/sign-in");
     router.refresh();
+  };
+
+  const handleOpenConfirmLogout = async () => {
+    openConfirm({
+      title: "Đăng xuất",
+      description: "Bạn có chắc chắn muốn đăng xuất không?",
+      onConfirm: handleSignOut,
+    });
   };
 
   return (
@@ -37,7 +48,7 @@ export const AccountSidebar = () => {
           </AvatarFallback>
         </Avatar>
         <div className="min-w-0">
-          <p className="text-sm font-semibold truncate">
+          <p className="text-sm font-semibold truncate text-foreground">
             {user?.name ?? "..."}
           </p>
           <p className="text-xs text-muted-foreground truncate">
@@ -46,7 +57,7 @@ export const AccountSidebar = () => {
         </div>
       </div>
 
-      <Separator className="mb-3" />
+      <Separator className="mb-3 bg-border" />
 
       <nav className="space-y-0.5">
         {navLinks.map(({ href, label, icon: Icon }) => {
@@ -57,7 +68,7 @@ export const AccountSidebar = () => {
               key={href}
               href={href}
               className={cn(
-                "flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
+                "flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium",
                 active
                   ? "bg-primary/10 text-primary"
                   : "text-muted-foreground hover:text-foreground hover:bg-muted",
@@ -69,11 +80,11 @@ export const AccountSidebar = () => {
           );
         })}
 
-        <Separator className="my-2" />
+        <Separator className="my-2 bg-border" />
 
         <button
-          onClick={handleSignOut}
-          className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+          onClick={handleOpenConfirmLogout}
+          className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:text-destructive hover:bg-destructive/10"
         >
           <LogOut className="w-4 h-4 shrink-0" />
           Đăng xuất

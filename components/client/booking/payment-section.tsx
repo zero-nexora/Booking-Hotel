@@ -20,25 +20,23 @@ interface PaymentSectionProps {
   onPaymentError: (message: string) => void;
 }
 
-export const PaymentSection = (props: PaymentSectionProps) => {
-  return (
-    <Elements
-      stripe={stripePromise}
-      options={{
-        clientSecret: props.clientSecret,
-        appearance: {
-          theme: "stripe",
-          variables: {
-            borderRadius: "10px",
-            fontSizeBase: "14px",
-          },
+export const PaymentSection = (props: PaymentSectionProps) => (
+  <Elements
+    stripe={stripePromise}
+    options={{
+      clientSecret: props.clientSecret,
+      appearance: {
+        theme: "stripe",
+        variables: {
+          borderRadius: "10px",
+          fontSizeBase: "14px",
         },
-      }}
-    >
-      <PaymentForm {...props} />
-    </Elements>
-  );
-};
+      },
+    }}
+  >
+    <PaymentForm {...props} />
+  </Elements>
+);
 
 const PaymentForm = ({
   total,
@@ -69,8 +67,6 @@ const PaymentForm = ({
     }
   };
 
-  const busy = processing;
-
   return (
     <div className="space-y-5">
       <div className="min-h-40">
@@ -90,7 +86,7 @@ const PaymentForm = ({
           id="terms"
           checked={agreed}
           onCheckedChange={(v) => setAgreed(v === true)}
-          className="mt-0.5"
+          className="mt-0.5 border-border data-[state=checked]:bg-primary data-[state=checked]:border-primary"
         />
         <Label
           htmlFor="terms"
@@ -99,14 +95,14 @@ const PaymentForm = ({
           Tôi đồng ý với{" "}
           <a
             href="/terms"
-            className="text-primary underline underline-offset-2"
+            className="text-primary underline underline-offset-2 hover:text-primary/80"
           >
             điều khoản dịch vụ
           </a>{" "}
           và{" "}
           <a
             href="/privacy"
-            className="text-primary underline underline-offset-2"
+            className="text-primary underline underline-offset-2 hover:text-primary/80"
           >
             chính sách bảo mật
           </a>
@@ -115,16 +111,16 @@ const PaymentForm = ({
       </div>
 
       <Button
-        className="w-full rounded-xl h-11 gap-2 text-base font-semibold"
-        disabled={!agreed || busy || !ready}
+        className="w-full rounded-xl h-11 gap-2 text-base font-semibold bg-primary text-primary-foreground hover:bg-primary/90"
+        disabled={!agreed || processing || !ready}
         onClick={handleSubmit}
       >
-        {busy ? (
+        {processing ? (
           <Loader2 className="w-4 h-4 animate-spin" />
         ) : (
           <ShieldCheck className="w-4 h-4" />
         )}
-        {busy ? "Đang xử lý..." : `Xác nhận & Thanh toán $${total}`}
+        {processing ? "Đang xử lý..." : `Xác nhận & Thanh toán $${total}`}
       </Button>
 
       <div className="flex items-center justify-center gap-1.5 text-xs text-muted-foreground">

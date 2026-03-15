@@ -46,7 +46,7 @@ export const HotelDetailClient = ({
     <div className="max-w-6xl mx-auto px-4 py-6 space-y-8">
       <ImageGallery images={hotel.images} hotelName={hotel.name} />
 
-      <div className="flex wapper gap-8">
+      <div className="flex gap-8">
         <div className="flex-1 min-w-0 space-y-8">
           <HotelOverview
             name={hotel.name}
@@ -59,32 +59,36 @@ export const HotelDetailClient = ({
             policy={hotel.policy}
           />
 
-          <Separator />
+          <Separator className="bg-border" />
 
           {hotel.description && (
             <>
               <section>
-                <h2 className="text-base font-semibold mb-3">Giới thiệu</h2>
+                <h2 className="text-base font-semibold mb-3 text-foreground">
+                  Giới thiệu
+                </h2>
                 <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-line">
                   {hotel.description}
                 </p>
               </section>
-              <Separator />
+              <Separator className="bg-border" />
             </>
           )}
 
           {hotel.amenities.length > 0 && (
             <>
               <section>
-                <h2 className="text-base font-semibold mb-4">Tiện nghi</h2>
+                <h2 className="text-base font-semibold mb-4 text-foreground">
+                  Tiện nghi
+                </h2>
                 <AmenitiesGrid amenities={hotel.amenities} />
               </section>
-              <Separator />
+              <Separator className="bg-border" />
             </>
           )}
 
           <section id="available-rooms">
-            <h2 className="text-base font-semibold mb-4">
+            <h2 className="text-base font-semibold mb-4 text-foreground">
               Phòng trống
               {checkIn && checkOut && (
                 <span className="ml-2 text-sm font-normal text-muted-foreground">
@@ -102,10 +106,12 @@ export const HotelDetailClient = ({
             />
           </section>
 
-          <Separator />
+          <Separator className="bg-border" />
 
           <section>
-            <h2 className="text-base font-semibold mb-4">Vị trí</h2>
+            <h2 className="text-base font-semibold mb-4 text-foreground">
+              Vị trí
+            </h2>
             <LocationMap
               latitude={hotel.address.latitude}
               longitude={hotel.address.longitude}
@@ -114,10 +120,10 @@ export const HotelDetailClient = ({
             />
           </section>
 
-          <Separator />
+          <Separator className="bg-border" />
 
           <section>
-            <h2 className="text-base font-semibold mb-5">
+            <h2 className="text-base font-semibold mb-5 text-foreground">
               Đánh giá
               {hotel.reviewCount > 0 && (
                 <span className="ml-2 text-sm font-normal text-muted-foreground">
@@ -150,21 +156,19 @@ export const HotelDetailClient = ({
   );
 };
 
-const HotelDetailSkeleton = () => {
-  return (
-    <div className="max-w-6xl mx-auto px-4 py-6 space-y-6">
-      <Skeleton className="h-105 rounded-2xl" />
-      <div className="flex gap-8">
-        <div className="flex-1 space-y-4">
-          <Skeleton className="h-8 w-2/3" />
-          <Skeleton className="h-4 w-1/2" />
-          <Skeleton className="h-32 w-full" />
-          <Skeleton className="h-48 w-full" />
-        </div>
-        <div className="w-80 shrink-0">
-          <Skeleton className="h-80 rounded-2xl" />
-        </div>
+const HotelDetailSkeleton = () => (
+  <div className="max-w-6xl mx-auto px-4 py-6 space-y-6">
+    <Skeleton className="h-96 rounded-2xl bg-muted" />
+    <div className="flex gap-8">
+      <div className="flex-1 space-y-4">
+        <Skeleton className="h-8 w-2/3 bg-muted" />
+        <Skeleton className="h-4 w-1/2 bg-muted" />
+        <Skeleton className="h-32 w-full bg-muted" />
+        <Skeleton className="h-48 w-full bg-muted" />
+      </div>
+      <div className="w-80 shrink-0">
+        <Skeleton className="h-80 rounded-2xl bg-muted" />
       </div>
     </div>
-  );
-}
+  </div>
+);

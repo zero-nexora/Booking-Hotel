@@ -39,9 +39,9 @@ type Values = z.infer<typeof schema>;
 type PageState = "idle" | "invalid" | "success";
 
 const inputCls =
-  "bg-secondary/40 border-border focus-visible:ring-1 focus-visible:ring-primary/40 focus-visible:border-primary placeholder:text-muted-foreground/50";
+  "bg-background border-border text-foreground placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-primary/50 focus-visible:border-primary";
 const labelCls =
-  "text-xs font-medium uppercase tracking-wide text-foreground/70";
+  "text-xs font-medium uppercase tracking-wide text-muted-foreground";
 
 const ResetPasswordPage = () => (
   <Suspense
@@ -86,7 +86,7 @@ const ResetPasswordContent = () => {
   if (state === "invalid")
     return (
       <div className="space-y-6 text-center">
-        <div className="mx-auto flex size-14 items-center justify-center rounded-2xl bg-orange-400/10 text-orange-400">
+        <div className="mx-auto flex size-14 items-center justify-center rounded-2xl bg-secondary text-secondary-foreground">
           <AlertTriangle className="size-6" />
         </div>
         <div className="space-y-1.5">
@@ -99,13 +99,16 @@ const ResetPasswordContent = () => {
           </p>
         </div>
         <div className="space-y-2">
-          <Button asChild className="w-full h-10 font-medium">
+          <Button
+            asChild
+            className="w-full h-10 font-medium bg-primary text-primary-foreground hover:bg-primary/90"
+          >
             <Link href="/forgot-password">Yêu cầu link mới</Link>
           </Button>
           <Button
             variant="ghost"
             asChild
-            className="w-full h-10 text-muted-foreground hover:text-foreground"
+            className="w-full h-10 text-muted-foreground hover:text-foreground hover:bg-muted"
           >
             <Link href="/sign-in">Quay lại đăng nhập</Link>
           </Button>
@@ -116,7 +119,7 @@ const ResetPasswordContent = () => {
   if (state === "success")
     return (
       <div className="space-y-6 text-center">
-        <div className="mx-auto flex size-14 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-500">
+        <div className="mx-auto flex size-14 items-center justify-center rounded-2xl bg-primary/15 text-primary">
           <CheckCircle2 className="size-6" />
         </div>
         <div className="space-y-1.5">
@@ -127,7 +130,10 @@ const ResetPasswordContent = () => {
             Mật khẩu của bạn đã được cập nhật thành công.
           </p>
         </div>
-        <Button asChild className="w-full h-10 font-medium">
+        <Button
+          asChild
+          className="w-full h-10 font-medium bg-primary text-primary-foreground hover:bg-primary/90"
+        >
           <Link href="/sign-in">Đăng nhập ngay</Link>
         </Button>
       </div>
@@ -166,10 +172,10 @@ const ResetPasswordContent = () => {
                   />
                 </FormControl>
                 <PasswordStrengthBar password={watchedPassword} />
-                <FormDescription className="text-xs text-muted-foreground/70">
+                <FormDescription className="text-xs text-muted-foreground">
                   Tối thiểu 8 ký tự, gồm chữ hoa và chữ số
                 </FormDescription>
-                <FormMessage />
+                <FormMessage className="text-destructive" />
               </FormItem>
             )}
           />
@@ -188,13 +194,13 @@ const ResetPasswordContent = () => {
                     {...field}
                   />
                 </FormControl>
-                <FormMessage />
+                <FormMessage className="text-destructive" />
               </FormItem>
             )}
           />
           <Button
             type="submit"
-            className="w-full h-10 font-medium"
+            className="w-full h-10 font-medium bg-primary text-primary-foreground hover:bg-primary/90"
             disabled={isLoading}
           >
             {isLoading && <Loader2 className="size-4 animate-spin" />}

@@ -4,8 +4,6 @@ import { Star, Loader2, Quote } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useHotelReviews } from "@/hooks/client/use-hotels";
-import { format } from "date-fns";
-import { vi } from "date-fns/locale";
 import { useInfiniteScroll } from "@/hooks/use-infinity-scroll";
 import { Card } from "@/components/ui/card";
 import { formatDateShort } from "@/lib/utils";
@@ -34,16 +32,18 @@ export const ReviewsSection = ({
   return (
     <div className="space-y-5">
       {avgRating !== null && (
-        <div className="flex items-center gap-4 p-4 rounded-2xl bg-muted/50 border">
+        <div className="flex items-center gap-4 p-4 rounded-2xl bg-muted/40 border border-border">
           <div className="text-center">
-            <p className="text-4xl font-bold">{avgRating.toFixed(1)}</p>
+            <p className="text-4xl font-bold text-foreground">
+              {avgRating.toFixed(1)}
+            </p>
             <div className="flex items-center justify-center gap-0.5 mt-1">
               {Array.from({ length: 5 }).map((_, i) => (
                 <Star
                   key={i}
                   className={`w-3.5 h-3.5 ${
                     i < Math.round(avgRating)
-                      ? "fill-amber-400 text-amber-400"
+                      ? "fill-primary text-primary"
                       : "text-muted-foreground/30"
                   }`}
                 />
@@ -64,10 +64,10 @@ export const ReviewsSection = ({
                   <span className="text-xs w-3 text-muted-foreground">
                     {star}
                   </span>
-                  <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
+                  <Star className="w-3 h-3 fill-primary text-primary" />
                   <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
                     <div
-                      className="h-full bg-amber-400 rounded-full"
+                      className="h-full bg-primary rounded-full"
                       style={{ width: `${pct}%` }}
                     />
                   </div>
@@ -84,11 +84,11 @@ export const ReviewsSection = ({
       {isLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {Array.from({ length: 4 }).map((_, i) => (
-            <Skeleton key={i} className="h-40 rounded-2xl" />
+            <Skeleton key={i} className="h-40 rounded-2xl bg-muted" />
           ))}
         </div>
       ) : reviews.length === 0 ? (
-        <Card className="text-center py-10 text-sm text-muted-foreground">
+        <Card className="bg-card border-border text-center py-10 text-sm text-muted-foreground">
           Chưa có đánh giá nào cho khách sạn này.
         </Card>
       ) : (
@@ -96,30 +96,30 @@ export const ReviewsSection = ({
           {reviews.map((review) => (
             <Card
               key={review.id}
-              className="rounded-2xl border p-4 flex flex-col gap-3 relative"
+              className="rounded-2xl border border-border bg-card p-4 flex flex-col gap-3 relative shadow-none"
             >
               <Quote className="w-5 h-5 text-primary/15 absolute top-3 right-3" />
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-0.5">
                 {Array.from({ length: 5 }).map((_, i) => (
                   <Star
                     key={i}
                     className={`w-3 h-3 ${
                       i < review.overallRating
-                        ? "fill-amber-400 text-amber-400"
+                        ? "fill-primary text-primary"
                         : "text-muted-foreground/20"
                     }`}
                   />
                 ))}
               </div>
               {review.title && (
-                <p className="font-semibold text-sm leading-tight">
+                <p className="font-semibold text-sm leading-tight text-foreground">
                   {review.title}
                 </p>
               )}
               <p className="text-sm text-muted-foreground leading-relaxed line-clamp-4 flex-1">
                 {review.comment}
               </p>
-              <div className="flex items-center gap-2 pt-3 border-t">
+              <div className="flex items-center gap-2 pt-3 border-t border-border">
                 <Avatar className="w-7 h-7">
                   <AvatarImage src={review.user.image ?? undefined} />
                   <AvatarFallback className="text-xs bg-primary/10 text-primary">
@@ -127,7 +127,7 @@ export const ReviewsSection = ({
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs font-medium truncate">
+                  <p className="text-xs font-medium truncate text-foreground">
                     {review.user.name}
                   </p>
                 </div>

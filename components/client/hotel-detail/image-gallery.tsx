@@ -47,7 +47,7 @@ export const ImageGallery = ({ images, hotelName }: ImageGalleryProps) => {
       <div className="relative rounded-2xl overflow-hidden bg-muted">
         <div className="grid grid-cols-4 grid-rows-2 gap-1.5 h-72 sm:h-96">
           <div
-            className="col-span-2 row-span-2 relative cursor-pointer group"
+            className="col-span-2 row-span-2 relative cursor-pointer"
             onClick={() => openLightbox(0)}
           >
             <Image
@@ -62,7 +62,7 @@ export const ImageGallery = ({ images, hotelName }: ImageGalleryProps) => {
           {thumbs.map((img, i) => (
             <div
               key={i}
-              className="relative cursor-pointer group"
+              className="relative cursor-pointer"
               onClick={() => openLightbox(i + 1)}
             >
               <Image
@@ -72,9 +72,9 @@ export const ImageGallery = ({ images, hotelName }: ImageGalleryProps) => {
                 className="object-cover"
               />
               {i === thumbs.length - 1 && hasMore && (
-                <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center gap-1">
-                  <Images className="w-5 h-5 text-white" />
-                  <span className="text-white text-sm font-semibold">
+                <div className="absolute inset-0 bg-foreground/50 flex flex-col items-center justify-center gap-1">
+                  <Images className="w-5 h-5 text-background" />
+                  <span className="text-background text-sm font-semibold">
                     +{images.length - 5}
                   </span>
                 </div>
@@ -92,7 +92,7 @@ export const ImageGallery = ({ images, hotelName }: ImageGalleryProps) => {
         <Button
           variant="secondary"
           size="sm"
-          className="absolute bottom-3 right-3 gap-1.5 text-xs shadow-md"
+          className="absolute bottom-3 right-3 gap-1.5 text-xs shadow-md bg-background/90 text-foreground border-border hover:bg-background"
           onClick={() => openLightbox(0)}
         >
           <Grid2x2 className="w-3.5 h-3.5" />
@@ -105,20 +105,22 @@ export const ImageGallery = ({ images, hotelName }: ImageGalleryProps) => {
           className="fixed inset-0 z-50 flex flex-col"
           onClick={closeLightbox}
         >
-          <div className="absolute inset-0 bg-black/95 backdrop-blur-sm" />
+          <div className="absolute inset-0 bg-foreground/95 backdrop-blur-sm" />
 
           <div
             className="relative z-10 flex items-center justify-between px-5 py-4"
             onClick={(e) => e.stopPropagation()}
           >
-            <p className="text-sm font-medium text-white/80">{hotelName}</p>
+            <p className="text-sm font-medium text-background/80">
+              {hotelName}
+            </p>
             <div className="flex items-center gap-3">
-              <span className="text-xs text-white/40 tabular-nums">
+              <span className="text-xs text-background/40 tabular-nums">
                 {lightboxIndex + 1} / {images.length}
               </span>
               <button
                 onClick={closeLightbox}
-                className="flex items-center justify-center w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 transition-colors text-white"
+                className="flex items-center justify-center w-8 h-8 rounded-full bg-background/10 hover:bg-background/20 text-background"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -132,7 +134,7 @@ export const ImageGallery = ({ images, hotelName }: ImageGalleryProps) => {
             <button
               onClick={prev}
               disabled={lightboxIndex === 0}
-              className="absolute left-4 flex items-center justify-center w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 disabled:opacity-20 disabled:cursor-not-allowed transition-colors text-white"
+              className="absolute left-4 flex items-center justify-center w-10 h-10 rounded-full bg-background/10 hover:bg-background/20 disabled:opacity-20 disabled:cursor-not-allowed text-background"
             >
               <ChevronLeft className="w-5 h-5" />
             </button>
@@ -150,7 +152,7 @@ export const ImageGallery = ({ images, hotelName }: ImageGalleryProps) => {
             <button
               onClick={next}
               disabled={lightboxIndex === images.length - 1}
-              className="absolute right-4 flex items-center justify-center w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 disabled:opacity-20 disabled:cursor-not-allowed transition-colors text-white"
+              className="absolute right-4 flex items-center justify-center w-10 h-10 rounded-full bg-background/10 hover:bg-background/20 disabled:opacity-20 disabled:cursor-not-allowed text-background"
             >
               <ChevronRight className="w-5 h-5" />
             </button>
@@ -164,9 +166,9 @@ export const ImageGallery = ({ images, hotelName }: ImageGalleryProps) => {
               <button
                 key={i}
                 onClick={() => setLightboxIndex(i)}
-                className={`relative shrink-0 w-14 h-10 rounded-md overflow-hidden transition-all duration-150 ${
+                className={`relative shrink-0 w-14 h-10 rounded-md overflow-hidden ${
                   i === lightboxIndex
-                    ? "ring-2 ring-white opacity-100"
+                    ? "ring-2 ring-background opacity-100"
                     : "opacity-40 hover:opacity-70"
                 }`}
               >

@@ -67,23 +67,21 @@ export const DEFAULT_ROOM_FORM_VALUES: RoomFormValues = {
   beds: [{ bedTypeId: "", quantity: 1 }],
 };
 
-export function roomDetailToFormValues(room: RoomDetail): RoomFormValues {
-  return {
-    name: room.name,
-    roomTypeId: room.roomTypeId,
-    description: room.description,
-    capacity: room.capacity,
-    sizeM2: room.sizeM2 ?? undefined,
-    floor: room.floor ?? undefined,
-    basePrice: Number(room.basePrice),
-    isActive: room.isActive,
-    amenityIds: room.amenities.map((a) => a.amenityId),
-    beds: room.beds.map((b) => ({
-      bedTypeId: b.bedType.id,
-      quantity: b.quantity,
-    })),
-  };
-}
+export const roomDetailToFormValues = (room: RoomDetail): RoomFormValues => ({
+  name: room.name,
+  roomTypeId: room.roomTypeId,
+  description: room.description,
+  capacity: room.capacity,
+  sizeM2: room.sizeM2 ?? undefined,
+  floor: room.floor ?? undefined,
+  basePrice: Number(room.basePrice),
+  isActive: room.isActive,
+  amenityIds: room.amenities.map((a) => a.amenityId),
+  beds: room.beds.map((b) => ({
+    bedTypeId: b.bedType.id,
+    quantity: b.quantity,
+  })),
+});
 
 interface RoomFormProps {
   defaultValues?: RoomFormValues;
@@ -123,7 +121,7 @@ export const RoomForm = ({
     return (
       <div className="space-y-4">
         {Array.from({ length: 8 }).map((_, i) => (
-          <Skeleton key={i} className="h-10 w-full" />
+          <Skeleton key={i} className="h-10 w-full bg-muted" />
         ))}
       </div>
     );
@@ -138,11 +136,17 @@ export const RoomForm = ({
             name="name"
             render={({ field }) => (
               <FormItem className="col-span-2">
-                <FormLabel>Tên phòng</FormLabel>
+                <FormLabel className="text-foreground font-medium">
+                  Tên phòng
+                </FormLabel>
                 <FormControl>
-                  <Input {...field} placeholder="Deluxe Ocean View..." />
+                  <Input
+                    {...field}
+                    placeholder="Deluxe Ocean View..."
+                    className="bg-background border-border text-foreground placeholder:text-muted-foreground focus-visible:ring-primary"
+                  />
                 </FormControl>
-                <FormMessage />
+                <FormMessage className="text-destructive" />
               </FormItem>
             )}
           />
@@ -152,15 +156,18 @@ export const RoomForm = ({
             name="description"
             render={({ field }) => (
               <FormItem className="col-span-2">
-                <FormLabel>Mô tả</FormLabel>
+                <FormLabel className="text-foreground font-medium">
+                  Mô tả
+                </FormLabel>
                 <FormControl>
                   <Textarea
                     {...field}
                     rows={3}
                     placeholder="Mô tả về phòng..."
+                    className="bg-background border-border text-foreground placeholder:text-muted-foreground focus-visible:ring-primary resize-none"
                   />
                 </FormControl>
-                <FormMessage />
+                <FormMessage className="text-destructive" />
               </FormItem>
             )}
           />
@@ -170,22 +177,28 @@ export const RoomForm = ({
             name="roomTypeId"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Loại phòng</FormLabel>
+                <FormLabel className="text-foreground font-medium">
+                  Loại phòng
+                </FormLabel>
                 <Select value={field.value} onValueChange={field.onChange}>
                   <FormControl>
-                    <SelectTrigger>
+                    <SelectTrigger className="bg-background border-border text-foreground">
                       <SelectValue placeholder="Chọn loại phòng" />
                     </SelectTrigger>
                   </FormControl>
-                  <SelectContent>
+                  <SelectContent className="bg-card border-border">
                     {roomTypes.map((rt) => (
-                      <SelectItem key={rt.id} value={rt.id}>
+                      <SelectItem
+                        key={rt.id}
+                        value={rt.id}
+                        className="text-foreground hover:bg-muted"
+                      >
                         {rt.name}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
-                <FormMessage />
+                <FormMessage className="text-destructive" />
               </FormItem>
             )}
           />
@@ -195,16 +208,19 @@ export const RoomForm = ({
             name="capacity"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Sức chứa (khách)</FormLabel>
+                <FormLabel className="text-foreground font-medium">
+                  Sức chứa (khách)
+                </FormLabel>
                 <FormControl>
                   <Input
                     type="number"
                     min={1}
                     value={field.value}
                     onChange={(e) => field.onChange(Number(e.target.value))}
+                    className="bg-background border-border text-foreground focus-visible:ring-primary"
                   />
                 </FormControl>
-                <FormMessage />
+                <FormMessage className="text-destructive" />
               </FormItem>
             )}
           />
@@ -214,7 +230,9 @@ export const RoomForm = ({
             name="basePrice"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Giá cơ bản (VNĐ)</FormLabel>
+                <FormLabel className="text-foreground font-medium">
+                  Giá cơ bản (USD)
+                </FormLabel>
                 <FormControl>
                   <Input
                     type="number"
@@ -222,9 +240,10 @@ export const RoomForm = ({
                     placeholder="500000"
                     value={field.value}
                     onChange={(e) => field.onChange(Number(e.target.value))}
+                    className="bg-background border-border text-foreground placeholder:text-muted-foreground focus-visible:ring-primary"
                   />
                 </FormControl>
-                <FormMessage />
+                <FormMessage className="text-destructive" />
               </FormItem>
             )}
           />
@@ -234,7 +253,9 @@ export const RoomForm = ({
             name="sizeM2"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Diện tích (m²)</FormLabel>
+                <FormLabel className="text-foreground font-medium">
+                  Diện tích (m²)
+                </FormLabel>
                 <FormControl>
                   <Input
                     type="number"
@@ -247,9 +268,10 @@ export const RoomForm = ({
                         e.target.value ? Number(e.target.value) : undefined,
                       )
                     }
+                    className="bg-background border-border text-foreground placeholder:text-muted-foreground focus-visible:ring-primary"
                   />
                 </FormControl>
-                <FormMessage />
+                <FormMessage className="text-destructive" />
               </FormItem>
             )}
           />
@@ -259,7 +281,9 @@ export const RoomForm = ({
             name="floor"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Tầng</FormLabel>
+                <FormLabel className="text-foreground font-medium">
+                  Tầng
+                </FormLabel>
                 <FormControl>
                   <Input
                     type="number"
@@ -270,9 +294,10 @@ export const RoomForm = ({
                         e.target.value ? Number(e.target.value) : undefined,
                       )
                     }
+                    className="bg-background border-border text-foreground placeholder:text-muted-foreground focus-visible:ring-primary"
                   />
                 </FormControl>
-                <FormMessage />
+                <FormMessage className="text-destructive" />
               </FormItem>
             )}
           />
@@ -281,8 +306,10 @@ export const RoomForm = ({
             control={form.control}
             name="isActive"
             render={({ field }) => (
-              <FormItem className="col-span-2 flex items-center justify-between rounded-lg border p-3">
-                <FormLabel className="cursor-pointer">Hiển thị phòng</FormLabel>
+              <FormItem className="col-span-2 flex items-center justify-between rounded-lg border border-border bg-background p-3">
+                <FormLabel className="cursor-pointer text-foreground font-medium">
+                  Hiển thị phòng
+                </FormLabel>
                 <FormControl>
                   <Switch
                     checked={field.value}
@@ -296,11 +323,14 @@ export const RoomForm = ({
 
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <FormLabel>Loại giường</FormLabel>
+            <FormLabel className="text-foreground font-medium">
+              Loại giường
+            </FormLabel>
             <Button
               type="button"
               variant="outline"
               size="sm"
+              className="border-border text-foreground hover:bg-muted hover:text-foreground"
               onClick={() => append({ bedTypeId: "", quantity: 1 })}
             >
               <Plus className="w-3.5 h-3.5 mr-1" />
@@ -317,19 +347,23 @@ export const RoomForm = ({
                   <FormItem className="flex-1">
                     <Select value={field.value} onValueChange={field.onChange}>
                       <FormControl>
-                        <SelectTrigger>
+                        <SelectTrigger className="bg-background border-border text-foreground">
                           <SelectValue placeholder="Chọn loại giường" />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent>
+                      <SelectContent className="bg-card border-border">
                         {bedTypes.map((bt) => (
-                          <SelectItem key={bt.id} value={bt.id}>
+                          <SelectItem
+                            key={bt.id}
+                            value={bt.id}
+                            className="text-foreground hover:bg-muted"
+                          >
                             {bt.name}
                           </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
-                    <FormMessage />
+                    <FormMessage className="text-destructive" />
                   </FormItem>
                 )}
               />
@@ -345,9 +379,10 @@ export const RoomForm = ({
                         max={10}
                         value={field.value}
                         onChange={(e) => field.onChange(Number(e.target.value))}
+                        className="bg-background border-border text-foreground focus-visible:ring-primary"
                       />
                     </FormControl>
-                    <FormMessage />
+                    <FormMessage className="text-destructive" />
                   </FormItem>
                 )}
               />
@@ -355,7 +390,7 @@ export const RoomForm = ({
                 type="button"
                 variant="ghost"
                 size="icon"
-                className="h-10 w-10 text-destructive shrink-0"
+                className="h-10 w-10 text-destructive hover:text-destructive hover:bg-destructive/10 shrink-0"
                 onClick={() => remove(index)}
               >
                 <Trash2 className="w-3.5 h-3.5" />
@@ -369,14 +404,16 @@ export const RoomForm = ({
           name="amenityIds"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Tiện nghi</FormLabel>
+              <FormLabel className="text-foreground font-medium">
+                Tiện nghi
+              </FormLabel>
               <FormControl>
                 <AmenityMultiSelect
                   value={field.value}
                   onChange={field.onChange}
                 />
               </FormControl>
-              <FormMessage />
+              <FormMessage className="text-destructive" />
             </FormItem>
           )}
         />
@@ -386,11 +423,15 @@ export const RoomForm = ({
             type="button"
             variant="outline"
             onClick={onCancel}
-            className="flex-1"
+            className="flex-1 border-border text-foreground hover:bg-muted hover:text-foreground"
           >
             Hủy
           </Button>
-          <Button type="submit" disabled={isPending} className="flex-1">
+          <Button
+            type="submit"
+            disabled={isPending}
+            className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90"
+          >
             {isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
             {submitLabel}
           </Button>

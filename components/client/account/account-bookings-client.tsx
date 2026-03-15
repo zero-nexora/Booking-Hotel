@@ -10,13 +10,13 @@ import {
   Loader2,
   BookX,
 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useMyBookings } from "@/hooks/client/use-booking";
 import { cn, formatCurrencyUSD, formatDateShort } from "@/lib/utils";
 import { accountBookingParsers } from "@/lib/search-params/booking-search";
 import { useInfiniteScroll } from "@/hooks/use-infinity-scroll";
+import { StatusBadge } from "@/components/shared/status-badge";
 
 type BookingStatus =
   | "PENDING"
@@ -34,21 +34,6 @@ const TABS: { value: BookingStatus | null; label: string }[] = [
   { value: "CHECKED_OUT", label: "Hoàn thành" },
   { value: "CANCELLED", label: "Đã huỷ" },
 ];
-
-const STATUS_MAP: Record<
-  string,
-  {
-    label: string;
-    variant: "default" | "secondary" | "destructive" | "outline";
-  }
-> = {
-  PENDING: { label: "Chờ xác nhận", variant: "secondary" },
-  CONFIRMED: { label: "Đã xác nhận", variant: "default" },
-  CHECKED_IN: { label: "Đang lưu trú", variant: "default" },
-  CHECKED_OUT: { label: "Hoàn thành", variant: "outline" },
-  CANCELLED: { label: "Đã huỷ", variant: "destructive" },
-  NO_SHOW: { label: "Không đến", variant: "destructive" },
-};
 
 const PAYMENT_MAP: Record<string, string> = {
   UNPAID: "Chưa thanh toán",
@@ -73,7 +58,9 @@ export const AccountBookingsClient = () => {
 
   return (
     <div className="space-y-5">
-      <h1 className="text-lg font-semibold">Đặt phòng của tôi</h1>
+      <h1 className="text-lg font-semibold text-foreground">
+        Đặt phòng của tôi
+      </h1>
 
       <div className="flex gap-1.5 flex-wrap">
         {TABS.map((tab) => (
@@ -81,7 +68,7 @@ export const AccountBookingsClient = () => {
             key={tab.label}
             onClick={() => setParams({ status: tab.value })}
             className={cn(
-              "px-3 py-1.5 rounded-lg text-xs font-medium transition-colors",
+              "px-3 py-1.5 rounded-lg text-xs font-medium",
               params.status === tab.value
                 ? "bg-primary text-primary-foreground"
                 : "bg-muted text-muted-foreground hover:text-foreground hover:bg-muted/80",
@@ -95,16 +82,18 @@ export const AccountBookingsClient = () => {
       {isLoading ? (
         <div className="space-y-3">
           {Array.from({ length: 4 }).map((_, i) => (
-            <Skeleton key={i} className="h-28 rounded-2xl" />
+            <Skeleton key={i} className="h-28 rounded-2xl bg-muted" />
           ))}
         </div>
       ) : bookings.length === 0 ? (
-        <div className="rounded-2xl border bg-card py-14 flex flex-col items-center gap-3 text-center">
+        <div className="rounded-2xl border border-border bg-card shadow-none py-14 flex flex-col items-center gap-3 text-center">
           <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center">
             <BookX className="w-6 h-6 text-muted-foreground" />
           </div>
           <div>
-            <p className="font-medium text-sm">Không có đặt phòng nào</p>
+            <p className="font-medium text-sm text-foreground">
+              Không có đặt phòng nào
+            </p>
             <p className="text-xs text-muted-foreground mt-0.5">
               {params.status
                 ? "Thử xem danh mục khác"
@@ -112,7 +101,11 @@ export const AccountBookingsClient = () => {
             </p>
           </div>
           {!params.status && (
-            <Button size="sm" className="rounded-xl mt-1" asChild>
+            <Button
+              size="sm"
+              className="rounded-xl mt-1 bg-primary text-primary-foreground hover:bg-primary/90"
+              asChild
+            >
               <Link href="/hotels">Tìm khách sạn</Link>
             </Button>
           )}
@@ -120,7 +113,6 @@ export const AccountBookingsClient = () => {
       ) : (
         <div className="space-y-3">
           {bookings.map((booking) => {
-            const status = STATUS_MAP[booking.status] ?? STATUS_MAP.PENDING;
             const item = booking.items[0];
             const canCancel = ["PENDING", "CONFIRMED"].includes(booking.status);
             const canReview =
@@ -129,7 +121,7 @@ export const AccountBookingsClient = () => {
             return (
               <div
                 key={booking.id}
-                className="rounded-2xl border bg-card hover:shadow-sm transition-shadow"
+                className="rounded-2xl border border-border bg-card shadow-none hover:shadow-sm"
               >
                 <Link
                   href={`/account/bookings/${booking.bookingRef}`}
@@ -141,15 +133,10 @@ export const AccountBookingsClient = () => {
 
                   <div className="flex-1 min-w-0 space-y-1">
                     <div className="flex items-start justify-between gap-2">
-                      <p className="font-semibold text-sm leading-tight truncate">
+                      <p className="font-semibold text-sm leading-tight truncate text-foreground">
                         {booking.hotel.name}
                       </p>
-                      <Badge
-                        variant={status.variant}
-                        className="text-xs shrink-0"
-                      >
-                        {status.label}
-                      </Badge>
+                      <StatusBadge status={booking.status} type="booking" />
                     </div>
 
                     {item && (
@@ -171,7 +158,7 @@ export const AccountBookingsClient = () => {
 
                     <div className="flex items-center justify-between pt-1">
                       <div className="flex items-center gap-2">
-                        <span className="text-xs font-semibold">
+                        <span className="text-xs font-semibold text-foreground">
                           {formatCurrencyUSD(Number(booking.totalAmount))}
                         </span>
                         <span className="text-xs text-muted-foreground">
@@ -193,7 +180,7 @@ export const AccountBookingsClient = () => {
                       <Button
                         size="sm"
                         variant="outline"
-                        className="rounded-lg text-xs h-7 gap-1 hover:text-primary"
+                        className="rounded-lg text-xs h-7 gap-1 border-border text-foreground hover:bg-muted hover:text-primary"
                         asChild
                       >
                         <Link

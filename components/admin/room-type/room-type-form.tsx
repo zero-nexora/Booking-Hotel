@@ -48,11 +48,17 @@ export const RoomTypeForm = ({
           name="name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Tên loại phòng</FormLabel>
+              <FormLabel className="text-foreground font-medium">
+                Tên loại phòng
+              </FormLabel>
               <FormControl>
-                <Input {...field} placeholder="Deluxe, Suite, Villa..." />
+                <Input
+                  {...field}
+                  placeholder="Deluxe, Suite, Villa..."
+                  className="bg-background border-border text-foreground placeholder:text-muted-foreground focus-visible:ring-primary"
+                />
               </FormControl>
-              <FormMessage />
+              <FormMessage className="text-destructive" />
             </FormItem>
           )}
         />

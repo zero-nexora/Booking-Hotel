@@ -60,12 +60,16 @@ export const CountryListClient = () => {
         addLabel="Thêm quốc gia"
         onAdd={openCreate}
       />
-      <Card>
+      <Card className="bg-card border-border shadow-none">
         <Table>
           <TableHeader>
-            <TableRow>
-              <TableHead>Tên</TableHead>
-              <TableHead className="text-center">Số thành phố</TableHead>
+            <TableRow className="border-border hover:bg-transparent">
+              <TableHead className="text-muted-foreground font-medium">
+                Tên
+              </TableHead>
+              <TableHead className="text-center text-muted-foreground font-medium">
+                Số thành phố
+              </TableHead>
               <TableHead />
             </TableRow>
           </TableHeader>
@@ -96,9 +100,11 @@ interface CountryRowProps {
 }
 
 const CountryRow = ({ country, onEdit, onDelete }: CountryRowProps) => (
-  <TableRow>
-    <TableCell className="font-medium">{country.name}</TableCell>
-    <TableCell className="text-center text-sm">
+  <TableRow className="border-border hover:bg-muted/40">
+    <TableCell className="font-medium text-foreground">
+      {country.name}
+    </TableCell>
+    <TableCell className="text-center text-sm text-muted-foreground">
       {country._count.cities}
     </TableCell>
     <TableCell>

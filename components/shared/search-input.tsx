@@ -4,6 +4,8 @@ import { Input } from "@/components/ui/input";
 import { Search, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
+import { useDebounce } from "@/hooks/use-debounce";
+import { DEFAULT_DEBOUNCE } from "@/lib/constants";
 
 interface SearchInputProps {
   value: string;
@@ -18,18 +20,18 @@ export const SearchInput = ({
   onChange,
   placeholder = "Tìm kiếm...",
   className,
-  debounce = 300,
+  debounce = DEFAULT_DEBOUNCE,
 }: SearchInputProps) => {
   const [local, setLocal] = useState(value);
+  const debounced = useDebounce(local, debounce);
 
   useEffect(() => {
     setLocal(value);
   }, [value]);
 
   useEffect(() => {
-    const timer = setTimeout(() => onChange(local), debounce);
-    return () => clearTimeout(timer);
-  }, [local, debounce, onChange]);
+    onChange(debounced);
+  }, [debounced, onChange]);
 
   return (
     <div className={cn("relative", className)}>
@@ -38,7 +40,7 @@ export const SearchInput = ({
         value={local}
         onChange={(e) => setLocal(e.target.value)}
         placeholder={placeholder}
-        className="pl-9 pr-8 h-10"
+        className="pl-9 pr-8 h-10 bg-background border-border text-foreground placeholder:text-muted-foreground focus-visible:ring-primary"
       />
       {local && (
         <button

@@ -46,7 +46,7 @@ export const AdminBreadcrumb = () => {
           <Fragment key={crumb.href}>
             <BreadcrumbItem>
               {crumb.isLast ? (
-                <BreadcrumbPage className="font-medium">
+                <BreadcrumbPage className="font-medium text-foreground">
                   {crumb.label}
                 </BreadcrumbPage>
               ) : (
@@ -60,10 +60,12 @@ export const AdminBreadcrumb = () => {
                 </BreadcrumbLink>
               )}
             </BreadcrumbItem>
-            {!crumb.isLast && <BreadcrumbSeparator />}
+            {!crumb.isLast && (
+              <BreadcrumbSeparator className="text-muted-foreground" />
+            )}
           </Fragment>
         ))}
       </BreadcrumbList>
     </Breadcrumb>
   );
-}
+};

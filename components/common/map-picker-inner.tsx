@@ -12,10 +12,10 @@ const markerIcon = L.icon({
   iconAnchor: [12, 41],
 });
 
-function ClickHandler({ onChange }: { onChange: (lat: number, lng: number) => void }) {
+const ClickHandler = ({ onChange }: { onChange: (lat: number, lng: number) => void }) => {
   useMapEvents({ click: (e) => onChange(e.latlng.lat, e.latlng.lng) });
   return null;
-}
+};
 
 interface Props {
   lat?: number;
@@ -23,7 +23,7 @@ interface Props {
   onChange: (lat: number, lng: number) => void;
 }
 
-export default function MapPickerInner({ lat, lng, onChange }: Props) {
+export const MapPickerInner = ({ lat, lng, onChange }: Props) => {
   return (
     <BaseMap center={[lat ?? 21.0278, lng ?? 105.8342]} zoom={13} style={{ cursor: "crosshair" }}>
       <ClickHandler onChange={onChange} />

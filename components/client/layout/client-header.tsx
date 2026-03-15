@@ -27,6 +27,7 @@ import { useMe } from "@/hooks/client/use-user";
 import { authClient } from "@/lib/auth-client";
 import { ThemeToggle } from "@/components/common/theme-toggle";
 import { Logo } from "@/components/common/logo";
+import { useConfirmDialogStore } from "@/store/confirm-dialog-store";
 
 const navLinks = [
   { label: "Khách sạn", href: "/hotels" },
@@ -42,6 +43,7 @@ const navItemClass = (active: boolean) =>
   );
 
 export const ClientHeader = () => {
+  const { openConfirm } = useConfirmDialogStore();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -54,6 +56,14 @@ export const ClientHeader = () => {
   const handleSignOut = async () => {
     await authClient.signOut();
     router.push("/sign-in");
+  };
+
+  const handleOpenConfirmLogout = async () => {
+    openConfirm({
+      title: "Đăng xuất",
+      description: "Bạn có chắc chắn muốn đăng xuất không?",
+      onConfirm: handleSignOut,
+    });
   };
 
   return (
@@ -81,7 +91,7 @@ export const ClientHeader = () => {
           {user ? (
             <DropdownMenu modal={false}>
               <DropdownMenuTrigger asChild>
-                <button className="box-hidden items-center gap-2 rounded-lg px-2 py-1.5 text-sm font-medium text-foreground hover:bg-accent hover:text-accent-foreground">
+                <button className="box-hidden items-center gap-2 rounded-lg px-2 py-1.5 text-sm font-medium text-foreground hover:bg-muted">
                   <Avatar className="size-7">
                     <AvatarImage src={user.image ?? undefined} />
                     <AvatarFallback className="bg-primary/10 text-primary text-xs font-semibold">
@@ -94,12 +104,12 @@ export const ClientHeader = () => {
               </DropdownMenuTrigger>
               <DropdownMenuContent
                 align="end"
-                className="w-52 bg-popover border-border text-popover-foreground"
+                className="w-52 bg-card border-border text-foreground"
               >
                 <DropdownMenuItem asChild>
                   <Link
                     href="/account"
-                    className="flex items-center gap-2 cursor-pointer hover:bg-accent hover:text-accent-foreground"
+                    className="flex items-center gap-2 cursor-pointer text-foreground hover:bg-muted"
                   >
                     <User className="size-4" />
                     Tài khoản
@@ -109,7 +119,7 @@ export const ClientHeader = () => {
                   <DropdownMenuItem asChild>
                     <Link
                       href="/admin"
-                      className="flex items-center gap-2 cursor-pointer hover:bg-accent hover:text-accent-foreground"
+                      className="flex items-center gap-2 cursor-pointer text-foreground hover:bg-muted"
                     >
                       <LayoutDashboard className="size-4" />
                       Trang quản trị
@@ -119,7 +129,7 @@ export const ClientHeader = () => {
                 <DropdownMenuItem asChild>
                   <Link
                     href="/account/bookings"
-                    className="flex items-center gap-2 cursor-pointer hover:bg-accent hover:text-accent-foreground"
+                    className="flex items-center gap-2 cursor-pointer text-foreground hover:bg-muted"
                   >
                     <BookOpen className="size-4" />
                     Đặt phòng của tôi
@@ -128,7 +138,7 @@ export const ClientHeader = () => {
                 <DropdownMenuItem asChild>
                   <Link
                     href="/account/reviews"
-                    className="flex items-center gap-2 cursor-pointer hover:bg-accent hover:text-accent-foreground"
+                    className="flex items-center gap-2 cursor-pointer text-foreground hover:bg-muted"
                   >
                     <Star className="size-4" />
                     Đánh giá của tôi
@@ -137,7 +147,7 @@ export const ClientHeader = () => {
                 <DropdownMenuSeparator className="bg-border" />
                 <DropdownMenuItem
                   className="flex items-center gap-2 cursor-pointer text-destructive hover:bg-destructive/10 hover:text-destructive focus:bg-destructive/10 focus:text-destructive"
-                  onClick={handleSignOut}
+                  onClick={handleOpenConfirmLogout}
                 >
                   <LogOut className="size-4" />
                   Đăng xuất
@@ -149,12 +159,16 @@ export const ClientHeader = () => {
               <Button
                 variant="ghost"
                 size="sm"
-                className="text-muted-foreground hover:text-foreground hover:bg-accent"
+                className="text-muted-foreground hover:text-foreground hover:bg-muted"
                 asChild
               >
                 <Link href="/sign-in">Đăng nhập</Link>
               </Button>
-              <Button size="sm" asChild>
+              <Button
+                size="sm"
+                className="bg-primary text-primary-foreground hover:bg-primary/90"
+                asChild
+              >
                 <Link href="/sign-up">Đăng ký</Link>
               </Button>
             </div>
@@ -165,7 +179,7 @@ export const ClientHeader = () => {
               <Button
                 variant="ghost"
                 size="icon"
-                className="md:hidden size-9 text-muted-foreground hover:text-foreground hover:bg-accent"
+                className="md:hidden size-9 text-muted-foreground hover:text-foreground hover:bg-muted"
               >
                 <Menu className="size-4" />
               </Button>
@@ -189,7 +203,7 @@ export const ClientHeader = () => {
                       "flex items-center h-10 px-3 rounded-lg text-sm font-medium",
                       currentUrl === link.href
                         ? "bg-primary/10 text-primary"
-                        : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+                        : "text-muted-foreground hover:bg-muted hover:text-foreground",
                     )}
                   >
                     {link.label}
@@ -200,7 +214,7 @@ export const ClientHeader = () => {
                     <Button
                       variant="outline"
                       size="sm"
-                      className="w-full border-border bg-background text-foreground hover:bg-accent hover:text-accent-foreground"
+                      className="w-full border-border bg-background text-foreground hover:bg-muted hover:text-foreground"
                       asChild
                     >
                       <Link
@@ -210,7 +224,11 @@ export const ClientHeader = () => {
                         Đăng nhập
                       </Link>
                     </Button>
-                    <Button size="sm" className="w-full" asChild>
+                    <Button
+                      size="sm"
+                      className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
+                      asChild
+                    >
                       <Link
                         href="/sign-up"
                         onClick={() => setMobileOpen(false)}

@@ -26,6 +26,7 @@ export const adminBookingParsers = {
     "REFUNDED",
     "FAILED",
   ] as const),
+  view: parseAsStringEnum(["calendar", "list"]).withDefault("list"),
   hotelId: parseAsString.withDefault(""),
   from: parseAsIsoDate,
   to: parseAsIsoDate,

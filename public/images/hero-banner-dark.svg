@@ -1,130 +1,245 @@
-<svg viewBox="0 0 1200 500" xmlns="http://www.w3.org/2000/svg">
-  <!-- Night sky -->
-  <rect width="1200" height="500" fill="#0D0D0B"/>
+<svg viewBox="0 0 1440 640" xmlns="http://www.w3.org/2000/svg">
 
-  <!-- Stars -->
-  <circle cx="120" cy="40" r="1" fill="#F5F0E8" fill-opacity=".5"/>
-  <circle cx="280" cy="25" r="1.2" fill="#C9A96E" fill-opacity=".6"/>
-  <circle cx="420" cy="60" r="1" fill="#F5F0E8" fill-opacity=".4"/>
-  <circle cx="550" cy="30" r=".8" fill="#F5F0E8" fill-opacity=".5"/>
-  <circle cx="670" cy="50" r="1" fill="#C9A96E" fill-opacity=".4"/>
-  <circle cx="750" cy="20" r="1.2" fill="#F5F0E8" fill-opacity=".5"/>
-  <circle cx="820" cy="55" r=".8" fill="#F5F0E8" fill-opacity=".4"/>
-  <circle cx="980" cy="35" r="1" fill="#C9A96E" fill-opacity=".5"/>
-  <circle cx="1080" cy="50" r="1.2" fill="#F5F0E8" fill-opacity=".4"/>
-  <circle cx="1150" cy="28" r="1" fill="#F5F0E8" fill-opacity=".55"/>
-  <circle cx="195" cy="75" r=".8" fill="#F5F0E8" fill-opacity=".35"/>
-  <circle cx="480" cy="85" r=".8" fill="#C9A96E" fill-opacity=".35"/>
-  <circle cx="880" cy="70" r="1" fill="#F5F0E8" fill-opacity=".4"/>
-  <circle cx="1020" cy="78" r=".8" fill="#F5F0E8" fill-opacity=".35"/>
+  <!-- Night sky -->
+  <rect width="1440" height="640" fill="#0D0D0B"/>
+  <rect width="1440" height="380" fill="#0F0E0C"/>
+
+  <!-- Stars — scattered -->
+  <circle cx="80" cy="38" r="1" fill="#F5F0E8" fill-opacity=".55"/>
+  <circle cx="195" cy="22" r="1.2" fill="#C9A96E" fill-opacity=".6"/>
+  <circle cx="310" cy="55" r=".8" fill="#F5F0E8" fill-opacity=".45"/>
+  <circle cx="440" cy="18" r="1" fill="#F5F0E8" fill-opacity=".5"/>
+  <circle cx="520" cy="48" r=".8" fill="#C9A96E" fill-opacity=".4"/>
+  <circle cx="620" cy="28" r="1.2" fill="#F5F0E8" fill-opacity=".5"/>
+  <circle cx="730" cy="15" r=".8" fill="#F5F0E8" fill-opacity=".45"/>
+  <circle cx="850" cy="42" r="1" fill="#C9A96E" fill-opacity=".5"/>
+  <circle cx="955" cy="20" r="1.2" fill="#F5F0E8" fill-opacity=".4"/>
+  <circle cx="1070" cy="38" r=".8" fill="#F5F0E8" fill-opacity=".5"/>
+  <circle cx="1180" cy="55" r="1" fill="#C9A96E" fill-opacity=".45"/>
+  <circle cx="1290" cy="25" r="1.2" fill="#F5F0E8" fill-opacity=".55"/>
+  <circle cx="1380" cy="44" r=".8" fill="#F5F0E8" fill-opacity=".4"/>
+  <circle cx="160" cy="72" r=".8" fill="#F5F0E8" fill-opacity=".35"/>
+  <circle cx="380" cy="80" r=".8" fill="#C9A96E" fill-opacity=".3"/>
+  <circle cx="560" cy="68" r="1" fill="#F5F0E8" fill-opacity=".4"/>
+  <circle cx="760" cy="62" r=".8" fill="#F5F0E8" fill-opacity=".35"/>
+  <circle cx="980" cy="75" r="1" fill="#C9A96E" fill-opacity=".35"/>
+  <circle cx="1130" cy="65" r=".8" fill="#F5F0E8" fill-opacity=".4"/>
+  <circle cx="1340" cy="72" r="1" fill="#F5F0E8" fill-opacity=".35"/>
+  <circle cx="248" cy="110" r=".7" fill="#F5F0E8" fill-opacity=".3"/>
+  <circle cx="490" cy="100" r=".7" fill="#C9A96E" fill-opacity=".28"/>
+  <circle cx="690" cy="95" r=".7" fill="#F5F0E8" fill-opacity=".3"/>
+  <circle cx="900" cy="108" r=".7" fill="#F5F0E8" fill-opacity=".28"/>
+  <circle cx="1200" cy="96" r=".7" fill="#C9A96E" fill-opacity=".3"/>
 
   <!-- Moon -->
-  <circle cx="920" cy="100" r="44" fill="#1A1612" fill-opacity=".8"/>
-  <circle cx="900" cy="100" r="40" fill="#C9A96E" fill-opacity=".14" stroke="#C9A96E" stroke-width=".6"/>
-  <circle cx="900" cy="100" r="26" fill="#C9A96E" fill-opacity=".1"/>
-  <circle cx="900" cy="100" r="14" fill="#C9A96E" fill-opacity=".12"/>
+  <circle cx="1100" cy="110" r="56" fill="#1A1612" fill-opacity=".9"/>
+  <circle cx="1080" cy="108" r="50" fill="#C9A96E" fill-opacity=".1" stroke="#C9A96E" stroke-width=".5"/>
+  <circle cx="1080" cy="108" r="34" fill="#C9A96E" fill-opacity=".08"/>
+  <circle cx="1080" cy="108" r="20" fill="#C9A96E" fill-opacity=".1"/>
 
-  <!-- Distant mountain range — far (very dark) -->
-  <polygon points="0,300 80,210 180,270 260,190 360,255 460,175 560,240 660,165 760,225 860,150 960,215 1060,168 1160,228 1200,185 1200,500 0,500" fill="#141210"/>
-  <!-- Mid mountain -->
-  <polygon points="0,360 100,278 210,325 310,252 420,298 520,238 620,288 720,232 830,275 930,222 1030,262 1130,218 1200,248 1200,500 0,500" fill="#1A1612"/>
+  <!-- Far mountain silhouettes — near black -->
+  <polygon points="0,340 120,238 200,285 310,212 420,268 530,200 640,255 750,192 860,248 970,198 1080,242 1190,202 1310,238 1440,208 1440,370 0,370" fill="#141210"/>
+  <!-- Mid mountains -->
+  <polygon points="0,395 90,315 200,358 320,294 430,336 550,278 660,322 770,272 880,320 990,274 1100,312 1220,270 1340,306 1440,274 1440,415 0,415" fill="#1A1712"/>
   <!-- Near hills -->
-  <polygon points="0,415 150,348 280,388 400,338 530,375 660,330 790,368 920,332 1050,358 1200,328 1200,500 0,500" fill="#221E18"/>
+  <polygon points="0,445 130,378 260,412 390,372 510,402 640,364 760,396 890,362 1020,386 1150,358 1280,380 1440,355 1440,465 0,465" fill="#201D16"/>
+
   <!-- Ground -->
-  <rect x="0" y="415" width="1200" height="85" fill="#1A1612"/>
+  <rect x="0" y="445" width="1440" height="195" fill="#1A1712"/>
+  <rect x="0" y="510" width="1440" height="130" fill="#18160F"/>
+  <rect x="0" y="580" width="1440" height="60" fill="#141210"/>
 
-  <!-- Building base podium -->
-  <rect x="380" y="310" width="440" height="105" fill="#1A1612" stroke="rgba(201,169,110,.15)" stroke-width=".6"/>
-  <!-- Podium columns -->
-  <rect x="400" y="318" width="16" height="97" fill="#221E18" stroke="#C9A96E" stroke-width=".3" opacity=".3"/>
-  <rect x="440" y="318" width="16" height="97" fill="#221E18" stroke="#C9A96E" stroke-width=".3" opacity=".3"/>
-  <rect x="480" y="318" width="16" height="97" fill="#221E18" stroke="#C9A96E" stroke-width=".3" opacity=".3"/>
-  <rect x="744" y="318" width="16" height="97" fill="#221E18" stroke="#C9A96E" stroke-width=".3" opacity=".3"/>
-  <rect x="704" y="318" width="16" height="97" fill="#221E18" stroke="#C9A96E" stroke-width=".3" opacity=".3"/>
-  <rect x="664" y="318" width="16" height="97" fill="#221E18" stroke="#C9A96E" stroke-width=".3" opacity=".3"/>
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- HOTEL — night version, windows warm glow   -->
+  <!-- ═══════════════════════════════════════════ -->
 
-  <!-- Main tower -->
-  <rect x="460" y="130" width="280" height="200" fill="#1A1612" stroke="rgba(201,169,110,.15)" stroke-width=".6"/>
+  <!-- Far background buildings -->
+  <rect x="160" y="330" width="90" height="135" fill="#1A1712"/>
+  <rect x="170" y="310" width="30" height="24" fill="#161410"/>
+  <rect x="1190" y="320" width="100" height="145" fill="#1A1712"/>
+  <rect x="1210" y="298" width="28" height="26" fill="#161410"/>
+  <!-- Bg building windows glow -->
+  <rect x="178" y="338" width="16" height="22" rx="1" fill="#C9A96E" fill-opacity=".35"/>
+  <rect x="200" y="338" width="16" height="22" rx="1" fill="#C9A96E" fill-opacity=".2"/>
+  <rect x="178" y="372" width="16" height="22" rx="1" fill="#C9A96E" fill-opacity=".15"/>
+  <rect x="1204" y="335" width="16" height="22" rx="1" fill="#C9A96E" fill-opacity=".28"/>
+  <rect x="1226" y="335" width="16" height="22" rx="1" fill="#C9A96E" fill-opacity=".18"/>
+  <rect x="1248" y="335" width="16" height="22" rx="1" fill="#C9A96E" fill-opacity=".4"/>
 
-  <!-- Tower windows row 1 — glowing warm -->
-  <rect x="484" y="152" width="36" height="48" rx="2" fill="#C9A96E" fill-opacity=".3" stroke="#C9A96E" stroke-width=".5"/>
-  <rect x="534" y="152" width="36" height="48" rx="2" fill="#C9A96E" fill-opacity=".45" stroke="#C9A96E" stroke-width=".5"/>
-  <rect x="584" y="152" width="36" height="48" rx="2" fill="#C9A96E" fill-opacity=".15" stroke="#C9A96E" stroke-width=".5"/>
-  <rect x="634" y="152" width="36" height="48" rx="2" fill="#C9A96E" fill-opacity=".5" stroke="#C9A96E" stroke-width=".5"/>
-  <rect x="684" y="152" width="36" height="48" rx="2" fill="#C9A96E" fill-opacity=".25" stroke="#C9A96E" stroke-width=".5"/>
+  <!-- Left annexe -->
+  <rect x="240" y="310" width="180" height="210" fill="#1A1712" stroke="#C9A96E" stroke-width=".4" stroke-opacity=".18"/>
+  <rect x="258" y="328" width="30" height="40" rx="1" fill="#C9A96E" fill-opacity=".3" stroke="#C9A96E" stroke-width=".4"/>
+  <rect x="302" y="328" width="30" height="40" rx="1" fill="#C9A96E" fill-opacity=".15" stroke="#C9A96E" stroke-width=".4"/>
+  <rect x="346" y="328" width="30" height="40" rx="1" fill="#C9A96E" fill-opacity=".42" stroke="#C9A96E" stroke-width=".4"/>
+  <rect x="390" y="328" width="22" height="40" rx="1" fill="#C9A96E" fill-opacity=".2" stroke="#C9A96E" stroke-width=".4"/>
+  <rect x="258" y="382" width="30" height="40" rx="1" fill="#C9A96E" fill-opacity=".12" stroke="#C9A96E" stroke-width=".4"/>
+  <rect x="302" y="382" width="30" height="40" rx="1" fill="#C9A96E" fill-opacity=".38" stroke="#C9A96E" stroke-width=".4"/>
+  <rect x="346" y="382" width="30" height="40" rx="1" fill="#C9A96E" fill-opacity=".1" stroke="#C9A96E" stroke-width=".4"/>
+  <rect x="390" y="382" width="22" height="40" rx="1" fill="#C9A96E" fill-opacity=".28" stroke="#C9A96E" stroke-width=".4"/>
+  <rect x="236" y="305" width="188" height="6" rx="1" fill="#C9A96E" fill-opacity=".15"/>
+  <rect x="238" y="296" width="184" height="10" rx="1" fill="#221E18" stroke="#C9A96E" stroke-width=".4" stroke-opacity=".2"/>
+  <rect x="260" y="286" width="18" height="12" fill="#1E1A14"/>
+  <rect x="300" y="286" width="18" height="12" fill="#1E1A14"/>
+  <rect x="340" y="286" width="18" height="12" fill="#1E1A14"/>
+  <rect x="380" y="286" width="18" height="12" fill="#1E1A14"/>
 
-  <!-- Tower windows row 2 -->
-  <rect x="484" y="214" width="36" height="48" rx="2" fill="#C9A96E" fill-opacity=".4" stroke="#C9A96E" stroke-width=".5"/>
-  <rect x="534" y="214" width="36" height="48" rx="2" fill="#C9A96E" fill-opacity=".12" stroke="#C9A96E" stroke-width=".5"/>
-  <rect x="584" y="214" width="36" height="48" rx="2" fill="#C9A96E" fill-opacity=".48" stroke="#C9A96E" stroke-width=".5"/>
-  <rect x="634" y="214" width="36" height="48" rx="2" fill="#C9A96E" fill-opacity=".2" stroke="#C9A96E" stroke-width=".5"/>
-  <rect x="684" y="214" width="36" height="48" rx="2" fill="#C9A96E" fill-opacity=".35" stroke="#C9A96E" stroke-width=".5"/>
+  <!-- Right annexe -->
+  <rect x="1020" y="310" width="180" height="210" fill="#1A1712" stroke="#C9A96E" stroke-width=".4" stroke-opacity=".18"/>
+  <rect x="1030" y="328" width="22" height="40" rx="1" fill="#C9A96E" fill-opacity=".35" stroke="#C9A96E" stroke-width=".4"/>
+  <rect x="1066" y="328" width="30" height="40" rx="1" fill="#C9A96E" fill-opacity=".14" stroke="#C9A96E" stroke-width=".4"/>
+  <rect x="1110" y="328" width="30" height="40" rx="1" fill="#C9A96E" fill-opacity=".44" stroke="#C9A96E" stroke-width=".4"/>
+  <rect x="1154" y="328" width="30" height="40" rx="1" fill="#C9A96E" fill-opacity=".2" stroke="#C9A96E" stroke-width=".4"/>
+  <rect x="1030" y="382" width="22" height="40" rx="1" fill="#C9A96E" fill-opacity=".1" stroke="#C9A96E" stroke-width=".4"/>
+  <rect x="1066" y="382" width="30" height="40" rx="1" fill="#C9A96E" fill-opacity=".32" stroke="#C9A96E" stroke-width=".4"/>
+  <rect x="1110" y="382" width="30" height="40" rx="1" fill="#C9A96E" fill-opacity=".08" stroke="#C9A96E" stroke-width=".4"/>
+  <rect x="1154" y="382" width="30" height="40" rx="1" fill="#C9A96E" fill-opacity=".42" stroke="#C9A96E" stroke-width=".4"/>
+  <rect x="1016" y="305" width="188" height="6" rx="1" fill="#C9A96E" fill-opacity=".15"/>
+  <rect x="1018" y="296" width="184" height="10" rx="1" fill="#221E18" stroke="#C9A96E" stroke-width=".4" stroke-opacity=".2"/>
+  <rect x="1030" y="286" width="18" height="12" fill="#1E1A14"/>
+  <rect x="1070" y="286" width="18" height="12" fill="#1E1A14"/>
+  <rect x="1110" y="286" width="18" height="12" fill="#1E1A14"/>
+  <rect x="1150" y="286" width="18" height="12" fill="#1E1A14"/>
 
-  <!-- Belt cornice -->
-  <line x1="460" y1="275" x2="740" y2="275" stroke="#C9A96E" stroke-width=".6" opacity=".3"/>
+  <!-- Main centre block -->
+  <rect x="418" y="260" width="604" height="260" fill="#1E1A14" stroke="#C9A96E" stroke-width=".5" stroke-opacity=".2"/>
 
-  <!-- Tower windows row 3 -->
-  <rect x="484" y="282" width="36" height="34" rx="1" fill="#C9A96E" fill-opacity=".18" stroke="#C9A96E" stroke-width=".5"/>
-  <rect x="534" y="282" width="36" height="34" rx="1" fill="#C9A96E" fill-opacity=".38" stroke="#C9A96E" stroke-width=".5"/>
-  <rect x="584" y="282" width="36" height="34" rx="1" fill="#C9A96E" fill-opacity=".1" stroke="#C9A96E" stroke-width=".5"/>
-  <rect x="634" y="282" width="36" height="34" rx="1" fill="#C9A96E" fill-opacity=".28" stroke="#C9A96E" stroke-width=".5"/>
-  <rect x="684" y="282" width="36" height="34" rx="1" fill="#C9A96E" fill-opacity=".42" stroke="#C9A96E" stroke-width=".5"/>
+  <!-- Main windows row 1 — glowing warm -->
+  <rect x="440" y="282" width="38" height="52" rx="2" fill="#C9A96E" fill-opacity=".32" stroke="#C9A96E" stroke-width=".5"/>
+  <rect x="492" y="282" width="38" height="52" rx="2" fill="#C9A96E" fill-opacity=".48" stroke="#C9A96E" stroke-width=".5"/>
+  <rect x="544" y="282" width="38" height="52" rx="2" fill="#C9A96E" fill-opacity=".18" stroke="#C9A96E" stroke-width=".5"/>
+  <rect x="596" y="282" width="38" height="52" rx="2" fill="#C9A96E" fill-opacity=".55" stroke="#C9A96E" stroke-width=".5"/>
+  <rect x="808" y="282" width="38" height="52" rx="2" fill="#C9A96E" fill-opacity=".4" stroke="#C9A96E" stroke-width=".5"/>
+  <rect x="860" y="282" width="38" height="52" rx="2" fill="#C9A96E" fill-opacity=".22" stroke="#C9A96E" stroke-width=".5"/>
+  <rect x="912" y="282" width="38" height="52" rx="2" fill="#C9A96E" fill-opacity=".5" stroke="#C9A96E" stroke-width=".5"/>
+  <rect x="964" y="282" width="38" height="52" rx="2" fill="#C9A96E" fill-opacity=".28" stroke="#C9A96E" stroke-width=".5"/>
 
-  <!-- Roof gable -->
-  <polygon points="600,60 460,130 740,130" fill="#0D0D0B" stroke="#C9A96E" stroke-width=".8"/>
-  <polygon points="600,88 480,130 720,130" fill="none" stroke="#C9A96E" stroke-width=".3" opacity=".35"/>
+  <!-- Main windows row 2 -->
+  <rect x="440" y="350" width="38" height="52" rx="2" fill="#C9A96E" fill-opacity=".14" stroke="#C9A96E" stroke-width=".5"/>
+  <rect x="492" y="350" width="38" height="52" rx="2" fill="#C9A96E" fill-opacity=".44" stroke="#C9A96E" stroke-width=".5"/>
+  <rect x="544" y="350" width="38" height="52" rx="2" fill="#C9A96E" fill-opacity=".36" stroke="#C9A96E" stroke-width=".5"/>
+  <rect x="596" y="350" width="38" height="52" rx="2" fill="#C9A96E" fill-opacity=".1" stroke="#C9A96E" stroke-width=".5"/>
+  <rect x="808" y="350" width="38" height="52" rx="2" fill="#C9A96E" fill-opacity=".52" stroke="#C9A96E" stroke-width=".5"/>
+  <rect x="860" y="350" width="38" height="52" rx="2" fill="#C9A96E" fill-opacity=".2" stroke="#C9A96E" stroke-width=".5"/>
+  <rect x="912" y="350" width="38" height="52" rx="2" fill="#C9A96E" fill-opacity=".16" stroke="#C9A96E" stroke-width=".5"/>
+  <rect x="964" y="350" width="38" height="52" rx="2" fill="#C9A96E" fill-opacity=".42" stroke="#C9A96E" stroke-width=".5"/>
 
-  <!-- Finial -->
-  <line x1="600" y1="22" x2="600" y2="60" stroke="#C9A96E" stroke-width="1.5" stroke-linecap="round"/>
-  <circle cx="600" cy="16" r="8" fill="#0D0D0B" stroke="#C9A96E" stroke-width="1"/>
-  <circle cx="600" cy="16" r="3.5" fill="#C9A96E" fill-opacity=".7"/>
+  <rect x="414" y="254" width="612" height="8" rx="1" fill="#C9A96E" fill-opacity=".15"/>
+  <rect x="416" y="242" width="608" height="14" rx="1" fill="#221E18" stroke="#C9A96E" stroke-width=".4" stroke-opacity=".2"/>
+  <rect x="440" y="232" width="20" height="12" fill="#1C1810"/>
+  <rect x="474" y="232" width="20" height="12" fill="#1C1810"/>
+  <rect x="508" y="232" width="20" height="12" fill="#1C1810"/>
+  <rect x="542" y="232" width="20" height="12" fill="#1C1810"/>
+  <rect x="576" y="232" width="20" height="12" fill="#1C1810"/>
+  <rect x="844" y="232" width="20" height="12" fill="#1C1810"/>
+  <rect x="878" y="232" width="20" height="12" fill="#1C1810"/>
+  <rect x="912" y="232" width="20" height="12" fill="#1C1810"/>
+  <rect x="946" y="232" width="20" height="12" fill="#1C1810"/>
+  <rect x="980" y="232" width="20" height="12" fill="#1C1810"/>
 
-  <!-- Left wing -->
-  <rect x="280" y="250" width="180" height="165" fill="#1A1612" stroke="rgba(201,169,110,.15)" stroke-width=".6"/>
-  <rect x="298" y="268" width="32" height="42" rx="1" fill="#C9A96E" fill-opacity=".22" stroke="#C9A96E" stroke-width=".4"/>
-  <rect x="344" y="268" width="32" height="42" rx="1" fill="#C9A96E" fill-opacity=".38" stroke="#C9A96E" stroke-width=".4"/>
-  <rect x="390" y="268" width="32" height="42" rx="1" fill="#C9A96E" fill-opacity=".14" stroke="#C9A96E" stroke-width=".4"/>
-  <rect x="298" y="326" width="32" height="42" rx="1" fill="#C9A96E" fill-opacity=".3" stroke="#C9A96E" stroke-width=".4"/>
-  <rect x="344" y="326" width="32" height="42" rx="1" fill="#C9A96E" fill-opacity=".1" stroke="#C9A96E" stroke-width=".4"/>
-  <rect x="390" y="326" width="32" height="42" rx="1" fill="#C9A96E" fill-opacity=".42" stroke="#C9A96E" stroke-width=".4"/>
+  <!-- Central tower -->
+  <rect x="630" y="160" width="180" height="360" fill="#221E18" stroke="#C9A96E" stroke-width=".5" stroke-opacity=".25"/>
 
-  <!-- Right wing -->
-  <rect x="740" y="250" width="180" height="165" fill="#1A1612" stroke="rgba(201,169,110,.15)" stroke-width=".6"/>
-  <rect x="758" y="268" width="32" height="42" rx="1" fill="#C9A96E" fill-opacity=".35" stroke="#C9A96E" stroke-width=".4"/>
-  <rect x="804" y="268" width="32" height="42" rx="1" fill="#C9A96E" fill-opacity=".12" stroke="#C9A96E" stroke-width=".4"/>
-  <rect x="850" y="268" width="32" height="42" rx="1" fill="#C9A96E" fill-opacity=".44" stroke="#C9A96E" stroke-width=".4"/>
-  <rect x="758" y="326" width="32" height="42" rx="1" fill="#C9A96E" fill-opacity=".08" stroke="#C9A96E" stroke-width=".4"/>
-  <rect x="804" y="326" width="32" height="42" rx="1" fill="#C9A96E" fill-opacity=".28" stroke="#C9A96E" stroke-width=".4"/>
-  <rect x="850" y="326" width="32" height="42" rx="1" fill="#C9A96E" fill-opacity=".18" stroke="#C9A96E" stroke-width=".4"/>
+  <!-- Tower windows glowing warm -->
+  <rect x="648" y="182" width="34" height="46" rx="2" fill="#C9A96E" fill-opacity=".38" stroke="#C9A96E" stroke-width=".5"/>
+  <rect x="648" y="242" width="34" height="46" rx="2" fill="#C9A96E" fill-opacity=".55" stroke="#C9A96E" stroke-width=".5"/>
+  <rect x="648" y="302" width="34" height="46" rx="2" fill="#C9A96E" fill-opacity=".2" stroke="#C9A96E" stroke-width=".5"/>
+  <rect x="648" y="362" width="34" height="46" rx="2" fill="#C9A96E" fill-opacity=".44" stroke="#C9A96E" stroke-width=".5"/>
+  <rect x="703" y="182" width="34" height="46" rx="2" fill="#C9A96E" fill-opacity=".6" stroke="#C9A96E" stroke-width=".5"/>
+  <rect x="703" y="242" width="34" height="46" rx="2" fill="#C9A96E" fill-opacity=".15" stroke="#C9A96E" stroke-width=".5"/>
+  <rect x="703" y="302" width="34" height="46" rx="2" fill="#C9A96E" fill-opacity=".5" stroke="#C9A96E" stroke-width=".5"/>
+  <rect x="703" y="362" width="34" height="46" rx="2" fill="#C9A96E" fill-opacity=".12" stroke="#C9A96E" stroke-width=".5"/>
+  <rect x="758" y="182" width="34" height="46" rx="2" fill="#C9A96E" fill-opacity=".3" stroke="#C9A96E" stroke-width=".5"/>
+  <rect x="758" y="242" width="34" height="46" rx="2" fill="#C9A96E" fill-opacity=".18" stroke="#C9A96E" stroke-width=".5"/>
+  <rect x="758" y="302" width="34" height="46" rx="2" fill="#C9A96E" fill-opacity=".48" stroke="#C9A96E" stroke-width=".5"/>
+  <rect x="758" y="362" width="34" height="46" rx="2" fill="#C9A96E" fill-opacity=".35" stroke="#C9A96E" stroke-width=".5"/>
 
-  <!-- Central entrance arch -->
-  <rect x="554" y="360" width="92" height="55" fill="#0D0D0B"/>
-  <path d="M554,400 A46,46 0 0,1 646,400" fill="#0D0D0B" stroke="#C9A96E" stroke-width=".8"/>
-  <rect x="558" y="400" width="84" height="15" fill="#0D0D0B"/>
-  <rect x="548" y="390" width="10" height="25" fill="#1A1612"/>
-  <rect x="642" y="390" width="10" height="25" fill="#1A1612"/>
+  <rect x="626" y="154" width="188" height="8" rx="1" fill="#C9A96E" fill-opacity=".18"/>
+  <rect x="628" y="140" width="184" height="16" rx="1" fill="#221E18" stroke="#C9A96E" stroke-width=".4" stroke-opacity=".25"/>
+  <rect x="648" y="128" width="22" height="14" fill="#1C1810"/>
+  <rect x="684" y="128" width="22" height="14" fill="#1C1810"/>
+  <rect x="720" y="128" width="22" height="14" fill="#1C1810"/>
+  <rect x="756" y="128" width="22" height="14" fill="#1C1810"/>
+  <rect x="792" y="128" width="22" height="14" fill="#1C1810"/>
+
+  <!-- Roof -->
+  <polygon points="720,44 630,128 810,128" fill="#1A1612" stroke="#C9A96E" stroke-width=".6" stroke-opacity=".4"/>
+  <polygon points="720,68 648,128 792,128" fill="none" stroke="#C9A96E" stroke-width=".3" opacity=".25"/>
+
+  <!-- Spire -->
+  <line x1="720" y1="4" x2="720" y2="44" stroke="#C9A96E" stroke-width="2" stroke-linecap="round"/>
+  <circle cx="720" cy="4" r="6" fill="#0D0D0B" stroke="#C9A96E" stroke-width="1.2"/>
+  <circle cx="720" cy="4" r="3" fill="#C9A96E" fill-opacity=".7"/>
+  <ellipse cx="720" cy="44" rx="14" ry="6" fill="#1A1612" stroke="#C9A96E" stroke-width=".6" stroke-opacity=".4"/>
+
+  <!-- Portico pediment -->
+  <polygon points="720,432 640,470 800,470" fill="#1C1914" stroke="#C9A96E" stroke-width=".5" stroke-opacity=".3"/>
+  <!-- Columns -->
+  <rect x="648" y="470" width="14" height="90" fill="#181610" stroke="#C9A96E" stroke-width=".3" stroke-opacity=".2"/>
+  <rect x="680" y="470" width="14" height="90" fill="#181610" stroke="#C9A96E" stroke-width=".3" stroke-opacity=".2"/>
+  <rect x="746" y="470" width="14" height="90" fill="#181610" stroke="#C9A96E" stroke-width=".3" stroke-opacity=".2"/>
+  <rect x="778" y="470" width="14" height="90" fill="#181610" stroke="#C9A96E" stroke-width=".3" stroke-opacity=".2"/>
+  <rect x="644" y="466" width="22" height="5" rx="1" fill="#C9A96E" fill-opacity=".2"/>
+  <rect x="676" y="466" width="22" height="5" rx="1" fill="#C9A96E" fill-opacity=".2"/>
+  <rect x="742" y="466" width="22" height="5" rx="1" fill="#C9A96E" fill-opacity=".2"/>
+  <rect x="774" y="466" width="22" height="5" rx="1" fill="#C9A96E" fill-opacity=".2"/>
+  <rect x="636" y="558" width="168" height="6" rx="1" fill="#C9A96E" fill-opacity=".15"/>
+  <rect x="628" y="562" width="184" height="6" rx="1" fill="#C9A96E" fill-opacity=".1"/>
+
+  <!-- Door with warm interior light glow -->
+  <rect x="698" y="490" width="44" height="70" rx="0" fill="#C9A96E" fill-opacity=".12"/>
+  <path d="M698,516 A22,22 0 0,1 742,516" fill="#C9A96E" fill-opacity=".14" stroke="#C9A96E" stroke-width=".7"/>
+  <rect x="702" y="517" width="36" height="44" fill="#C9A96E" fill-opacity=".12"/>
+  <line x1="720" y1="516" x2="720" y2="560" stroke="#C9A96E" stroke-width=".4" opacity=".25"/>
+
+  <!-- Forecourt -->
+  <rect x="560" y="568" width="320" height="72" fill="#181510"/>
+  <line x1="560" y1="590" x2="880" y2="590" stroke="#C9A96E" stroke-width=".3" opacity=".12"/>
+  <line x1="560" y1="610" x2="880" y2="610" stroke="#C9A96E" stroke-width=".3" opacity=".12"/>
+  <line x1="640" y1="568" x2="640" y2="640" stroke="#C9A96E" stroke-width=".3" opacity=".12"/>
+  <line x1="720" y1="568" x2="720" y2="640" stroke="#C9A96E" stroke-width=".3" opacity=".12"/>
+  <line x1="800" y1="568" x2="800" y2="640" stroke="#C9A96E" stroke-width=".3" opacity=".12"/>
+  <polygon points="660,568 780,568 820,640 620,640" fill="#141210"/>
+
+  <!-- Topiary dark -->
+  <rect x="372" y="502" width="12" height="66" fill="#C9A96E" fill-opacity=".1"/>
+  <ellipse cx="378" cy="494" rx="28" ry="38" fill="#18160E"/>
+  <ellipse cx="378" cy="488" rx="20" ry="28" fill="#161410"/>
+  <rect x="456" y="508" width="10" height="60" fill="#C9A96E" fill-opacity=".1"/>
+  <ellipse cx="461" cy="500" rx="22" ry="32" fill="#18160E"/>
+  <ellipse cx="461" cy="494" rx="16" ry="24" fill="#161410"/>
+  <rect x="968" y="502" width="12" height="66" fill="#C9A96E" fill-opacity=".1"/>
+  <ellipse cx="974" cy="494" rx="28" ry="38" fill="#18160E"/>
+  <ellipse cx="974" cy="488" rx="20" ry="28" fill="#161410"/>
+  <rect x="1056" y="508" width="10" height="60" fill="#C9A96E" fill-opacity=".1"/>
+  <ellipse cx="1061" cy="500" rx="22" ry="32" fill="#18160E"/>
+  <ellipse cx="1061" cy="494" rx="16" ry="24" fill="#161410"/>
 
   <!-- Lampposts glowing -->
-  <line x1="340" y1="415" x2="340" y2="310" stroke="#C9A96E" stroke-width="1.2" opacity=".3"/>
-  <path d="M326,310 Q340,298 354,310" fill="#C9A96E" fill-opacity=".2" stroke="#C9A96E" stroke-width=".6"/>
-  <circle cx="340" cy="307" r="5" fill="#C9A96E" fill-opacity=".25"/>
-  <line x1="860" y1="415" x2="860" y2="310" stroke="#C9A96E" stroke-width="1.2" opacity=".3"/>
-  <path d="M846,310 Q860,298 874,310" fill="#C9A96E" fill-opacity=".2" stroke="#C9A96E" stroke-width=".6"/>
-  <circle cx="860" cy="307" r="5" fill="#C9A96E" fill-opacity=".25"/>
+  <line x1="530" y1="568" x2="530" y2="440" stroke="#C9A96E" stroke-width="1.5" stroke-linecap="round" opacity=".4"/>
+  <path d="M514,440 Q530,426 546,440" fill="#C9A96E" fill-opacity=".2" stroke="#C9A96E" stroke-width=".8"/>
+  <circle cx="530" cy="437" r="6" fill="#C9A96E" fill-opacity=".4"/>
+  <circle cx="530" cy="437" r="14" fill="#C9A96E" fill-opacity=".06"/>
+  <line x1="600" y1="568" x2="600" y2="456" stroke="#C9A96E" stroke-width="1.2" stroke-linecap="round" opacity=".3"/>
+  <path d="M588,456 Q600,445 612,456" fill="#C9A96E" fill-opacity=".18" stroke="#C9A96E" stroke-width=".7"/>
+  <circle cx="600" cy="452" r="5" fill="#C9A96E" fill-opacity=".35"/>
+  <circle cx="600" cy="452" r="12" fill="#C9A96E" fill-opacity=".05"/>
+  <line x1="910" y1="568" x2="910" y2="440" stroke="#C9A96E" stroke-width="1.5" stroke-linecap="round" opacity=".4"/>
+  <path d="M894,440 Q910,426 926,440" fill="#C9A96E" fill-opacity=".2" stroke="#C9A96E" stroke-width=".8"/>
+  <circle cx="910" cy="437" r="6" fill="#C9A96E" fill-opacity=".4"/>
+  <circle cx="910" cy="437" r="14" fill="#C9A96E" fill-opacity=".06"/>
+  <line x1="840" y1="568" x2="840" y2="456" stroke="#C9A96E" stroke-width="1.2" stroke-linecap="round" opacity=".3"/>
+  <path d="M828,456 Q840,445 852,456" fill="#C9A96E" fill-opacity=".18" stroke="#C9A96E" stroke-width=".7"/>
+  <circle cx="840" cy="452" r="5" fill="#C9A96E" fill-opacity=".35"/>
+  <circle cx="840" cy="452" r="12" fill="#C9A96E" fill-opacity=".05"/>
 
-  <!-- Driveway -->
-  <line x1="490" y1="415" x2="490" y2="500" stroke="#C9A96E" stroke-width=".4" opacity=".15"/>
-  <line x1="560" y1="415" x2="550" y2="500" stroke="#C9A96E" stroke-width=".4" opacity=".15"/>
-  <line x1="640" y1="415" x2="650" y2="500" stroke="#C9A96E" stroke-width=".4" opacity=".15"/>
-  <line x1="710" y1="415" x2="710" y2="500" stroke="#C9A96E" stroke-width=".4" opacity=".15"/>
+  <!-- Flagpoles -->
+  <line x1="480" y1="232" x2="480" y2="186" stroke="#C9A96E" stroke-width="1" stroke-linecap="round" opacity=".3"/>
+  <polygon points="480,186 500,192 480,198" fill="#C9A96E" fill-opacity=".25"/>
+  <line x1="960" y1="232" x2="960" y2="186" stroke="#C9A96E" stroke-width="1" stroke-linecap="round" opacity=".3"/>
+  <polygon points="960,186 940,192 960,198" fill="#C9A96E" fill-opacity=".25"/>
 
-  <!-- Frame ornaments -->
-  <line x1="0" y1="0" x2="40" y2="0" stroke="#C9A96E" stroke-width="1"/>
-  <line x1="0" y1="0" x2="0" y2="40" stroke="#C9A96E" stroke-width="1"/>
-  <line x1="1200" y1="0" x2="1160" y2="0" stroke="#C9A96E" stroke-width="1"/>
-  <line x1="1200" y1="0" x2="1200" y2="40" stroke="#C9A96E" stroke-width="1"/>
-  <line x1="0" y1="500" x2="40" y2="500" stroke="#C9A96E" stroke-width="1"/>
-  <line x1="0" y1="500" x2="0" y2="460" stroke="#C9A96E" stroke-width="1"/>
-  <line x1="1200" y1="500" x2="1160" y2="500" stroke="#C9A96E" stroke-width="1"/>
-  <line x1="1200" y1="500" x2="1200" y2="460" stroke="#C9A96E" stroke-width="1"/>
+  <!-- Frame border -->
+  <rect x="0" y="0" width="1440" height="3" fill="#C9A96E" fill-opacity=".15"/>
+  <rect x="0" y="637" width="1440" height="3" fill="#C9A96E" fill-opacity=".15"/>
+
 </svg>

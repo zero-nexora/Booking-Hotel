@@ -45,16 +45,18 @@ export const HotelOverview = ({
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
         <div className="space-y-1.5">
           <div className="flex items-center gap-2 flex-wrap">
-            <Badge variant="outline" className="gap-0.5 text-xs">
+            <Badge variant="outline" className="gap-0.5 text-xs border-border">
               {Array.from({ length: starRating }).map((_, i) => (
                 <Star
                   key={i}
-                  className="w-2.5 h-2.5 fill-amber-400 text-amber-400"
+                  className="w-2.5 h-2.5 fill-primary text-primary"
                 />
               ))}
             </Badge>
           </div>
-          <h1 className="text-2xl font-bold tracking-tight">{name}</h1>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">
+            {name}
+          </h1>
           <div className="flex items-start gap-1.5 text-muted-foreground">
             <MapPin className="w-3.5 h-3.5 mt-0.5 shrink-0" />
             <span className="text-sm">
@@ -85,13 +87,13 @@ export const HotelOverview = ({
         )}
       </div>
 
-      <Separator />
+      <Separator className="bg-border" />
 
       <div className="flex flex-wrap gap-x-6 gap-y-2">
         {phone && (
           <a
             href={`tel:${phone}`}
-            className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+            className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
           >
             <Phone className="w-3.5 h-3.5" />
             {phone}
@@ -100,7 +102,7 @@ export const HotelOverview = ({
         {email && (
           <a
             href={`mailto:${email}`}
-            className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+            className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
           >
             <Mail className="w-3.5 h-3.5" />
             {email}
@@ -127,4 +129,4 @@ export const HotelOverview = ({
       </div>
     </div>
   );
-}
+};

@@ -19,7 +19,10 @@ export const PasswordInput = forwardRef<HTMLInputElement, PasswordInputProps>(
         <Input
           ref={ref}
           type={show ? "text" : "password"}
-          className={cn("pr-10", className)}
+          className={cn(
+            "pr-10 bg-background border-border text-foreground placeholder:text-muted-foreground focus-visible:ring-primary",
+            className,
+          )}
           disabled={disabled}
           {...props}
         />

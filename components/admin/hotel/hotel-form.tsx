@@ -126,27 +126,40 @@ const ComboboxField = ({
           variant="outline"
           role="combobox"
           disabled={disabled}
-          className="w-full justify-between font-normal"
+          className="w-full justify-between font-normal border-border bg-background text-foreground hover:bg-muted hover:text-foreground disabled:opacity-50"
         >
-          {selected ? selected.name : placeholder}
-          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+          {selected ? (
+            selected.name
+          ) : (
+            <span className="text-muted-foreground">{placeholder}</span>
+          )}
+          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 text-muted-foreground" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-full p-0" align="start">
-        <Command>
-          <CommandInput placeholder={searchPlaceholder} />
+      <PopoverContent
+        className="w-full p-0 bg-card border-border"
+        align="start"
+      >
+        <Command className="bg-card">
+          <CommandInput
+            placeholder={searchPlaceholder}
+            className="text-foreground placeholder:text-muted-foreground"
+          />
           <CommandList>
-            <CommandEmpty>{emptyText}</CommandEmpty>
+            <CommandEmpty className="text-muted-foreground text-sm py-4 text-center">
+              {emptyText}
+            </CommandEmpty>
             <CommandGroup>
               {options.map((option) => (
                 <CommandItem
                   key={option.id}
                   value={option.name}
                   onSelect={() => onChange(option.id)}
+                  className="text-foreground hover:bg-muted cursor-pointer"
                 >
                   <Check
                     className={cn(
-                      "mr-2 h-4 w-4",
+                      "mr-2 h-4 w-4 text-primary",
                       value === option.id ? "opacity-100" : "opacity-0",
                     )}
                   />
@@ -211,7 +224,7 @@ export const HotelForm = ({
     return (
       <div className="space-y-4">
         {Array.from({ length: 8 }).map((_, i) => (
-          <Skeleton key={i} className="h-10 w-full" />
+          <Skeleton key={i} className="h-10 w-full bg-muted" />
         ))}
       </div>
     );
@@ -226,11 +239,17 @@ export const HotelForm = ({
             name="name"
             render={({ field }) => (
               <FormItem className="col-span-2">
-                <FormLabel>Tên khách sạn</FormLabel>
+                <FormLabel className="text-foreground font-medium">
+                  Tên khách sạn
+                </FormLabel>
                 <FormControl>
-                  <Input {...field} placeholder="Grand Palace Hotel" />
+                  <Input
+                    {...field}
+                    placeholder="Grand Palace Hotel"
+                    className="bg-background border-border text-foreground placeholder:text-muted-foreground focus-visible:ring-primary"
+                  />
                 </FormControl>
-                <FormMessage />
+                <FormMessage className="text-destructive" />
               </FormItem>
             )}
           />
@@ -240,15 +259,18 @@ export const HotelForm = ({
             name="description"
             render={({ field }) => (
               <FormItem className="col-span-2">
-                <FormLabel>Mô tả</FormLabel>
+                <FormLabel className="text-foreground font-medium">
+                  Mô tả
+                </FormLabel>
                 <FormControl>
                   <Textarea
                     {...field}
                     rows={3}
                     placeholder="Mô tả về khách sạn..."
+                    className="bg-background border-border text-foreground placeholder:text-muted-foreground focus-visible:ring-primary resize-none"
                   />
                 </FormControl>
-                <FormMessage />
+                <FormMessage className="text-destructive" />
               </FormItem>
             )}
           />
@@ -258,25 +280,31 @@ export const HotelForm = ({
             name="starRating"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Hạng sao</FormLabel>
+                <FormLabel className="text-foreground font-medium">
+                  Hạng sao
+                </FormLabel>
                 <Select
                   value={String(field.value)}
                   onValueChange={(v) => field.onChange(Number(v))}
                 >
                   <FormControl>
-                    <SelectTrigger>
+                    <SelectTrigger className="bg-background border-border text-foreground">
                       <SelectValue />
                     </SelectTrigger>
                   </FormControl>
-                  <SelectContent>
+                  <SelectContent className="bg-card border-border">
                     {[1, 2, 3, 4, 5].map((s) => (
-                      <SelectItem key={s} value={String(s)}>
+                      <SelectItem
+                        key={s}
+                        value={String(s)}
+                        className="text-foreground hover:bg-muted"
+                      >
                         {s} sao
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
-                <FormMessage />
+                <FormMessage className="text-destructive" />
               </FormItem>
             )}
           />
@@ -286,20 +314,37 @@ export const HotelForm = ({
             name="status"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Trạng thái</FormLabel>
+                <FormLabel className="text-foreground font-medium">
+                  Trạng thái
+                </FormLabel>
                 <Select value={field.value} onValueChange={field.onChange}>
                   <FormControl>
-                    <SelectTrigger>
+                    <SelectTrigger className="bg-background border-border text-foreground">
                       <SelectValue />
                     </SelectTrigger>
                   </FormControl>
-                  <SelectContent>
-                    <SelectItem value="ACTIVE">Hoạt động</SelectItem>
-                    <SelectItem value="INACTIVE">Không hoạt động</SelectItem>
-                    <SelectItem value="MAINTENANCE">Bảo trì</SelectItem>
+                  <SelectContent className="bg-card border-border">
+                    <SelectItem
+                      value="ACTIVE"
+                      className="text-foreground hover:bg-muted"
+                    >
+                      Hoạt động
+                    </SelectItem>
+                    <SelectItem
+                      value="INACTIVE"
+                      className="text-foreground hover:bg-muted"
+                    >
+                      Không hoạt động
+                    </SelectItem>
+                    <SelectItem
+                      value="MAINTENANCE"
+                      className="text-foreground hover:bg-muted"
+                    >
+                      Bảo trì
+                    </SelectItem>
                   </SelectContent>
                 </Select>
-                <FormMessage />
+                <FormMessage className="text-destructive" />
               </FormItem>
             )}
           />
@@ -309,11 +354,17 @@ export const HotelForm = ({
             name="phone"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Điện thoại</FormLabel>
+                <FormLabel className="text-foreground font-medium">
+                  Điện thoại
+                </FormLabel>
                 <FormControl>
-                  <Input {...field} placeholder="+84..." />
+                  <Input
+                    {...field}
+                    placeholder="+84..."
+                    className="bg-background border-border text-foreground placeholder:text-muted-foreground focus-visible:ring-primary"
+                  />
                 </FormControl>
-                <FormMessage />
+                <FormMessage className="text-destructive" />
               </FormItem>
             )}
           />
@@ -323,15 +374,18 @@ export const HotelForm = ({
             name="email"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Email</FormLabel>
+                <FormLabel className="text-foreground font-medium">
+                  Email
+                </FormLabel>
                 <FormControl>
                   <Input
                     {...field}
                     type="email"
                     placeholder="hotel@example.com"
+                    className="bg-background border-border text-foreground placeholder:text-muted-foreground focus-visible:ring-primary"
                   />
                 </FormControl>
-                <FormMessage />
+                <FormMessage className="text-destructive" />
               </FormItem>
             )}
           />
@@ -341,11 +395,17 @@ export const HotelForm = ({
             name="checkInTime"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Giờ check-in</FormLabel>
+                <FormLabel className="text-foreground font-medium">
+                  Giờ check-in
+                </FormLabel>
                 <FormControl>
-                  <Input {...field} type="time" />
+                  <Input
+                    {...field}
+                    type="time"
+                    className="bg-background border-border text-foreground focus-visible:ring-primary"
+                  />
                 </FormControl>
-                <FormMessage />
+                <FormMessage className="text-destructive" />
               </FormItem>
             )}
           />
@@ -355,11 +415,17 @@ export const HotelForm = ({
             name="checkOutTime"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Giờ check-out</FormLabel>
+                <FormLabel className="text-foreground font-medium">
+                  Giờ check-out
+                </FormLabel>
                 <FormControl>
-                  <Input {...field} type="time" />
+                  <Input
+                    {...field}
+                    type="time"
+                    className="bg-background border-border text-foreground focus-visible:ring-primary"
+                  />
                 </FormControl>
-                <FormMessage />
+                <FormMessage className="text-destructive" />
               </FormItem>
             )}
           />
@@ -369,11 +435,17 @@ export const HotelForm = ({
             name="street"
             render={({ field }) => (
               <FormItem className="col-span-2">
-                <FormLabel>Địa chỉ</FormLabel>
+                <FormLabel className="text-foreground font-medium">
+                  Địa chỉ
+                </FormLabel>
                 <FormControl>
-                  <Input {...field} placeholder="123 Đường ABC..." />
+                  <Input
+                    {...field}
+                    placeholder="123 Đường ABC..."
+                    className="bg-background border-border text-foreground placeholder:text-muted-foreground focus-visible:ring-primary"
+                  />
                 </FormControl>
-                <FormMessage />
+                <FormMessage className="text-destructive" />
               </FormItem>
             )}
           />
@@ -383,7 +455,9 @@ export const HotelForm = ({
             name="countryId"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Quốc gia</FormLabel>
+                <FormLabel className="text-foreground font-medium">
+                  Quốc gia
+                </FormLabel>
                 <FormControl>
                   <ComboboxField
                     value={field.value}
@@ -394,7 +468,7 @@ export const HotelForm = ({
                     emptyText="Không tìm thấy quốc gia"
                   />
                 </FormControl>
-                <FormMessage />
+                <FormMessage className="text-destructive" />
               </FormItem>
             )}
           />
@@ -404,7 +478,9 @@ export const HotelForm = ({
             name="cityId"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Thành phố</FormLabel>
+                <FormLabel className="text-foreground font-medium">
+                  Thành phố
+                </FormLabel>
                 <FormControl>
                   <ComboboxField
                     value={field.value}
@@ -420,7 +496,7 @@ export const HotelForm = ({
                     disabled={!selectedCountryId}
                   />
                 </FormControl>
-                <FormMessage />
+                <FormMessage className="text-destructive" />
               </FormItem>
             )}
           />
@@ -430,10 +506,12 @@ export const HotelForm = ({
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-1.5">
               <MapPin className="w-3.5 h-3.5 text-muted-foreground" />
-              <span className="text-sm font-medium">Vị trí trên bản đồ</span>
+              <span className="text-sm font-medium text-foreground">
+                Vị trí trên bản đồ
+              </span>
             </div>
             {watchedLat && watchedLng && (
-              <span className="text-xs text-muted-foreground font-mono bg-muted px-2 py-0.5 rounded">
+              <span className="text-xs text-muted-foreground font-mono bg-muted px-2 py-0.5 rounded border border-border">
                 {watchedLat.toFixed(5)}, {watchedLng.toFixed(5)}
               </span>
             )}
@@ -465,9 +543,10 @@ export const HotelForm = ({
                           e.target.value ? Number(e.target.value) : undefined,
                         )
                       }
+                      className="bg-background border-border text-foreground placeholder:text-muted-foreground focus-visible:ring-primary"
                     />
                   </FormControl>
-                  <FormMessage />
+                  <FormMessage className="text-destructive" />
                 </FormItem>
               )}
             />
@@ -490,9 +569,10 @@ export const HotelForm = ({
                           e.target.value ? Number(e.target.value) : undefined,
                         )
                       }
+                      className="bg-background border-border text-foreground placeholder:text-muted-foreground focus-visible:ring-primary"
                     />
                   </FormControl>
-                  <FormMessage />
+                  <FormMessage className="text-destructive" />
                 </FormItem>
               )}
             />
@@ -504,14 +584,16 @@ export const HotelForm = ({
           name="amenityIds"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Tiện nghi</FormLabel>
+              <FormLabel className="text-foreground font-medium">
+                Tiện nghi
+              </FormLabel>
               <FormControl>
                 <AmenityMultiSelect
                   value={field.value}
                   onChange={field.onChange}
                 />
               </FormControl>
-              <FormMessage />
+              <FormMessage className="text-destructive" />
             </FormItem>
           )}
         />

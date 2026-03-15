@@ -8,8 +8,6 @@ import Image from "next/image";
 export const Logo = () => {
   const { theme } = useTheme();
 
-  console.log(theme);
-
   return (
     <div className={"flex items-center gap-2.5 select-none"}>
       {theme === "dark" ? (

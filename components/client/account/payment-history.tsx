@@ -1,5 +1,3 @@
-import { format } from "date-fns";
-import { vi } from "date-fns/locale";
 import { ArrowDownLeft, ArrowUpRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -10,6 +8,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { formatDatetime, formatCurrencyUSD } from "@/lib/utils";
 
 type Payment = {
   id: string;
@@ -22,18 +21,25 @@ type Payment = {
   createdAt: Date;
 };
 
-const PAYMENT_STATUS_MAP: Record<
-  string,
+const PAYMENT_STATUS_MAP: Record<string, { label: string; className: string }> =
   {
-    label: string;
-    variant: "default" | "secondary" | "destructive" | "outline";
-  }
-> = {
-  PENDING: { label: "Đang xử lý", variant: "secondary" },
-  PAID: { label: "Thành công", variant: "default" },
-  REFUNDED: { label: "Đã hoàn", variant: "outline" },
-  FAILED: { label: "Thất bại", variant: "destructive" },
-};
+    PENDING: {
+      label: "Đang xử lý",
+      className: "bg-secondary text-secondary-foreground border-border",
+    },
+    PAID: {
+      label: "Thành công",
+      className: "bg-primary/10 text-primary border-primary/20",
+    },
+    REFUNDED: {
+      label: "Đã hoàn",
+      className: "bg-muted text-muted-foreground border-border",
+    },
+    FAILED: {
+      label: "Thất bại",
+      className: "bg-destructive/10 text-destructive border-destructive/20",
+    },
+  };
 
 interface PaymentHistoryProps {
   payments: Payment[];
@@ -43,14 +49,22 @@ export const PaymentHistory = ({ payments }: PaymentHistoryProps) => {
   if (!payments.length) return null;
 
   return (
-    <div className="rounded-2xl border overflow-hidden">
+    <div className="rounded-2xl border border-border overflow-hidden">
       <Table>
         <TableHeader>
-          <TableRow className="bg-muted/40">
-            <TableHead className="text-xs">Loại</TableHead>
-            <TableHead className="text-xs">Trạng thái</TableHead>
-            <TableHead className="text-xs">Số tiền</TableHead>
-            <TableHead className="text-xs">Thời gian</TableHead>
+          <TableRow className="bg-muted/40 border-border hover:bg-transparent">
+            <TableHead className="text-xs text-muted-foreground font-medium">
+              Loại
+            </TableHead>
+            <TableHead className="text-xs text-muted-foreground font-medium">
+              Trạng thái
+            </TableHead>
+            <TableHead className="text-xs text-muted-foreground font-medium">
+              Số tiền
+            </TableHead>
+            <TableHead className="text-xs text-muted-foreground font-medium">
+              Thời gian
+            </TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -59,32 +73,35 @@ export const PaymentHistory = ({ payments }: PaymentHistoryProps) => {
               PAYMENT_STATUS_MAP[p.status] ?? PAYMENT_STATUS_MAP.PENDING;
             const date = p.paidAt ?? p.refundedAt ?? p.createdAt;
             return (
-              <TableRow key={p.id}>
+              <TableRow key={p.id} className="border-border hover:bg-muted/40">
                 <TableCell>
                   <div className="flex items-center gap-1.5">
                     {p.type === "CHARGE" ? (
                       <ArrowUpRight className="w-3.5 h-3.5 text-primary" />
                     ) : (
-                      <ArrowDownLeft className="w-3.5 h-3.5 text-emerald-500" />
+                      <ArrowDownLeft className="w-3.5 h-3.5 text-accent-foreground" />
                     )}
-                    <span className="text-xs font-medium">
+                    <span className="text-xs font-medium text-foreground">
                       {p.type === "CHARGE" ? "Thanh toán" : "Hoàn tiền"}
                     </span>
                   </div>
                 </TableCell>
                 <TableCell>
-                  <Badge variant={statusInfo.variant} className="text-xs">
+                  <Badge
+                    variant="outline"
+                    className={`text-xs font-medium ${statusInfo.className}`}
+                  >
                     {statusInfo.label}
                   </Badge>
                 </TableCell>
-                <TableCell className="text-sm font-semibold">
+                <TableCell className="text-sm font-semibold text-foreground">
                   {p.type === "REFUND" && (
-                    <span className="text-emerald-600">+</span>
+                    <span className="text-primary">+</span>
                   )}
-                  ${Number(p.amount.toString())} {p.currency}
+                  {formatCurrencyUSD(Number(p.amount.toString()))}
                 </TableCell>
                 <TableCell className="text-xs text-muted-foreground">
-                  {format(new Date(date), "dd/MM/yyyy HH:mm", { locale: vi })}
+                  {formatDatetime(new Date(date))}
                 </TableCell>
               </TableRow>
             );

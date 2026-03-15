@@ -1,9 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { format } from "date-fns";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -12,7 +10,13 @@ import {
 } from "@/hooks/admin/use-admin-bookings";
 import { ArrowLeft } from "lucide-react";
 import { RouterOutput } from "@/trpc/client";
-import { formatDateShort } from "@/lib/utils";
+import { StatusBadge } from "@/components/shared/status-badge";
+import { StarRating } from "@/components/shared/star-rating";
+import {
+  formatDateShort,
+  formatDatetime,
+  formatCurrencyUSD,
+} from "@/lib/utils";
 
 type BookingDetail = RouterOutput["admin"]["booking"]["detail"];
 type BookingStatus =
@@ -21,46 +25,6 @@ type BookingStatus =
   | "CHECKED_OUT"
   | "CANCELLED"
   | "NO_SHOW";
-
-const BOOKING_STATUS_LABEL: Record<string, string> = {
-  PENDING: "Chờ xác nhận",
-  CONFIRMED: "Đã xác nhận",
-  CHECKED_IN: "Đã check-in",
-  CHECKED_OUT: "Đã check-out",
-  CANCELLED: "Đã hủy",
-  NO_SHOW: "Không đến",
-};
-
-const BOOKING_STATUS_VARIANT: Record<
-  string,
-  "default" | "secondary" | "destructive" | "outline"
-> = {
-  PENDING: "secondary",
-  CONFIRMED: "default",
-  CHECKED_IN: "default",
-  CHECKED_OUT: "outline",
-  CANCELLED: "destructive",
-  NO_SHOW: "destructive",
-};
-
-const PAYMENT_STATUS_LABEL: Record<string, string> = {
-  UNPAID: "Chưa thanh toán",
-  PENDING: "Đang xử lý",
-  PAID: "Đã thanh toán",
-  REFUNDED: "Đã hoàn tiền",
-  FAILED: "Thất bại",
-};
-
-const PAYMENT_STATUS_VARIANT: Record<
-  string,
-  "default" | "secondary" | "destructive" | "outline"
-> = {
-  UNPAID: "secondary",
-  PENDING: "secondary",
-  PAID: "default",
-  REFUNDED: "outline",
-  FAILED: "destructive",
-};
 
 const VALID_TRANSITIONS: Record<string, BookingStatus[]> = {
   PENDING: ["CONFIRMED", "CANCELLED"],
@@ -79,15 +43,15 @@ const TRANSITION_LABEL: Record<BookingStatus, string> = {
 const BookingDetailSkeleton = () => (
   <div className="space-y-6">
     <div className="flex items-center gap-4">
-      <Skeleton className="h-9 w-9" />
-      <Skeleton className="h-8 w-64" />
+      <Skeleton className="h-9 w-9 bg-muted" />
+      <Skeleton className="h-8 w-64 bg-muted" />
     </div>
     <div className="grid grid-cols-3 gap-4">
       {Array.from({ length: 3 }).map((_, i) => (
-        <Skeleton key={i} className="h-32" />
+        <Skeleton key={i} className="h-32 bg-muted" />
       ))}
     </div>
-    <Skeleton className="h-64" />
+    <Skeleton className="h-64 bg-muted" />
   </div>
 );
 
@@ -111,25 +75,21 @@ const BookingHeader = ({
         <Button
           variant="ghost"
           size="icon"
+          className="text-muted-foreground hover:text-foreground hover:bg-muted"
           onClick={() => router.push("/admin/bookings")}
         >
           <ArrowLeft className="w-4 h-4" />
         </Button>
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold tracking-tight font-mono">
+            <h1 className="text-2xl font-bold tracking-tight font-mono text-foreground">
               {booking.bookingRef}
             </h1>
-            <Badge variant={BOOKING_STATUS_VARIANT[booking.status]}>
-              {BOOKING_STATUS_LABEL[booking.status]}
-            </Badge>
-            <Badge variant={PAYMENT_STATUS_VARIANT[booking.paymentStatus]}>
-              {PAYMENT_STATUS_LABEL[booking.paymentStatus]}
-            </Badge>
+            <StatusBadge status={booking.status} type="booking" />
+            <StatusBadge status={booking.paymentStatus} type="payment" />
           </div>
           <p className="text-sm text-muted-foreground mt-1">
-            {booking.hotel.name} · Tạo{" "}
-            {formatDateShort(booking.createdAt)}
+            {booking.hotel.name} · Tạo {formatDateShort(booking.createdAt)}
           </p>
         </div>
       </div>
@@ -144,6 +104,11 @@ const BookingHeader = ({
                   ? "destructive"
                   : "default"
               }
+              className={
+                status === "CANCELLED" || status === "NO_SHOW"
+                  ? "bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  : "bg-primary text-primary-foreground hover:bg-primary/90"
+              }
               disabled={isPending}
               onClick={() => onStatusChange(status)}
             >
@@ -157,54 +122,58 @@ const BookingHeader = ({
 };
 
 const GuestCard = ({ booking }: { booking: BookingDetail }) => (
-  <Card>
+  <Card className="bg-card border-border shadow-none">
     <CardHeader>
-      <CardTitle className="text-base">Thông tin khách</CardTitle>
+      <CardTitle className="text-base text-foreground">
+        Thông tin khách
+      </CardTitle>
     </CardHeader>
     <CardContent className="space-y-3 text-sm">
       <div className="flex justify-between">
         <span className="text-muted-foreground">Tên</span>
-        <span className="font-medium">{booking.guestName}</span>
+        <span className="font-medium text-foreground">{booking.guestName}</span>
       </div>
       <div className="flex justify-between">
         <span className="text-muted-foreground">Email</span>
-        <span>{booking.guestEmail}</span>
+        <span className="text-foreground">{booking.guestEmail}</span>
       </div>
       {booking.guestPhone && (
         <div className="flex justify-between">
           <span className="text-muted-foreground">Điện thoại</span>
-          <span>{booking.guestPhone}</span>
+          <span className="text-foreground">{booking.guestPhone}</span>
         </div>
       )}
       <div className="flex justify-between">
         <span className="text-muted-foreground">Tài khoản</span>
-        <span>{booking.user.name}</span>
+        <span className="text-foreground">{booking.user.name}</span>
       </div>
     </CardContent>
   </Card>
 );
 
 const StayCard = ({ booking }: { booking: BookingDetail }) => (
-  <Card>
+  <Card className="bg-card border-border shadow-none">
     <CardHeader>
-      <CardTitle className="text-base">Thông tin lưu trú</CardTitle>
+      <CardTitle className="text-base text-foreground">
+        Thông tin lưu trú
+      </CardTitle>
     </CardHeader>
     <CardContent className="space-y-3 text-sm">
       <div className="flex justify-between">
         <span className="text-muted-foreground">Check-in</span>
-        <span className="font-medium">
-          {format(new Date(booking.checkIn), "dd/MM/yyyy")}
+        <span className="font-medium text-foreground">
+          {formatDateShort(booking.checkIn)}
         </span>
       </div>
       <div className="flex justify-between">
         <span className="text-muted-foreground">Check-out</span>
-        <span className="font-medium">
-          {format(new Date(booking.checkOut), "dd/MM/yyyy")}
+        <span className="font-medium text-foreground">
+          {formatDateShort(booking.checkOut)}
         </span>
       </div>
       <div className="flex justify-between">
         <span className="text-muted-foreground">Địa điểm</span>
-        <span>
+        <span className="text-foreground">
           {booking.hotel.address.city.name},{" "}
           {booking.hotel.address.city.country.name}
         </span>
@@ -212,7 +181,7 @@ const StayCard = ({ booking }: { booking: BookingDetail }) => (
       {booking.specialRequests && (
         <div>
           <p className="text-muted-foreground mb-1">Yêu cầu đặc biệt</p>
-          <p className="text-xs bg-muted rounded p-2">
+          <p className="text-xs bg-muted text-foreground rounded p-2">
             {booking.specialRequests}
           </p>
         </div>
@@ -230,43 +199,43 @@ const StayCard = ({ booking }: { booking: BookingDetail }) => (
 );
 
 const PaymentCard = ({ booking }: { booking: BookingDetail }) => (
-  <Card>
+  <Card className="bg-card border-border shadow-none">
     <CardHeader>
-      <CardTitle className="text-base">Thanh toán</CardTitle>
+      <CardTitle className="text-base text-foreground">Thanh toán</CardTitle>
     </CardHeader>
     <CardContent className="space-y-3 text-sm">
       <div className="flex justify-between">
         <span className="text-muted-foreground">Tổng tiền</span>
-        <span className="font-bold text-base">
-          {Number(booking.totalAmount).toLocaleString("vi-VN")}đ
+        <span className="font-bold text-base text-foreground">
+          {formatCurrencyUSD(Number(booking.totalAmount))}
         </span>
       </div>
       <div className="flex justify-between">
         <span className="text-muted-foreground">Trạng thái</span>
-        <Badge variant={PAYMENT_STATUS_VARIANT[booking.paymentStatus]}>
-          {PAYMENT_STATUS_LABEL[booking.paymentStatus]}
-        </Badge>
+        <StatusBadge status={booking.paymentStatus} type="payment" />
       </div>
       {booking.payments.map((payment) => (
-        <div key={payment.id} className="border-t pt-2 space-y-1">
+        <div key={payment.id} className="border-t border-border pt-2 space-y-1">
           <div className="flex justify-between">
             <span className="text-muted-foreground">
               {payment.type === "CHARGE" ? "Thanh toán" : "Hoàn tiền"}
             </span>
-            <span>{Number(payment.amount).toLocaleString("vi-VN")}đ</span>
+            <span className="text-foreground">
+              {formatCurrencyUSD(Number(payment.amount))}
+            </span>
           </div>
           {payment.paidAt && (
             <div className="flex justify-between">
               <span className="text-muted-foreground">Thời gian</span>
-              <span className="text-xs">
-                {format(new Date(payment.paidAt), "dd/MM/yyyy HH:mm")}
+              <span className="text-xs text-foreground">
+                {formatDatetime(payment.paidAt)}
               </span>
             </div>
           )}
           {payment.stripePaymentIntentId && (
             <div className="flex justify-between">
               <span className="text-muted-foreground">Stripe ID</span>
-              <span className="font-mono text-xs truncate max-w-35">
+              <span className="font-mono text-xs text-foreground truncate max-w-35">
                 {payment.stripePaymentIntentId}
               </span>
             </div>
@@ -281,34 +250,39 @@ const PaymentCard = ({ booking }: { booking: BookingDetail }) => (
 );
 
 const BookingItemsCard = ({ booking }: { booking: BookingDetail }) => (
-  <Card>
+  <Card className="bg-card border-border shadow-none">
     <CardHeader>
-      <CardTitle className="text-base">Chi tiết phòng</CardTitle>
+      <CardTitle className="text-base text-foreground">
+        Chi tiết phòng
+      </CardTitle>
     </CardHeader>
     <CardContent className="space-y-3">
       {booking.items.map((item) => (
-        <div key={item.id} className="rounded-lg border p-3 space-y-2 text-sm">
+        <div
+          key={item.id}
+          className="rounded-lg border border-border bg-background p-3 space-y-2 text-sm"
+        >
           <div className="flex items-center justify-between">
             <div>
-              <p className="font-medium">{item.room.name}</p>
+              <p className="font-medium text-foreground">{item.room.name}</p>
               <p className="text-xs text-muted-foreground">
                 {item.room.roomType.name}
                 {item.room.floor ? ` · Tầng ${item.room.floor}` : ""}
               </p>
             </div>
-            <Badge variant="outline">{item.status}</Badge>
+            <StatusBadge status={item.status} type="booking" />
           </div>
           <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-muted-foreground">
             <div className="flex justify-between">
               <span>Check-in</span>
               <span className="text-foreground">
-                {format(new Date(item.checkIn), "dd/MM/yyyy")}
+                {formatDateShort(item.checkIn)}
               </span>
             </div>
             <div className="flex justify-between">
               <span>Check-out</span>
               <span className="text-foreground">
-                {format(new Date(item.checkOut), "dd/MM/yyyy")}
+                {formatDateShort(item.checkOut)}
               </span>
             </div>
             <div className="flex justify-between">
@@ -325,13 +299,13 @@ const BookingItemsCard = ({ booking }: { booking: BookingDetail }) => (
             <div className="flex justify-between">
               <span>Đơn giá</span>
               <span className="text-foreground">
-                {Number(item.unitPrice).toLocaleString("vi-VN")}đ
+                {formatCurrencyUSD(Number(item.unitPrice))}
               </span>
             </div>
             <div className="flex justify-between font-medium">
               <span className="text-foreground">Tổng</span>
               <span className="text-foreground">
-                {Number(item.total).toLocaleString("vi-VN")}đ
+                {formatCurrencyUSD(Number(item.total))}
               </span>
             </div>
           </div>
@@ -344,46 +318,17 @@ const BookingItemsCard = ({ booking }: { booking: BookingDetail }) => (
 const ReviewCard = ({ booking }: { booking: BookingDetail }) => {
   if (!booking.review) return null;
   return (
-    <Card>
+    <Card className="bg-card border-border shadow-none">
       <CardHeader>
-        <CardTitle className="text-base">Đánh giá</CardTitle>
+        <CardTitle className="text-base text-foreground">Đánh giá</CardTitle>
       </CardHeader>
       <CardContent className="space-y-2 text-sm">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-1">
-            {Array.from({ length: booking.review.overallRating }).map(
-              (_, i) => (
-                <span key={i} className="text-amber-400">
-                  ★
-                </span>
-              ),
-            )}
-            {Array.from({ length: 5 - booking.review.overallRating }).map(
-              (_, i) => (
-                <span key={i} className="text-muted-foreground">
-                  ★
-                </span>
-              ),
-            )}
-          </div>
-          <Badge
-            variant={
-              booking.review.status === "APPROVED"
-                ? "default"
-                : booking.review.status === "REJECTED"
-                  ? "destructive"
-                  : "secondary"
-            }
-          >
-            {booking.review.status === "APPROVED"
-              ? "Đã duyệt"
-              : booking.review.status === "REJECTED"
-                ? "Từ chối"
-                : "Chờ duyệt"}
-          </Badge>
+          <StarRating value={booking.review.overallRating} readonly size="sm" />
+          <StatusBadge status={booking.review.status} type="review" />
         </div>
         {booking.review.title && (
-          <p className="font-medium">{booking.review.title}</p>
+          <p className="font-medium text-foreground">{booking.review.title}</p>
         )}
         <p className="text-muted-foreground">{booking.review.comment}</p>
       </CardContent>

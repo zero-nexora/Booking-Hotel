@@ -34,6 +34,7 @@ import { useRoomTypeList } from "@/hooks/admin/use-admin-room-type";
 import { ListHeader } from "@/components/shared/list-header";
 import { TableSkeleton } from "@/components/shared/table-skeleton";
 import { DEFAULT_PAGE } from "@/lib/constants";
+import { formatCurrencyUSD } from "@/lib/utils";
 
 type Room = RouterOutput["admin"]["room"]["list"]["items"][number];
 
@@ -49,7 +50,6 @@ export const HotelRoomsTab = ({ hotelId }: HotelRoomsTabProps) => {
   const [params, setParams] = useQueryStates(adminRoomParsers);
   const { data, isLoading } = useAdminRoomList(hotelId, params);
   const { data: roomTypes = [] } = useRoomTypeList();
-
   const deleteRoom = useDeleteRoom();
 
   const openCreate = useCallback(
@@ -137,13 +137,22 @@ export const HotelRoomsTab = ({ hotelId }: HotelRoomsTabProps) => {
             value={params.roomTypeId || "all"}
             onValueChange={handleRoomTypeChange}
           >
-            <SelectTrigger className="w-44">
+            <SelectTrigger className="w-44 border-border bg-background text-foreground">
               <SelectValue placeholder="Loại phòng" />
             </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Tất cả loại</SelectItem>
+            <SelectContent className="bg-card border-border">
+              <SelectItem
+                value="all"
+                className="text-foreground hover:bg-muted"
+              >
+                Tất cả loại
+              </SelectItem>
               {roomTypes.map((rt) => (
-                <SelectItem key={rt.id} value={rt.id}>
+                <SelectItem
+                  key={rt.id}
+                  value={rt.id}
+                  className="text-foreground hover:bg-muted"
+                >
                   {rt.name}
                 </SelectItem>
               ))}
@@ -153,28 +162,55 @@ export const HotelRoomsTab = ({ hotelId }: HotelRoomsTabProps) => {
             value={params.isActive === null ? "all" : String(params.isActive)}
             onValueChange={handleActiveChange}
           >
-            <SelectTrigger className="w-40">
+            <SelectTrigger className="w-40 border-border bg-background text-foreground">
               <SelectValue placeholder="Trạng thái" />
             </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Tất cả</SelectItem>
-              <SelectItem value="true">Hoạt động</SelectItem>
-              <SelectItem value="false">Ẩn</SelectItem>
+            <SelectContent className="bg-card border-border">
+              <SelectItem
+                value="all"
+                className="text-foreground hover:bg-muted"
+              >
+                Tất cả
+              </SelectItem>
+              <SelectItem
+                value="true"
+                className="text-foreground hover:bg-muted"
+              >
+                Hoạt động
+              </SelectItem>
+              <SelectItem
+                value="false"
+                className="text-foreground hover:bg-muted"
+              >
+                Ẩn
+              </SelectItem>
             </SelectContent>
           </Select>
         </div>
       </ListHeader>
 
-      <Card>
+      <Card className="bg-card border-border shadow-none">
         <Table>
           <TableHeader>
-            <TableRow>
-              <TableHead>Tên phòng</TableHead>
-              <TableHead>Loại</TableHead>
-              <TableHead>Sức chứa</TableHead>
-              <TableHead>Giá cơ bản</TableHead>
-              <TableHead>Trạng thái</TableHead>
-              <TableHead className="text-center">Booking</TableHead>
+            <TableRow className="border-border hover:bg-transparent">
+              <TableHead className="text-muted-foreground font-medium">
+                Tên phòng
+              </TableHead>
+              <TableHead className="text-muted-foreground font-medium">
+                Loại
+              </TableHead>
+              <TableHead className="text-muted-foreground font-medium">
+                Sức chứa
+              </TableHead>
+              <TableHead className="text-muted-foreground font-medium">
+                Giá cơ bản
+              </TableHead>
+              <TableHead className="text-muted-foreground font-medium">
+                Trạng thái
+              </TableHead>
+              <TableHead className="text-center text-muted-foreground font-medium">
+                Booking
+              </TableHead>
               <TableHead />
             </TableRow>
           </TableHeader>
@@ -228,26 +264,43 @@ interface RoomRowProps {
 }
 
 const RoomRow = ({ room, onNavigate, onEdit, onDelete }: RoomRowProps) => (
-  <TableRow className="cursor-pointer" onClick={() => onNavigate(room)}>
+  <TableRow
+    className="border-border hover:bg-muted/40 cursor-pointer"
+    onClick={() => onNavigate(room)}
+  >
     <TableCell>
       <div>
-        <p className="font-medium text-sm">{room.name}</p>
+        <p className="font-medium text-sm text-foreground">{room.name}</p>
         <p className="text-xs text-muted-foreground">{room.slug}</p>
       </div>
     </TableCell>
     <TableCell>
-      <Badge variant="secondary">{room.roomType.name}</Badge>
+      <Badge
+        variant="outline"
+        className="bg-muted text-muted-foreground border-border"
+      >
+        {room.roomType.name}
+      </Badge>
     </TableCell>
-    <TableCell className="text-sm">{room.capacity} khách</TableCell>
-    <TableCell className="text-sm">
-      ${Number(room.basePrice).toLocaleString("en-US")}
+    <TableCell className="text-sm text-foreground">
+      {room.capacity} khách
+    </TableCell>
+    <TableCell className="text-sm text-foreground">
+      {formatCurrencyUSD(Number(room.basePrice))}
     </TableCell>
     <TableCell>
-      <Badge variant={room.isActive ? "default" : "outline"}>
+      <Badge
+        variant="outline"
+        className={
+          room.isActive
+            ? "bg-primary/10 text-primary border-primary/20"
+            : "bg-muted text-muted-foreground border-border"
+        }
+      >
         {room.isActive ? "Hoạt động" : "Ẩn"}
       </Badge>
     </TableCell>
-    <TableCell className="text-center text-sm">
+    <TableCell className="text-center text-sm text-muted-foreground">
       {room._count.bookingItems}
     </TableCell>
     <TableCell>
@@ -258,7 +311,7 @@ const RoomRow = ({ room, onNavigate, onEdit, onDelete }: RoomRowProps) => (
         <Button
           variant="ghost"
           size="icon"
-          className="h-8 w-8"
+          className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-muted"
           onClick={() => onEdit(room)}
         >
           <Pencil className="w-3.5 h-3.5" />
@@ -266,7 +319,7 @@ const RoomRow = ({ room, onNavigate, onEdit, onDelete }: RoomRowProps) => (
         <Button
           variant="ghost"
           size="icon"
-          className="h-8 w-8 text-destructive"
+          className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
           onClick={() => onDelete(room)}
         >
           <Trash2 className="w-3.5 h-3.5" />

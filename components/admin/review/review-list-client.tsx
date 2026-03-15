@@ -1,9 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { format } from "date-fns";
 import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -22,7 +20,9 @@ import {
 } from "@/components/ui/table";
 import { Pagination } from "@/components/shared/pagination";
 import { SearchInput } from "@/components/shared/search-input";
-import { Check, X, Eye, Star } from "lucide-react";
+import { StatusBadge } from "@/components/shared/status-badge";
+import { StarRating } from "@/components/shared/star-rating";
+import { Check, X, Eye } from "lucide-react";
 import {
   useAdminReviewList,
   useUpdateReviewStatus,
@@ -33,34 +33,9 @@ import { RouterOutput } from "@/trpc/client";
 import { ReviewStatus } from "@/generated/prisma/enums";
 import { ListHeader } from "@/components/shared/list-header";
 import { TableSkeleton } from "@/components/shared/table-skeleton";
+import { formatDateShort } from "@/lib/utils";
 
 type Review = RouterOutput["admin"]["review"]["list"]["items"][number];
-
-const REVIEW_STATUS_VARIANT: Record<
-  string,
-  "default" | "secondary" | "destructive" | "outline"
-> = {
-  PENDING: "secondary",
-  APPROVED: "default",
-  REJECTED: "destructive",
-};
-
-const REVIEW_STATUS_LABEL: Record<string, string> = {
-  PENDING: "Chờ duyệt",
-  APPROVED: "Đã duyệt",
-  REJECTED: "Từ chối",
-};
-
-const InlineStars = ({ value }: { value: number }) => (
-  <div className="flex gap-0.5">
-    {Array.from({ length: 5 }).map((_, i) => (
-      <Star
-        key={i}
-        className={`w-3 h-3 ${i < value ? "fill-amber-400 text-amber-400" : "text-muted-foreground"}`}
-      />
-    ))}
-  </div>
-);
 
 export const ReviewListClient = () => {
   const [params, setParams] = useQueryStates(adminReviewParsers);
@@ -75,10 +50,7 @@ export const ReviewListClient = () => {
 
   const handleTabChange = useCallback(
     (v: string) =>
-      setParams({
-        status: v === "all" ? null : (v as ReviewStatus),
-        page: 1,
-      }),
+      setParams({ status: v === "all" ? null : (v as ReviewStatus), page: 1 }),
     [setParams],
   );
 
@@ -105,28 +77,64 @@ export const ReviewListClient = () => {
             className="w-64"
           />
           <Tabs value={params.status ?? "all"} onValueChange={handleTabChange}>
-            <TabsList>
-              <TabsTrigger value="all">Tất cả</TabsTrigger>
-              <TabsTrigger value="PENDING">Chờ duyệt</TabsTrigger>
-              <TabsTrigger value="APPROVED">Đã duyệt</TabsTrigger>
-              <TabsTrigger value="REJECTED">Từ chối</TabsTrigger>
+            <TabsList className="bg-muted border-border">
+              <TabsTrigger
+                value="all"
+                className="data-[state=active]:bg-card data-[state=active]:text-foreground text-muted-foreground"
+              >
+                Tất cả
+              </TabsTrigger>
+              <TabsTrigger
+                value="PENDING"
+                className="data-[state=active]:bg-card data-[state=active]:text-foreground text-muted-foreground"
+              >
+                Chờ duyệt
+              </TabsTrigger>
+              <TabsTrigger
+                value="APPROVED"
+                className="data-[state=active]:bg-card data-[state=active]:text-foreground text-muted-foreground"
+              >
+                Đã duyệt
+              </TabsTrigger>
+              <TabsTrigger
+                value="REJECTED"
+                className="data-[state=active]:bg-card data-[state=active]:text-foreground text-muted-foreground"
+              >
+                Từ chối
+              </TabsTrigger>
             </TabsList>
           </Tabs>
         </div>
       </ListHeader>
 
-      <Card>
+      <Card className="bg-card border-border shadow-none">
         <Table>
           <TableHeader>
-            <TableRow>
-              <TableHead>Khách sạn</TableHead>
-              <TableHead>Người dùng</TableHead>
-              <TableHead>Rating</TableHead>
-              <TableHead>Tiêu đề</TableHead>
-              <TableHead>Nội dung</TableHead>
-              <TableHead>Booking</TableHead>
-              <TableHead>Ngày tạo</TableHead>
-              <TableHead>Trạng thái</TableHead>
+            <TableRow className="border-border hover:bg-transparent">
+              <TableHead className="text-muted-foreground font-medium">
+                Khách sạn
+              </TableHead>
+              <TableHead className="text-muted-foreground font-medium">
+                Người dùng
+              </TableHead>
+              <TableHead className="text-muted-foreground font-medium">
+                Rating
+              </TableHead>
+              <TableHead className="text-muted-foreground font-medium">
+                Tiêu đề
+              </TableHead>
+              <TableHead className="text-muted-foreground font-medium">
+                Nội dung
+              </TableHead>
+              <TableHead className="text-muted-foreground font-medium">
+                Booking
+              </TableHead>
+              <TableHead className="text-muted-foreground font-medium">
+                Ngày tạo
+              </TableHead>
+              <TableHead className="text-muted-foreground font-medium">
+                Trạng thái
+              </TableHead>
               <TableHead />
             </TableRow>
           </TableHeader>
@@ -145,20 +153,29 @@ export const ReviewListClient = () => {
                 </TableRow>
               ) : (
                 data?.items.map((review) => (
-                  <TableRow key={review.id}>
-                    <TableCell className="text-sm font-medium">
+                  <TableRow
+                    key={review.id}
+                    className="border-border hover:bg-muted/40"
+                  >
+                    <TableCell className="text-sm font-medium text-foreground">
                       {review.hotel.name}
                     </TableCell>
                     <TableCell>
-                      <p className="text-sm">{review.user.name}</p>
+                      <p className="text-sm text-foreground">
+                        {review.user.name}
+                      </p>
                       <p className="text-xs text-muted-foreground">
                         {review.user.email}
                       </p>
                     </TableCell>
                     <TableCell>
-                      <InlineStars value={review.overallRating} />
+                      <StarRating
+                        value={review.overallRating}
+                        readonly
+                        size="xs"
+                      />
                     </TableCell>
-                    <TableCell className="text-sm">
+                    <TableCell className="text-sm text-foreground">
                       {review.title ?? "—"}
                     </TableCell>
                     <TableCell className="max-w-xs">
@@ -166,23 +183,21 @@ export const ReviewListClient = () => {
                         {review.comment}
                       </p>
                     </TableCell>
-                    <TableCell className="font-mono text-xs">
+                    <TableCell className="font-mono text-xs text-muted-foreground">
                       {review.booking.bookingRef.slice(0, 8).toUpperCase()}
                     </TableCell>
                     <TableCell className="text-sm text-muted-foreground">
-                      {format(new Date(review.createdAt), "dd/MM/yyyy")}
+                      {formatDateShort(review.createdAt)}
                     </TableCell>
                     <TableCell>
-                      <Badge variant={REVIEW_STATUS_VARIANT[review.status]}>
-                        {REVIEW_STATUS_LABEL[review.status]}
-                      </Badge>
+                      <StatusBadge status={review.status} type="review" />
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-1">
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-7 w-7"
+                          className="h-7 w-7 text-muted-foreground hover:text-foreground hover:bg-muted"
                           onClick={() => setViewReview(review)}
                         >
                           <Eye className="w-3.5 h-3.5" />
@@ -192,7 +207,7 @@ export const ReviewListClient = () => {
                             <Button
                               variant="ghost"
                               size="icon"
-                              className="h-7 w-7 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50"
+                              className="h-7 w-7 text-primary hover:text-primary hover:bg-primary/10"
                               disabled={updateStatus.isPending}
                               onClick={() =>
                                 updateStatus.mutate({
@@ -240,20 +255,28 @@ export const ReviewListClient = () => {
       </Card>
 
       <Dialog open={!!viewReview} onOpenChange={handleCloseDialog}>
-        <DialogContent>
+        <DialogContent className="bg-card border-border">
           <DialogHeader>
-            <DialogTitle>Chi tiết đánh giá</DialogTitle>
+            <DialogTitle className="text-foreground">
+              Chi tiết đánh giá
+            </DialogTitle>
           </DialogHeader>
           {viewReview && (
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="font-medium">{viewReview.user.name}</p>
+                  <p className="font-medium text-foreground">
+                    {viewReview.user.name}
+                  </p>
                   <p className="text-xs text-muted-foreground">
                     {viewReview.user.email}
                   </p>
                 </div>
-                <InlineStars value={viewReview.overallRating} />
+                <StarRating
+                  value={viewReview.overallRating}
+                  readonly
+                  size="sm"
+                />
               </div>
               <p className="text-sm text-muted-foreground">
                 Khách sạn:{" "}
@@ -266,19 +289,21 @@ export const ReviewListClient = () => {
                 {viewReview.booking.bookingRef.slice(0, 8).toUpperCase()}
               </p>
               {viewReview.title && (
-                <p className="font-medium">{viewReview.title}</p>
+                <p className="font-medium text-foreground">
+                  {viewReview.title}
+                </p>
               )}
-              <p className="text-sm leading-relaxed">{viewReview.comment}</p>
-              <div className="flex items-center justify-between pt-2 border-t">
-                <Badge variant={REVIEW_STATUS_VARIANT[viewReview.status]}>
-                  {REVIEW_STATUS_LABEL[viewReview.status]}
-                </Badge>
+              <p className="text-sm text-foreground leading-relaxed">
+                {viewReview.comment}
+              </p>
+              <div className="flex items-center justify-between pt-2 border-t border-border">
+                <StatusBadge status={viewReview.status} type="review" />
                 {viewReview.status === "PENDING" && (
                   <div className="flex gap-2">
                     <Button
                       size="sm"
                       variant="outline"
-                      className="text-emerald-600 border-emerald-200 hover:text-emerald-500 hover:border-emerald-200"
+                      className="border-border text-primary hover:bg-primary/10 hover:text-primary"
                       disabled={updateStatus.isPending}
                       onClick={() => {
                         updateStatus.mutate({
@@ -294,7 +319,7 @@ export const ReviewListClient = () => {
                     <Button
                       size="sm"
                       variant="outline"
-                      className="text-destructive border-destructive/30 hover:bg-destructive/10 hover:text-destructive hover:border-destructive/30"
+                      className="border-destructive/30 text-destructive hover:bg-destructive/10 hover:text-destructive"
                       disabled={updateStatus.isPending}
                       onClick={() => {
                         updateStatus.mutate({

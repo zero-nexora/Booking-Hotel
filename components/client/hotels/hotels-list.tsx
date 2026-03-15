@@ -5,7 +5,7 @@ import { Loader2, SearchX } from "lucide-react";
 import { useHotelSearch } from "@/hooks/client/use-hotels";
 import { HotelCard } from "./hotel-card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { calcNights } from "@/lib/utils";
+import { calcNights, cn } from "@/lib/utils";
 import { hotelSearchParsers } from "@/lib/search-params/hotel-search";
 import { useInfiniteScroll } from "@/hooks/use-infinity-scroll";
 import { HotelsMapView } from "./hotel-map-view";
@@ -34,7 +34,7 @@ export const HotelsList = () => {
     if (view === "map") {
       return (
         <Skeleton
-          className="rounded-2xl"
+          className="rounded-2xl bg-muted"
           style={{ height: "calc(100vh - 220px)", minHeight: 480 }}
         />
       );
@@ -50,9 +50,10 @@ export const HotelsList = () => {
         {Array.from({ length: 6 }).map((_, i) => (
           <Skeleton
             key={i}
-            className={
-              view === "grid" ? "h-72 rounded-2xl" : "h-36 rounded-2xl"
-            }
+            className={cn(
+              "bg-muted",
+              view === "grid" ? "h-72 rounded-2xl" : "h-36 rounded-2xl",
+            )}
           />
         ))}
       </div>
@@ -63,7 +64,9 @@ export const HotelsList = () => {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-center gap-3">
         <SearchX className="w-10 h-10 text-muted-foreground" />
-        <p className="font-medium">Không tìm thấy khách sạn phù hợp</p>
+        <p className="font-medium text-foreground">
+          Không tìm thấy khách sạn phù hợp
+        </p>
         <p className="text-sm text-muted-foreground">
           Thử điều chỉnh bộ lọc hoặc thay đổi điểm đến
         </p>

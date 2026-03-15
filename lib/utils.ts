@@ -1,63 +1,84 @@
 import { Decimal } from "@prisma/client/runtime/client";
 import { clsx, type ClassValue } from "clsx";
-import { format } from "date-fns";
-import { vi } from "date-fns/locale";
 import { twMerge } from "tailwind-merge";
+import {
+  format,
+  formatDistanceToNow,
+  isToday,
+  isYesterday,
+  isTomorrow,
+} from "date-fns";
+import { vi } from "date-fns/locale";
 import { BOOKING_EXPIRY_MINUTES } from "./constants";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export const toDateStr = (date: Date | string): string => {
-  if (typeof date === "string") return date.slice(0, 10);
-  return format(date, "yyyy-MM-dd");
+const toDate = (d: Date | string) => (d instanceof Date ? d : new Date(d));
+
+export const formatDateShort = (d: Date | string) =>
+  format(toDate(d), "dd/MM/yyyy");
+
+export const formatDatetime = (d: Date | string) =>
+  format(toDate(d), "dd/MM/yyyy HH:mm");
+
+export const formatDateFull = (d: Date | string) =>
+  format(toDate(d), "EEEE, dd/MM/yyyy", { locale: vi });
+
+export const formatDateLong = (d: Date | string) =>
+  format(toDate(d), "dd MMMM, yyyy", { locale: vi });
+
+export const formatDateCompact = (d: Date | string) =>
+  format(toDate(d), "MMM yyyy", { locale: vi });
+
+export const formatDateMonthDay = (d: Date | string) =>
+  format(toDate(d), "dd MMM", { locale: vi });
+
+export const formatTime = (d: Date | string) => format(toDate(d), "HH:mm");
+
+export const formatRelative = (d: Date | string) =>
+  formatDistanceToNow(toDate(d), { addSuffix: true, locale: vi });
+
+export const formatSmart = (d: Date | string): string => {
+  const date = toDate(d);
+  if (isToday(date)) return "Hôm nay";
+  if (isYesterday(date)) return "Hôm qua";
+  if (isTomorrow(date)) return "Ngày mai";
+  return formatDateShort(date);
 };
 
-export const formatDateShort = (date: Date | string): string => {
-  return format(new Date(date), "MM/dd/yyyy");
-};
+export const toDateParam = (d: Date): string => format(d, "yyyy-MM-dd");
 
-export const formatDateDisplay = (date: Date | string): string => {
-  return format(new Date(date), "MM/dd");
-};
-
-export const formatDateFull = (date: Date | string): string => {
-  return format(new Date(date), "MMM d, yyyy");
-};
-
-export const formatMonthYear = (date: Date): string => {
-  return format(date, "MMMM yyyy", { locale: vi });
-};
-
-export const formatCurrencyUSD = (amount: number): string => {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(amount);
-};
-
-export const formatCurrencyUSDCompact = (amount: number): string => {
-  return new Intl.NumberFormat("en-US", {
+export const formatCurrencyUSD = (amount: number): string =>
+  new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: "USD",
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
   }).format(amount);
-};
 
-export function calcNights(checkIn: Date, checkOut: Date): number {
+export const formatCurrencyUSDExact = (amount: number): string =>
+  new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(amount);
+
+export const calcNights = (checkIn: Date, checkOut: Date): number => {
   const ms = checkOut.getTime() - checkIn.getTime();
   return Math.max(1, Math.round(ms / (1000 * 60 * 60 * 24)));
-}
+};
 
-export function calcTotal(basePrice: Decimal | number, nights: number): number {
+export const calcTotal = (
+  basePrice: Decimal | number,
+  nights: number,
+): number => {
   return Number(basePrice) * nights;
-}
+};
 
-export function buildCursorWhere(cursor?: { id: string; updatedAt: Date }) {
+export const buildCursorWhere = (cursor?: { id: string; updatedAt: Date }) => {
   if (!cursor) return undefined;
   return {
     OR: [
@@ -65,33 +86,26 @@ export function buildCursorWhere(cursor?: { id: string; updatedAt: Date }) {
       { updatedAt: cursor.updatedAt, id: { lt: cursor.id } },
     ],
   };
-}
+};
 
-export function getNextCursor<T extends { id: string; updatedAt: Date }>(
+export const getNextCursor = <T extends { id: string; updatedAt: Date }>(
   items: T[],
   limit: number,
-): { id: string; updatedAt: Date } | null {
+): { id: string; updatedAt: Date } | null => {
   if (items.length < limit) return null;
   const last = items[items.length - 1];
   return { id: last.id, updatedAt: last.updatedAt };
-}
+};
 
-export function formatCurrency(amount: number | Decimal, currency = "USD") {
-  return new Intl.NumberFormat("vi-VN", {
-    style: "currency",
-    currency,
-  }).format(Number(amount));
-}
-
-export function getBookingExpiresAt(): Date {
+export const getBookingExpiresAt = (): Date => {
   return new Date(Date.now() + BOOKING_EXPIRY_MINUTES * 60 * 1000);
-}
+};
 
-export function isBookingCancellable(status: string): boolean {
+export const isBookingCancellable = (status: string): boolean => {
   return ["PENDING", "CONFIRMED"].includes(status);
-}
+};
 
-export function getDatesInRange(checkIn: Date, checkOut: Date): Date[] {
+export const getDatesInRange = (checkIn: Date, checkOut: Date): Date[] => {
   const dates: Date[] = [];
   const cur = new Date(checkIn);
   while (cur < checkOut) {
@@ -99,4 +113,4 @@ export function getDatesInRange(checkIn: Date, checkOut: Date): Date[] {
     cur.setDate(cur.getDate() + 1);
   }
   return dates;
-}
+};

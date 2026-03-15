@@ -39,13 +39,13 @@ interface StatusTimelineProps {
   status: BookingStatus;
 }
 
-export function StatusTimeline({ status }: StatusTimelineProps) {
+export const StatusTimeline = ({ status }: StatusTimelineProps) => {
   const currentOrder = STATUS_ORDER[status];
   const isCancelled = status === "CANCELLED" || status === "NO_SHOW";
 
   if (isCancelled) {
     return (
-      <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-destructive/10 text-destructive text-sm font-medium">
+      <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-sm font-medium">
         <Circle className="w-4 h-4" />
         {status === "CANCELLED" ? "Đặt phòng đã bị huỷ" : "Không đến (No-show)"}
       </div>
@@ -63,10 +63,9 @@ export function StatusTimeline({ status }: StatusTimelineProps) {
         return (
           <div key={step.status} className="flex-1 flex flex-col items-center">
             <div className="flex items-center w-full">
-              {/* Connector left */}
               <div
                 className={cn(
-                  "flex-1 h-0.5 transition-colors",
+                  "flex-1 h-0.5",
                   i === 0
                     ? "invisible"
                     : done || active
@@ -75,10 +74,9 @@ export function StatusTimeline({ status }: StatusTimelineProps) {
                 )}
               />
 
-              {/* Node */}
               <div
                 className={cn(
-                  "w-7 h-7 rounded-full flex items-center justify-center shrink-0 transition-colors border-2",
+                  "w-7 h-7 rounded-full flex items-center justify-center shrink-0 border-2",
                   done
                     ? "bg-primary border-primary text-primary-foreground"
                     : active
@@ -95,16 +93,14 @@ export function StatusTimeline({ status }: StatusTimelineProps) {
                 )}
               </div>
 
-              {/* Connector right */}
               <div
                 className={cn(
-                  "flex-1 h-0.5 transition-colors",
+                  "flex-1 h-0.5",
                   isLast ? "invisible" : done ? "bg-primary" : "bg-border",
                 )}
               />
             </div>
 
-            {/* Label */}
             <div className="mt-2 text-center px-1">
               <p
                 className={cn(
@@ -129,4 +125,4 @@ export function StatusTimeline({ status }: StatusTimelineProps) {
       })}
     </div>
   );
-}
+};

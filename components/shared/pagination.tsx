@@ -31,7 +31,7 @@ export const Pagination = ({
   const to = Math.min(page * limit, total);
 
   return (
-    <div className="flex items-center justify-between px-2 py-3 border-t">
+    <div className="flex items-center justify-between px-2 py-3 border-t border-border">
       <div className="text-sm text-muted-foreground">
         {from}-{to} / {total} kết quả
       </div>
@@ -45,12 +45,16 @@ export const Pagination = ({
               value={String(limit)}
               onValueChange={(v) => onLimitChange(Number(v))}
             >
-              <SelectTrigger className="h-8 w-20">
+              <SelectTrigger className="h-8 w-20 border-border bg-background text-foreground">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-card border-border">
                 {[10, 20, 50, 100].map((v) => (
-                  <SelectItem key={v} value={String(v)}>
+                  <SelectItem
+                    key={v}
+                    value={String(v)}
+                    className="text-foreground hover:bg-muted"
+                  >
                     {v}
                   </SelectItem>
                 ))}
@@ -62,7 +66,7 @@ export const Pagination = ({
           <Button
             variant="outline"
             size="icon"
-            className="h-8 w-8 hover:bg-accent hover:text-secondary-foreground"
+            className="h-8 w-8 border-border text-muted-foreground hover:bg-muted hover:text-foreground"
             disabled={page <= 1}
             onClick={() => onPageChange(page - 1)}
           >
@@ -80,7 +84,11 @@ export const Pagination = ({
                   key={p}
                   variant={p === page ? "default" : "outline"}
                   size="icon"
-                  className="h-8 w-8 hover:bg-accent hover:text-secondary-foreground"
+                  className={
+                    p === page
+                      ? "h-8 w-8 bg-primary text-primary-foreground hover:bg-primary/90"
+                      : "h-8 w-8 border-border text-muted-foreground hover:bg-muted hover:text-foreground"
+                  }
                   onClick={() => onPageChange(p)}
                 >
                   {p}
@@ -91,7 +99,7 @@ export const Pagination = ({
           <Button
             variant="outline"
             size="icon"
-            className="h-8 w-8 hover:bg-accent hover:text-secondary-foreground"
+            className="h-8 w-8 border-border text-muted-foreground hover:bg-muted hover:text-foreground"
             disabled={page >= totalPages}
             onClick={() => onPageChange(page + 1)}
           >

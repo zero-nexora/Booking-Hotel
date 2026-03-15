@@ -3,12 +3,12 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Pagination } from "@/components/shared/pagination";
+import { StatusBadge } from "@/components/shared/status-badge";
+import { StarRating } from "@/components/shared/star-rating";
 import { adminReviewParsers } from "@/lib/search-params/admin-reviews";
-import { CheckCircle2, XCircle, Star } from "lucide-react";
-import { format } from "date-fns";
+import { CheckCircle2, XCircle } from "lucide-react";
 import { useQueryStates } from "nuqs";
 import { useCallback } from "react";
 import { RouterOutput } from "@/trpc/client";
@@ -17,28 +17,14 @@ import {
   useAdminReviewList,
   useUpdateReviewStatus,
 } from "@/hooks/admin/use-admin-reviews";
+import { formatDatetime } from "@/lib/utils";
 
 type Review = RouterOutput["admin"]["review"]["list"]["items"][number];
-
-const REVIEW_STATUS_VARIANT: Record<
-  string,
-  "default" | "secondary" | "destructive" | "outline"
-> = {
-  PENDING: "secondary",
-  APPROVED: "default",
-  REJECTED: "destructive",
-};
-
-const REVIEW_STATUS_LABEL: Record<string, string> = {
-  PENDING: "Chờ duyệt",
-  APPROVED: "Đã duyệt",
-  REJECTED: "Từ chối",
-};
 
 const ReviewCardSkeleton = () => (
   <div className="space-y-3">
     {Array.from({ length: 3 }).map((_, i) => (
-      <Skeleton key={i} className="h-28" />
+      <Skeleton key={i} className="h-28 bg-muted" />
     ))}
   </div>
 );
@@ -56,30 +42,25 @@ const ReviewCard = ({
   onReject,
   isPending,
 }: ReviewCardProps) => (
-  <Card>
+  <Card className="bg-card border-border shadow-none">
     <CardContent className="pt-4 space-y-2">
       <div className="flex items-start justify-between">
         <div>
           <div className="flex items-center gap-2">
-            <p className="font-medium text-sm">{review.user.name}</p>
-            <div className="flex items-center gap-0.5">
-              {Array.from({ length: review.overallRating }).map((_, i) => (
-                <Star
-                  key={i}
-                  className="w-3.5 h-3.5 fill-amber-400 text-amber-400"
-                />
-              ))}
-            </div>
+            <p className="font-medium text-sm text-foreground">
+              {review.user.name}
+            </p>
+            <StarRating value={review.overallRating} readonly size="xs" />
           </div>
           <p className="text-xs text-muted-foreground">
-            {format(new Date(review.createdAt), "dd/MM/yyyy HH:mm")}
+            {formatDatetime(review.createdAt)}
           </p>
         </div>
-        <Badge variant={REVIEW_STATUS_VARIANT[review.status]}>
-          {REVIEW_STATUS_LABEL[review.status]}
-        </Badge>
+        <StatusBadge status={review.status} type="review" />
       </div>
-      {review.title && <p className="text-sm font-medium">{review.title}</p>}
+      {review.title && (
+        <p className="text-sm font-medium text-foreground">{review.title}</p>
+      )}
       <p className="text-sm text-muted-foreground line-clamp-3">
         {review.comment}
       </p>
@@ -88,7 +69,7 @@ const ReviewCard = ({
           <Button
             size="sm"
             variant="outline"
-            className="text-emerald-600 border-emerald-200 hover:bg-emerald-50"
+            className="border-border text-primary hover:bg-primary/10 hover:text-primary"
             disabled={isPending}
             onClick={() => onApprove(review.id)}
           >
@@ -98,7 +79,7 @@ const ReviewCard = ({
           <Button
             size="sm"
             variant="outline"
-            className="text-destructive border-destructive/20 hover:bg-destructive/5"
+            className="border-destructive/30 text-destructive hover:bg-destructive/10 hover:text-destructive"
             disabled={isPending}
             onClick={() => onReject(review.id)}
           >
@@ -122,10 +103,7 @@ export const HotelReviewsTab = ({ hotelId }: HotelReviewsTabProps) => {
 
   const handleTabChange = useCallback(
     (v: string) =>
-      setParams({
-        status: v === "all" ? null : (v as ReviewStatus),
-        page: 1,
-      }),
+      setParams({ status: v === "all" ? null : (v as ReviewStatus), page: 1 }),
     [setParams],
   );
 
@@ -152,18 +130,28 @@ export const HotelReviewsTab = ({ hotelId }: HotelReviewsTabProps) => {
   return (
     <div className="space-y-4">
       <Tabs value={params.status ?? "all"} onValueChange={handleTabChange}>
-        <TabsList>
-          <TabsTrigger value="all">Tất cả</TabsTrigger>
-          <TabsTrigger value="PENDING">Chờ duyệt</TabsTrigger>
-          <TabsTrigger value="APPROVED">Đã duyệt</TabsTrigger>
-          <TabsTrigger value="REJECTED">Từ chối</TabsTrigger>
+        <TabsList className="bg-muted border-border">
+          {[
+            { value: "all", label: "Tất cả" },
+            { value: "PENDING", label: "Chờ duyệt" },
+            { value: "APPROVED", label: "Đã duyệt" },
+            { value: "REJECTED", label: "Từ chối" },
+          ].map((tab) => (
+            <TabsTrigger
+              key={tab.value}
+              value={tab.value}
+              className="data-[state=active]:bg-card data-[state=active]:text-foreground text-muted-foreground"
+            >
+              {tab.label}
+            </TabsTrigger>
+          ))}
         </TabsList>
       </Tabs>
 
       {isLoading ? (
         <ReviewCardSkeleton />
       ) : data?.items.length === 0 ? (
-        <Card className="flex items-center justify-center h-32 text-muted-foreground text-sm">
+        <Card className="bg-card border-border shadow-none flex items-center justify-center h-32 text-muted-foreground text-sm">
           Chưa có đánh giá nào
         </Card>
       ) : (

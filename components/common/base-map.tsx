@@ -17,36 +17,32 @@ interface BaseMapProps {
   children?: React.ReactNode;
 }
 
-export function BaseMap({
+export const BaseMap = ({
   center,
   zoom = 13,
   scrollWheelZoom = false,
   className = "w-full h-full",
   style,
   children,
-}: BaseMapProps) {
-  return (
-    <MapContainer
-      center={center}
-      zoom={zoom}
-      className={className}
-      scrollWheelZoom={scrollWheelZoom}
-      style={style}
-    >
-      <TileLayer url={TILE_URL} attribution={TILE_ATTRIBUTION} />
-      {children}
-    </MapContainer>
-  );
-}
+}: BaseMapProps) => (
+  <MapContainer
+    center={center}
+    zoom={zoom}
+    className={className}
+    scrollWheelZoom={scrollWheelZoom}
+    style={style}
+  >
+    <TileLayer url={TILE_URL} attribution={TILE_ATTRIBUTION} />
+    {children}
+  </MapContainer>
+);
 
-export function MapLoadingPlaceholder({
+export const MapLoadingPlaceholder = ({
   label = "Đang tải bản đồ...",
 }: {
   label?: string;
-}) {
-  return (
-    <div className="w-full h-full bg-muted animate-pulse flex items-center justify-center">
-      <span className="text-xs text-muted-foreground">{label}</span>
-    </div>
-  );
-}
+}) => (
+  <div className="w-full h-full bg-muted flex items-center justify-center">
+    <span className="text-xs text-muted-foreground">{label}</span>
+  </div>
+);

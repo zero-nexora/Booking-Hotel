@@ -53,12 +53,8 @@ export const HotelListClient = () => {
   const { data: cities = [] } = useCityList(params.countryId || undefined);
 
   const openCreate = useCallback(
-    () =>
-      openSheet({
-        title: "Thêm khách sạn",
-        content: <CreateHotelForm />,
-      }),
-    [openSheet]
+    () => openSheet({ title: "Thêm khách sạn", content: <CreateHotelForm /> }),
+    [openSheet],
   );
 
   const openEdit = useCallback(
@@ -67,7 +63,7 @@ export const HotelListClient = () => {
         title: `Chỉnh sửa "${hotel.name}"`,
         content: <EditHotelForm hotelId={hotel.id} />,
       }),
-    [openSheet]
+    [openSheet],
   );
 
   const handleDelete = useCallback(
@@ -78,12 +74,12 @@ export const HotelListClient = () => {
         variant: "destructive",
         onConfirm: () => void deleteHotel.mutateAsync({ id: hotel.id }),
       }),
-    [openConfirm, deleteHotel]
+    [openConfirm, deleteHotel],
   );
 
   const handleSearchChange = useCallback(
     (v: string) => setParams({ search: v, page: DEFAULT_PAGE }),
-    [setParams]
+    [setParams],
   );
 
   const handleStatusChange = useCallback(
@@ -92,7 +88,7 @@ export const HotelListClient = () => {
         status: v === "all" ? null : (v as HotelStatus),
         page: DEFAULT_PAGE,
       }),
-    [setParams]
+    [setParams],
   );
 
   const handleStarChange = useCallback(
@@ -101,7 +97,7 @@ export const HotelListClient = () => {
         starRating: v === "all" ? null : Number(v),
         page: DEFAULT_PAGE,
       }),
-    [setParams]
+    [setParams],
   );
 
   const handleCountryChange = useCallback(
@@ -111,28 +107,29 @@ export const HotelListClient = () => {
         cityId: "",
         page: DEFAULT_PAGE,
       }),
-    [setParams]
+    [setParams],
   );
 
   const handleCityChange = useCallback(
     (v: string) =>
       setParams({ cityId: v === "all" ? null : v, page: DEFAULT_PAGE }),
-    [setParams]
+    [setParams],
   );
 
   const handleNavigate = useCallback(
     (id: string) => router.push(`/admin/hotels/${id}`),
-    [router]
+    [router],
   );
 
   const handlePageChange = useCallback(
     (p: number) => setParams((prev) => ({ ...prev, page: p })),
-    [setParams]
+    [setParams],
   );
 
   const handleLimitChange = useCallback(
-    (l: number) => setParams((prev) => ({ ...prev, limit: l, page: DEFAULT_PAGE })),
-    [setParams]
+    (l: number) =>
+      setParams((prev) => ({ ...prev, limit: l, page: DEFAULT_PAGE })),
+    [setParams],
   );
 
   return (
@@ -155,27 +152,56 @@ export const HotelListClient = () => {
             value={params.status ?? "all"}
             onValueChange={handleStatusChange}
           >
-            <SelectTrigger className="w-44">
+            <SelectTrigger className="w-44 border-border bg-background text-foreground">
               <SelectValue placeholder="Trạng thái" />
             </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Tất cả trạng thái</SelectItem>
-              <SelectItem value="ACTIVE">Hoạt động</SelectItem>
-              <SelectItem value="INACTIVE">Không hoạt động</SelectItem>
-              <SelectItem value="MAINTENANCE">Bảo trì</SelectItem>
+            <SelectContent className="bg-card border-border">
+              <SelectItem
+                value="all"
+                className="text-foreground hover:bg-muted"
+              >
+                Tất cả trạng thái
+              </SelectItem>
+              <SelectItem
+                value="ACTIVE"
+                className="text-foreground hover:bg-muted"
+              >
+                Hoạt động
+              </SelectItem>
+              <SelectItem
+                value="INACTIVE"
+                className="text-foreground hover:bg-muted"
+              >
+                Không hoạt động
+              </SelectItem>
+              <SelectItem
+                value="MAINTENANCE"
+                className="text-foreground hover:bg-muted"
+              >
+                Bảo trì
+              </SelectItem>
             </SelectContent>
           </Select>
           <Select
             value={params.starRating ? String(params.starRating) : "all"}
             onValueChange={handleStarChange}
           >
-            <SelectTrigger className="w-36">
+            <SelectTrigger className="w-36 border-border bg-background text-foreground">
               <SelectValue placeholder="Hạng sao" />
             </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Tất cả sao</SelectItem>
+            <SelectContent className="bg-card border-border">
+              <SelectItem
+                value="all"
+                className="text-foreground hover:bg-muted"
+              >
+                Tất cả sao
+              </SelectItem>
               {[1, 2, 3, 4, 5].map((s) => (
-                <SelectItem key={s} value={String(s)}>
+                <SelectItem
+                  key={s}
+                  value={String(s)}
+                  className="text-foreground hover:bg-muted"
+                >
                   {s} sao
                 </SelectItem>
               ))}
@@ -185,13 +211,22 @@ export const HotelListClient = () => {
             value={params.countryId || "all"}
             onValueChange={handleCountryChange}
           >
-            <SelectTrigger className="w-44">
+            <SelectTrigger className="w-44 border-border bg-background text-foreground">
               <SelectValue placeholder="Quốc gia" />
             </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Tất cả quốc gia</SelectItem>
+            <SelectContent className="bg-card border-border">
+              <SelectItem
+                value="all"
+                className="text-foreground hover:bg-muted"
+              >
+                Tất cả quốc gia
+              </SelectItem>
               {countries.map((c) => (
-                <SelectItem key={c.id} value={c.id}>
+                <SelectItem
+                  key={c.id}
+                  value={c.id}
+                  className="text-foreground hover:bg-muted"
+                >
                   {c.name}
                 </SelectItem>
               ))}
@@ -202,13 +237,22 @@ export const HotelListClient = () => {
             onValueChange={handleCityChange}
             disabled={!params.countryId}
           >
-            <SelectTrigger className="w-44">
+            <SelectTrigger className="w-44 border-border bg-background text-foreground disabled:opacity-50">
               <SelectValue placeholder="Thành phố" />
             </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Tất cả thành phố</SelectItem>
+            <SelectContent className="bg-card border-border">
+              <SelectItem
+                value="all"
+                className="text-foreground hover:bg-muted"
+              >
+                Tất cả thành phố
+              </SelectItem>
               {cities.map((c) => (
-                <SelectItem key={c.id} value={c.id}>
+                <SelectItem
+                  key={c.id}
+                  value={c.id}
+                  className="text-foreground hover:bg-muted"
+                >
                   {c.name}
                 </SelectItem>
               ))}
@@ -217,17 +261,31 @@ export const HotelListClient = () => {
         </div>
       </ListHeader>
 
-      <Card>
+      <Card className="bg-card border-border shadow-none">
         <Table>
           <TableHeader>
-            <TableRow>
-              <TableHead>Khách sạn</TableHead>
-              <TableHead>Địa điểm</TableHead>
-              <TableHead>Sao</TableHead>
-              <TableHead>Trạng thái</TableHead>
-              <TableHead className="text-center">Phòng</TableHead>
-              <TableHead className="text-center">Booking</TableHead>
-              <TableHead className="text-center">Review</TableHead>
+            <TableRow className="border-border hover:bg-transparent">
+              <TableHead className="text-muted-foreground font-medium">
+                Khách sạn
+              </TableHead>
+              <TableHead className="text-muted-foreground font-medium">
+                Địa điểm
+              </TableHead>
+              <TableHead className="text-muted-foreground font-medium">
+                Sao
+              </TableHead>
+              <TableHead className="text-muted-foreground font-medium">
+                Trạng thái
+              </TableHead>
+              <TableHead className="text-center text-muted-foreground font-medium">
+                Phòng
+              </TableHead>
+              <TableHead className="text-center text-muted-foreground font-medium">
+                Booking
+              </TableHead>
+              <TableHead className="text-center text-muted-foreground font-medium">
+                Review
+              </TableHead>
               <TableHead />
             </TableRow>
           </TableHeader>
@@ -270,10 +328,13 @@ interface HotelRowProps {
 }
 
 const HotelRow = ({ hotel, onNavigate, onEdit, onDelete }: HotelRowProps) => (
-  <TableRow className="cursor-pointer" onClick={() => onNavigate(hotel.id)}>
+  <TableRow
+    className="border-border hover:bg-muted/40 cursor-pointer"
+    onClick={() => onNavigate(hotel.id)}
+  >
     <TableCell>
       <div>
-        <p className="font-medium text-sm">{hotel.name}</p>
+        <p className="font-medium text-sm text-foreground">{hotel.name}</p>
         <p className="text-xs text-muted-foreground">{hotel.slug}</p>
       </div>
     </TableCell>
@@ -282,18 +343,20 @@ const HotelRow = ({ hotel, onNavigate, onEdit, onDelete }: HotelRowProps) => (
     </TableCell>
     <TableCell>
       <div className="flex items-center gap-1">
-        <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-        <span className="text-sm">{hotel.starRating}</span>
+        <Star className="w-3.5 h-3.5 fill-primary text-primary" />
+        <span className="text-sm text-foreground">{hotel.starRating}</span>
       </div>
     </TableCell>
     <TableCell>
       <StatusBadge status={hotel.status} type="hotel" />
     </TableCell>
-    <TableCell className="text-center text-sm">{hotel._count.rooms}</TableCell>
-    <TableCell className="text-center text-sm">
+    <TableCell className="text-center text-sm text-muted-foreground">
+      {hotel._count.rooms}
+    </TableCell>
+    <TableCell className="text-center text-sm text-muted-foreground">
       {hotel._count.bookings}
     </TableCell>
-    <TableCell className="text-center text-sm">
+    <TableCell className="text-center text-sm text-muted-foreground">
       {hotel._count.reviews}
     </TableCell>
     <TableCell>
@@ -304,7 +367,7 @@ const HotelRow = ({ hotel, onNavigate, onEdit, onDelete }: HotelRowProps) => (
         <Button
           variant="ghost"
           size="icon"
-          className="h-8 w-8"
+          className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-muted"
           onClick={() => onEdit(hotel)}
         >
           <Pencil className="w-3.5 h-3.5" />
@@ -312,7 +375,7 @@ const HotelRow = ({ hotel, onNavigate, onEdit, onDelete }: HotelRowProps) => (
         <Button
           variant="ghost"
           size="icon"
-          className="h-8 w-8 text-destructive"
+          className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
           onClick={() => onDelete(hotel)}
         >
           <Trash2 className="w-3.5 h-3.5" />

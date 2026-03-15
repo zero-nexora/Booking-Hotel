@@ -14,7 +14,7 @@ export const FeaturedHotels = () => {
     return (
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
         {Array.from({ length: 6 }).map((_, i) => (
-          <Skeleton key={i} className="h-72 rounded-2xl" />
+          <Skeleton key={i} className="h-72 rounded-2xl bg-muted" />
         ))}
       </div>
     );
@@ -23,12 +23,8 @@ export const FeaturedHotels = () => {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
       {hotels?.map((hotel) => (
-        <Link
-          key={hotel.id}
-          href={`/hotels/${hotel.slug}`}
-          className="flex"
-        >
-          <div className="flex flex-col w-full rounded-2xl overflow-hidden border bg-card hover:shadow-md transition-shadow">
+        <Link key={hotel.id} href={`/hotels/${hotel.slug}`} className="flex">
+          <div className="flex flex-col w-full rounded-2xl overflow-hidden border border-border bg-card hover:shadow-md">
             <div className="relative h-48 bg-muted overflow-hidden shrink-0">
               {hotel.images[0] ? (
                 <Image
@@ -44,20 +40,20 @@ export const FeaturedHotels = () => {
               )}
               <div className="absolute top-3 left-3">
                 <Badge
-                  variant="secondary"
-                  className="backdrop-blur-sm bg-background/70 text-xs font-medium gap-0.5"
+                  variant="outline"
+                  className="backdrop-blur-sm bg-background/80 border-border text-foreground text-xs font-medium gap-0.5"
                 >
                   {Array.from({ length: hotel.starRating }).map((_, i) => (
                     <Star
                       key={i}
-                      className="w-2.5 h-2.5 fill-amber-400 text-amber-400"
+                      className="w-2.5 h-2.5 fill-primary text-primary"
                     />
                   ))}
                 </Badge>
               </div>
             </div>
             <div className="flex flex-col flex-1 p-4">
-              <h3 className="font-semibold text-sm leading-tight line-clamp-1">
+              <h3 className="font-semibold text-sm leading-tight line-clamp-1 text-foreground">
                 {hotel.name}
               </h3>
               <div className="flex items-center gap-1 mt-1">
@@ -67,11 +63,11 @@ export const FeaturedHotels = () => {
                 </span>
               </div>
               <div className="mt-auto pt-3">
-                <div className="border-t pt-3">
+                <div className="border-t border-border pt-3">
                   {hotel.avgRating !== null ? (
                     <div className="flex items-center gap-1.5">
-                      <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-                      <span className="text-sm font-semibold">
+                      <Star className="w-3.5 h-3.5 fill-primary text-primary" />
+                      <span className="text-sm font-semibold text-foreground">
                         {hotel.avgRating.toFixed(1)}
                       </span>
                       <span className="text-xs text-muted-foreground">

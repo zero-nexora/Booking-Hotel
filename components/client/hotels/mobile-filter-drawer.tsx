@@ -19,14 +19,21 @@ export const MobileFilterDrawer = () => {
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
-        <Button variant="outline" size="sm" className="gap-1.5 md:hidden">
+        <Button
+          variant="outline"
+          size="sm"
+          className="gap-1.5 md:hidden border-border text-foreground hover:bg-muted hover:text-foreground"
+        >
           <SlidersHorizontal className="w-3.5 h-3.5" />
           Bộ lọc
         </Button>
       </SheetTrigger>
-      <SheetContent side="left" className="p-0 w-72">
-        <SheetHeader className="px-4 py-3 border-b">
-          <SheetTitle className="text-sm">Bộ lọc</SheetTitle>
+      <SheetContent
+        side="left"
+        className="p-0 w-72 bg-background border-border"
+      >
+        <SheetHeader className="px-4 py-3 border-b border-border">
+          <SheetTitle className="text-sm text-foreground">Bộ lọc</SheetTitle>
         </SheetHeader>
         <ScrollArea className="h-[calc(100vh-56px)]">
           <div className="p-4">

@@ -7,20 +7,20 @@ const checks = [
   (p: string) => /[^A-Za-z0-9]/.test(p),
 ];
 
-const COLORS = [
+const SEGMENT_COLORS = [
   "bg-destructive",
-  "bg-orange-400",
-  "bg-yellow-400",
-  "bg-emerald-500",
+  "bg-destructive/70",
+  "bg-primary/60",
+  "bg-primary",
 ];
 
 const LABELS = ["Yếu", "Trung bình", "Khá", "Mạnh"];
 
 const LABEL_COLORS = [
   "text-destructive",
-  "text-orange-400",
-  "text-yellow-500",
-  "text-emerald-500",
+  "text-destructive/80",
+  "text-primary/80",
+  "text-primary",
 ];
 
 interface PasswordStrengthBarProps {
@@ -40,7 +40,7 @@ export const PasswordStrengthBar = ({ password }: PasswordStrengthBarProps) => {
             key={i}
             className={cn(
               "h-1 flex-1 rounded-full",
-              i < strength ? COLORS[strength - 1] : "bg-border",
+              i < strength ? SEGMENT_COLORS[strength - 1] : "bg-border",
             )}
           />
         ))}

@@ -18,7 +18,7 @@ const RATING_OPTIONS = [
   { label: "Tốt (3.5+)", value: 3.5 },
 ];
 
-export function HotelsFilterSidebar() {
+export const HotelsFilterSidebar = () => {
   const [params, setParams] = useQueryStates(hotelSearchParsers);
   const { data: options } = useHotelFilterOptions();
 
@@ -57,12 +57,12 @@ export function HotelsFilterSidebar() {
   return (
     <div className="space-y-5">
       <div className="flex items-center justify-between">
-        <h3 className="font-semibold text-sm">Bộ lọc</h3>
+        <h3 className="font-semibold text-sm text-foreground">Bộ lọc</h3>
         {hasFilters && (
           <Button
             variant="ghost"
             size="sm"
-            className="h-7 gap-1 text-xs text-muted-foreground"
+            className="h-7 gap-1 text-xs text-muted-foreground hover:text-foreground hover:bg-muted"
             onClick={resetAll}
           >
             <RotateCcw className="w-3 h-3" />
@@ -99,7 +99,7 @@ export function HotelsFilterSidebar() {
         </div>
       </div>
 
-      <Separator />
+      <Separator className="bg-border" />
 
       <div>
         <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-3">
@@ -112,16 +112,14 @@ export function HotelsFilterSidebar() {
                 id={`star-${s}`}
                 checked={(params.stars ?? []).includes(s)}
                 onCheckedChange={() => toggleArray("stars", s)}
+                className="border-border data-[state=checked]:bg-primary data-[state=checked]:border-primary"
               />
               <Label
                 htmlFor={`star-${s}`}
                 className="flex items-center gap-1 cursor-pointer"
               >
                 {Array.from({ length: s }).map((_, i) => (
-                  <Star
-                    key={i}
-                    className="w-3 h-3 fill-amber-400 text-amber-400"
-                  />
+                  <Star key={i} className="w-3 h-3 fill-primary text-primary" />
                 ))}
               </Label>
             </div>
@@ -129,7 +127,7 @@ export function HotelsFilterSidebar() {
         </div>
       </div>
 
-      <Separator />
+      <Separator className="bg-border" />
 
       <div>
         <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-3">
@@ -146,10 +144,11 @@ export function HotelsFilterSidebar() {
                     minRating: params.minRating === r.value ? null : r.value,
                   })
                 }
+                className="border-border data-[state=checked]:bg-primary data-[state=checked]:border-primary"
               />
               <Label
                 htmlFor={`rating-${r.value}`}
-                className="text-sm cursor-pointer"
+                className="text-sm cursor-pointer text-foreground"
               >
                 {r.label}
               </Label>
@@ -160,7 +159,7 @@ export function HotelsFilterSidebar() {
 
       {options?.amenities?.length ? (
         <>
-          <Separator />
+          <Separator className="bg-border" />
           <div>
             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-3">
               Tiện nghi
@@ -172,10 +171,11 @@ export function HotelsFilterSidebar() {
                     id={`amenity-${a.id}`}
                     checked={(params.amenities ?? []).includes(a.name)}
                     onCheckedChange={() => toggleArray("amenities", a.name)}
+                    className="border-border data-[state=checked]:bg-primary data-[state=checked]:border-primary"
                   />
                   <Label
                     htmlFor={`amenity-${a.id}`}
-                    className="text-sm cursor-pointer"
+                    className="text-sm cursor-pointer text-foreground"
                   >
                     {a.name}
                   </Label>
@@ -188,7 +188,7 @@ export function HotelsFilterSidebar() {
 
       {options?.bedTypes?.length ? (
         <>
-          <Separator />
+          <Separator className="bg-border" />
           <div>
             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-3">
               Loại giường
@@ -200,10 +200,11 @@ export function HotelsFilterSidebar() {
                     id={`bed-${b.id}`}
                     checked={(params.bedTypes ?? []).includes(b.name)}
                     onCheckedChange={() => toggleArray("bedTypes", b.name)}
+                    className="border-border data-[state=checked]:bg-primary data-[state=checked]:border-primary"
                   />
                   <Label
                     htmlFor={`bed-${b.id}`}
-                    className="text-sm cursor-pointer"
+                    className="text-sm cursor-pointer text-foreground"
                   >
                     {b.name}
                   </Label>
@@ -216,7 +217,7 @@ export function HotelsFilterSidebar() {
 
       {options?.roomTypes?.length ? (
         <>
-          <Separator />
+          <Separator className="bg-border" />
           <div>
             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-3">
               Loại phòng
@@ -228,10 +229,11 @@ export function HotelsFilterSidebar() {
                     id={`rt-${r.id}`}
                     checked={(params.roomTypes ?? []).includes(r.name)}
                     onCheckedChange={() => toggleArray("roomTypes", r.name)}
+                    className="border-border data-[state=checked]:bg-primary data-[state=checked]:border-primary"
                   />
                   <Label
                     htmlFor={`rt-${r.id}`}
-                    className="text-sm cursor-pointer"
+                    className="text-sm cursor-pointer text-foreground"
                   >
                     {r.name}
                   </Label>
@@ -243,4 +245,4 @@ export function HotelsFilterSidebar() {
       ) : null}
     </div>
   );
-}
+};

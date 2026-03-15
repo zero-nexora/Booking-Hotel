@@ -80,7 +80,6 @@ export const ProfileClient = () => {
 
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [isEditingPassword, setIsEditingPassword] = useState(false);
-
   const [showCurrent, setShowCurrent] = useState(false);
   const [showNew, setShowNew] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
@@ -171,7 +170,8 @@ export const ProfileClient = () => {
   const handleOpenDeleteAccountDialog = () =>
     openConfirm({
       title: "Bạn chắc chắn muốn xoá?",
-      description: `Hành động này không thể hoàn tác. Tài khoản, đặt phòng và đánh giá của bạn sẽ bị xoá vĩnh viễn`,
+      description:
+        "Hành động này không thể hoàn tác. Tài khoản, đặt phòng và đánh giá của bạn sẽ bị xoá vĩnh viễn",
       onConfirm: handleDeleteAccount,
     });
 
@@ -189,19 +189,21 @@ export const ProfileClient = () => {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-lg font-semibold">Hồ sơ</h1>
+      <h1 className="text-lg font-semibold text-foreground">Hồ sơ</h1>
 
       <Form {...profileForm}>
         <form onSubmit={profileForm.handleSubmit(handleProfileSubmit)}>
-          <Card className="rounded-2xl border p-5">
+          <Card className="rounded-2xl border border-border bg-card shadow-none p-5 space-y-4">
             <div className="flex items-center justify-between">
-              <p className="text-sm font-medium">Thông tin cá nhân</p>
+              <p className="text-sm font-medium text-foreground">
+                Thông tin cá nhân
+              </p>
               {!isEditingProfile ? (
                 <Button
                   type="button"
                   variant="ghost"
                   size="sm"
-                  className="h-7 gap-1 text-xs"
+                  className="h-7 gap-1 text-xs text-muted-foreground hover:text-foreground hover:bg-muted"
                   onClick={() => setIsEditingProfile(true)}
                 >
                   <Pencil className="w-3 h-3" />
@@ -212,7 +214,7 @@ export const ProfileClient = () => {
                   type="button"
                   variant="ghost"
                   size="sm"
-                  className="h-7 gap-1 text-xs text-muted-foreground"
+                  className="h-7 gap-1 text-xs text-muted-foreground hover:text-foreground hover:bg-muted"
                   onClick={handleCancelProfile}
                 >
                   <X className="w-3 h-3" />
@@ -221,7 +223,7 @@ export const ProfileClient = () => {
               )}
             </div>
 
-            <Separator />
+            <Separator className="bg-border" />
 
             <div className="flex items-center gap-4">
               <div className="relative flex flex-col gap-4 items-center">
@@ -242,7 +244,9 @@ export const ProfileClient = () => {
                 )}
               </div>
               <div>
-                <p className="text-sm font-medium">{user.name}</p>
+                <p className="text-sm font-medium text-foreground">
+                  {user.name}
+                </p>
                 <p className="text-xs text-muted-foreground">{user.email}</p>
               </div>
             </div>
@@ -253,13 +257,17 @@ export const ProfileClient = () => {
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-xs font-medium">
+                    <FormLabel className="text-xs font-medium text-foreground">
                       Họ và tên
                     </FormLabel>
                     <FormControl>
-                      <Input {...field} disabled={!isEditingProfile} />
+                      <Input
+                        {...field}
+                        disabled={!isEditingProfile}
+                        className="bg-background border-border text-foreground placeholder:text-muted-foreground focus-visible:ring-primary disabled:bg-muted/40 disabled:text-muted-foreground"
+                      />
                     </FormControl>
-                    <FormMessage />
+                    <FormMessage className="text-destructive" />
                   </FormItem>
                 )}
               />
@@ -268,7 +276,7 @@ export const ProfileClient = () => {
                 name="phone"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-xs font-medium">
+                    <FormLabel className="text-xs font-medium text-foreground">
                       Số điện thoại
                     </FormLabel>
                     <FormControl>
@@ -276,21 +284,22 @@ export const ProfileClient = () => {
                         placeholder="+84 901 234 567"
                         {...field}
                         disabled={!isEditingProfile}
+                        className="bg-background border-border text-foreground placeholder:text-muted-foreground focus-visible:ring-primary disabled:bg-muted/40 disabled:text-muted-foreground"
                       />
                     </FormControl>
-                    <FormMessage />
+                    <FormMessage className="text-destructive" />
                   </FormItem>
                 )}
               />
             </div>
 
             <div className="space-y-1.5">
-              <p className="text-xs font-medium">Email</p>
+              <p className="text-xs font-medium text-foreground">Email</p>
               <div className="flex items-center gap-2">
                 <Input
                   value={user.email}
                   readOnly
-                  className="bg-muted/50 text-muted-foreground"
+                  className="bg-muted/40 text-muted-foreground border-border"
                 />
                 {user.emailVerified ? (
                   <div className="flex items-center gap-1.5 text-xs text-primary shrink-0">
@@ -302,7 +311,7 @@ export const ProfileClient = () => {
                     type="button"
                     variant="outline"
                     size="sm"
-                    className="shrink-0 text-xs rounded-lg"
+                    className="shrink-0 text-xs rounded-lg border-border text-foreground hover:bg-muted"
                     onClick={handleResendVerification}
                   >
                     Xác minh
@@ -315,7 +324,7 @@ export const ProfileClient = () => {
               <Button
                 type="submit"
                 size="sm"
-                className="rounded-xl w-fit"
+                className="rounded-xl w-fit bg-primary text-primary-foreground hover:bg-primary/90"
                 disabled={updateProfile.isPending}
               >
                 {updateProfile.isPending ? "Đang lưu..." : "Lưu thay đổi"}
@@ -327,18 +336,20 @@ export const ProfileClient = () => {
 
       <Form {...passwordForm}>
         <form onSubmit={passwordForm.handleSubmit(handlePasswordSubmit)}>
-          <Card className="rounded-2xl border p-5">
+          <Card className="rounded-2xl border border-border bg-card shadow-none p-5 space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Shield className="w-4 h-4 text-muted-foreground" />
-                <p className="text-sm font-medium">Đổi mật khẩu</p>
+                <p className="text-sm font-medium text-foreground">
+                  Đổi mật khẩu
+                </p>
               </div>
               {!isEditingPassword ? (
                 <Button
                   type="button"
                   variant="ghost"
                   size="sm"
-                  className="h-7 gap-1 text-xs"
+                  className="h-7 gap-1 text-xs text-muted-foreground hover:text-foreground hover:bg-muted"
                   onClick={() => setIsEditingPassword(true)}
                 >
                   <Pencil className="w-3 h-3" />
@@ -349,7 +360,7 @@ export const ProfileClient = () => {
                   type="button"
                   variant="ghost"
                   size="sm"
-                  className="h-7 gap-1 text-xs text-muted-foreground"
+                  className="h-7 gap-1 text-xs text-muted-foreground hover:text-foreground hover:bg-muted"
                   onClick={handleCancelPassword}
                 >
                   <X className="w-3 h-3" />
@@ -357,7 +368,7 @@ export const ProfileClient = () => {
                 </Button>
               )}
             </div>
-            <Separator />
+            <Separator className="bg-border" />
 
             {isEditingPassword && (
               <>
@@ -366,7 +377,7 @@ export const ProfileClient = () => {
                   name="currentPassword"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-xs font-medium">
+                      <FormLabel className="text-xs font-medium text-foreground">
                         Mật khẩu hiện tại
                       </FormLabel>
                       <FormControl>
@@ -377,7 +388,7 @@ export const ProfileClient = () => {
                           {...field}
                         />
                       </FormControl>
-                      <FormMessage />
+                      <FormMessage className="text-destructive" />
                     </FormItem>
                   )}
                 />
@@ -387,7 +398,7 @@ export const ProfileClient = () => {
                     name="newPassword"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-xs font-medium">
+                        <FormLabel className="text-xs font-medium text-foreground">
                           Mật khẩu mới
                         </FormLabel>
                         <FormControl>
@@ -398,7 +409,7 @@ export const ProfileClient = () => {
                             {...field}
                           />
                         </FormControl>
-                        <FormMessage />
+                        <FormMessage className="text-destructive" />
                       </FormItem>
                     )}
                   />
@@ -407,7 +418,7 @@ export const ProfileClient = () => {
                     name="confirmPassword"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-xs font-medium">
+                        <FormLabel className="text-xs font-medium text-foreground">
                           Xác nhận mật khẩu
                         </FormLabel>
                         <FormControl>
@@ -418,7 +429,7 @@ export const ProfileClient = () => {
                             {...field}
                           />
                         </FormControl>
-                        <FormMessage />
+                        <FormMessage className="text-destructive" />
                       </FormItem>
                     )}
                   />
@@ -426,7 +437,7 @@ export const ProfileClient = () => {
                 <Button
                   type="submit"
                   size="sm"
-                  className="rounded-xl"
+                  className="rounded-xl bg-primary text-primary-foreground hover:bg-primary/90"
                   disabled={changingPassword}
                 >
                   {changingPassword ? "Đang đổi..." : "Đổi mật khẩu"}
@@ -444,12 +455,14 @@ export const ProfileClient = () => {
       </Form>
 
       {accounts && accounts.length > 0 && (
-        <Card className="rounded-2xl border p-5">
+        <Card className="rounded-2xl border border-border bg-card shadow-none p-5 space-y-4">
           <div className="flex items-center gap-2">
             <Link2 className="w-4 h-4 text-muted-foreground" />
-            <p className="text-sm font-medium">Tài khoản liên kết</p>
+            <p className="text-sm font-medium text-foreground">
+              Tài khoản liên kết
+            </p>
           </div>
-          <Separator />
+          <Separator className="bg-border" />
           <div className="space-y-2">
             {accounts.map((acc) => {
               const Icon =
@@ -457,21 +470,24 @@ export const ProfileClient = () => {
               return (
                 <div
                   key={acc.id}
-                  className="flex items-center justify-between p-3 rounded-xl bg-muted/40"
+                  className="flex items-center justify-between p-3 rounded-xl bg-muted/40 border border-border"
                 >
                   <div className="flex items-center gap-2.5">
                     <Icon className="w-4 h-4 text-muted-foreground" />
-                    <span className="text-sm font-medium capitalize">
+                    <span className="text-sm font-medium text-foreground capitalize">
                       {acc.providerId}
                     </span>
-                    <Badge variant="secondary" className="text-xs">
+                    <Badge
+                      variant="outline"
+                      className="text-xs bg-primary/10 text-primary border-primary/20"
+                    >
                       Đã kết nối
                     </Badge>
                   </div>
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="h-7 gap-1 text-xs text-muted-foreground hover:text-destructive"
+                    className="h-7 gap-1 text-xs text-muted-foreground hover:text-destructive hover:bg-destructive/10"
                     onClick={() =>
                       handleOpenUnLinkDialog(acc.providerId, acc.id)
                     }
@@ -491,7 +507,7 @@ export const ProfileClient = () => {
         <Separator className="bg-destructive/20" />
         <div className="flex items-center justify-between gap-3 flex-wrap">
           <div>
-            <p className="text-sm font-medium">Xoá tài khoản</p>
+            <p className="text-sm font-medium text-foreground">Xoá tài khoản</p>
             <p className="text-xs text-muted-foreground mt-0.5">
               Tất cả dữ liệu sẽ bị xoá vĩnh viễn và không thể khôi phục.
             </p>
@@ -499,7 +515,7 @@ export const ProfileClient = () => {
           <Button
             variant="destructive"
             size="sm"
-            className="rounded-xl gap-1.5"
+            className="rounded-xl gap-1.5 bg-destructive text-destructive-foreground hover:bg-destructive/90"
             onClick={handleOpenDeleteAccountDialog}
           >
             <Trash2 className="w-3.5 h-3.5" />
@@ -518,33 +534,33 @@ const PasswordInput = ({
 }: React.InputHTMLAttributes<HTMLInputElement> & {
   show: boolean;
   onToggle: () => void;
-}) => {
-  return (
-    <div className="relative">
-      <Input type={show ? "text" : "password"} className="pr-9" {...props} />
-      <button
-        type="button"
-        tabIndex={-1}
-        onClick={onToggle}
-        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground center-box"
-      >
-        {show ? (
-          <EyeOff className="w-3.5 h-3.5" />
-        ) : (
-          <Eye className="w-3.5 h-3.5" />
-        )}
-      </button>
-    </div>
-  );
-};
+}) => (
+  <div className="relative">
+    <Input
+      type={show ? "text" : "password"}
+      className="pr-9 bg-background border-border text-foreground placeholder:text-muted-foreground focus-visible:ring-primary"
+      {...props}
+    />
+    <button
+      type="button"
+      tabIndex={-1}
+      onClick={onToggle}
+      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+    >
+      {show ? (
+        <EyeOff className="w-3.5 h-3.5" />
+      ) : (
+        <Eye className="w-3.5 h-3.5" />
+      )}
+    </button>
+  </div>
+);
 
-const ProfileSkeleton = () => {
-  return (
-    <div className="space-y-5">
-      <Skeleton className="h-7 w-24" />
-      <Skeleton className="h-56 rounded-2xl" />
-      <Skeleton className="h-52 rounded-2xl" />
-      <Skeleton className="h-32 rounded-2xl" />
-    </div>
-  );
-};
+const ProfileSkeleton = () => (
+  <div className="space-y-5">
+    <Skeleton className="h-7 w-24 bg-muted" />
+    <Skeleton className="h-56 rounded-2xl bg-muted" />
+    <Skeleton className="h-52 rounded-2xl bg-muted" />
+    <Skeleton className="h-32 rounded-2xl bg-muted" />
+  </div>
+);

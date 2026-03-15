@@ -30,6 +30,11 @@ const schema = z.object({
 });
 type Values = z.infer<typeof schema>;
 
+const inputCls =
+  "bg-background border-border text-foreground placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-primary/50 focus-visible:border-primary";
+const labelCls =
+  "text-xs font-medium uppercase tracking-wide text-muted-foreground";
+
 const SignInPage = () => {
   const router = useRouter();
   const form = useForm<Values>({
@@ -75,20 +80,18 @@ const SignInPage = () => {
             name="email"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-xs font-medium uppercase tracking-wide text-foreground/70">
-                  Email
-                </FormLabel>
+                <FormLabel className={labelCls}>Email</FormLabel>
                 <FormControl>
                   <Input
                     type="email"
                     placeholder="you@example.com"
                     autoComplete="email"
                     disabled={isLoading}
-                    className="bg-secondary/40 border-border focus-visible:ring-1 focus-visible:ring-primary/40 focus-visible:border-primary placeholder:text-muted-foreground/50"
+                    className={inputCls}
                     {...field}
                   />
                 </FormControl>
-                <FormMessage />
+                <FormMessage className="text-destructive" />
               </FormItem>
             )}
           />
@@ -99,9 +102,7 @@ const SignInPage = () => {
             render={({ field }) => (
               <FormItem>
                 <div className="flex items-center justify-between">
-                  <FormLabel className="text-xs font-medium uppercase tracking-wide text-foreground/70">
-                    Mật khẩu
-                  </FormLabel>
+                  <FormLabel className={labelCls}>Mật khẩu</FormLabel>
                   <Link
                     href="/forgot-password"
                     className="text-xs text-primary hover:text-primary/80 font-medium"
@@ -114,11 +115,11 @@ const SignInPage = () => {
                     placeholder="••••••••"
                     autoComplete="current-password"
                     disabled={isLoading}
-                    className="bg-secondary/40 border-border focus-visible:ring-1 focus-visible:ring-primary/40 focus-visible:border-primary placeholder:text-muted-foreground/50"
+                    className={inputCls}
                     {...field}
                   />
                 </FormControl>
-                <FormMessage />
+                <FormMessage className="text-destructive" />
               </FormItem>
             )}
           />
@@ -145,7 +146,7 @@ const SignInPage = () => {
 
           <Button
             type="submit"
-            className="w-full h-10 font-medium"
+            className="w-full h-10 font-medium bg-primary text-primary-foreground hover:bg-primary/90"
             disabled={isLoading}
           >
             {isLoading && <Loader2 className="size-4 animate-spin" />}

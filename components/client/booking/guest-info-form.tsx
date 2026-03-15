@@ -22,11 +22,17 @@ export const GuestInfoForm = () => {
           name="guestName"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-xs font-medium">Họ và tên</FormLabel>
+              <FormLabel className="text-xs font-medium text-foreground">
+                Họ và tên
+              </FormLabel>
               <FormControl>
-                <Input placeholder="Nguyễn Văn A" {...field} />
+                <Input
+                  placeholder="Nguyễn Văn A"
+                  className="bg-background border-border text-foreground placeholder:text-muted-foreground focus-visible:ring-primary"
+                  {...field}
+                />
               </FormControl>
-              <FormMessage />
+              <FormMessage className="text-destructive" />
             </FormItem>
           )}
         />
@@ -35,13 +41,17 @@ export const GuestInfoForm = () => {
           name="guestPhone"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-xs font-medium">
+              <FormLabel className="text-xs font-medium text-foreground">
                 Số điện thoại
               </FormLabel>
               <FormControl>
-                <Input placeholder="+84 901 234 567" {...field} />
+                <Input
+                  placeholder="+84 901 234 567"
+                  className="bg-background border-border text-foreground placeholder:text-muted-foreground focus-visible:ring-primary"
+                  {...field}
+                />
               </FormControl>
-              <FormMessage />
+              <FormMessage className="text-destructive" />
             </FormItem>
           )}
         />
@@ -52,11 +62,18 @@ export const GuestInfoForm = () => {
         name="guestEmail"
         render={({ field }) => (
           <FormItem>
-            <FormLabel className="text-xs font-medium">Email</FormLabel>
+            <FormLabel className="text-xs font-medium text-foreground">
+              Email
+            </FormLabel>
             <FormControl>
-              <Input type="email" placeholder="example@email.com" {...field} />
+              <Input
+                type="email"
+                placeholder="example@email.com"
+                className="bg-background border-border text-foreground placeholder:text-muted-foreground focus-visible:ring-primary"
+                {...field}
+              />
             </FormControl>
-            <FormMessage />
+            <FormMessage className="text-destructive" />
           </FormItem>
         )}
       />
@@ -66,7 +83,7 @@ export const GuestInfoForm = () => {
         name="specialRequests"
         render={({ field }) => (
           <FormItem>
-            <FormLabel className="text-xs font-medium">
+            <FormLabel className="text-xs font-medium text-foreground">
               Yêu cầu đặc biệt{" "}
               <span className="text-muted-foreground font-normal">
                 (tuỳ chọn)
@@ -75,12 +92,12 @@ export const GuestInfoForm = () => {
             <FormControl>
               <Textarea
                 placeholder="Phòng tầng cao, không hút thuốc, đến muộn..."
-                className="resize-none"
+                className="resize-none bg-background border-border text-foreground placeholder:text-muted-foreground focus-visible:ring-primary"
                 rows={3}
                 {...field}
               />
             </FormControl>
-            <FormMessage />
+            <FormMessage className="text-destructive" />
           </FormItem>
         )}
       />

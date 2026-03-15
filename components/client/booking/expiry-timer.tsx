@@ -40,7 +40,7 @@ export const ExpiryTimer = ({ expiresAt, onExpire }: ExpiryTimerProps) => {
 
   if (expired) {
     return (
-      <div className="flex items-center gap-2 rounded-xl bg-destructive/10 text-destructive px-4 py-3 text-sm">
+      <div className="flex items-center gap-2 rounded-xl bg-destructive/10 text-destructive border border-destructive/20 px-4 py-3 text-sm">
         <AlertCircle className="w-4 h-4 shrink-0" />
         <p className="font-medium">
           Phiên đặt phòng đã hết hạn. Vui lòng thử lại.
@@ -52,19 +52,19 @@ export const ExpiryTimer = ({ expiresAt, onExpire }: ExpiryTimerProps) => {
   return (
     <div
       className={cn(
-        "flex items-center gap-2 rounded-xl px-4 py-3 text-sm",
+        "flex items-center gap-2 rounded-xl px-4 py-3 text-sm border",
         urgent
-          ? "bg-amber-50 text-amber-700 dark:bg-amber-950/30 dark:text-amber-400"
-          : "bg-muted text-muted-foreground",
+          ? "bg-secondary border-border text-secondary-foreground"
+          : "bg-muted border-border text-muted-foreground",
       )}
     >
-      <Clock className="w-4 h-4 shrink-0" />
+      <Clock className={cn("w-4 h-4 shrink-0", urgent && "text-primary")} />
       <p>
         Phòng được giữ trong{" "}
         <span
           className={cn(
             "font-bold tabular-nums",
-            urgent && "text-amber-600 dark:text-amber-400",
+            urgent ? "text-primary" : "text-foreground",
           )}
         >
           {mins}:{String(secs).padStart(2, "0")}
@@ -73,4 +73,4 @@ export const ExpiryTimer = ({ expiresAt, onExpire }: ExpiryTimerProps) => {
       </p>
     </div>
   );
-}
+};

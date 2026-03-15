@@ -86,13 +86,19 @@ export const CityListClient = () => {
             setSelectedCountryId(v === "all" ? undefined : v)
           }
         >
-          <SelectTrigger className="w-48">
+          <SelectTrigger className="w-48 border-border bg-background text-foreground">
             <SelectValue placeholder="Tất cả quốc gia" />
           </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Tất cả quốc gia</SelectItem>
+          <SelectContent className="bg-card border-border">
+            <SelectItem value="all" className="text-foreground hover:bg-muted">
+              Tất cả quốc gia
+            </SelectItem>
             {countries.map((c) => (
-              <SelectItem key={c.id} value={c.id}>
+              <SelectItem
+                key={c.id}
+                value={c.id}
+                className="text-foreground hover:bg-muted"
+              >
                 {c.name}
               </SelectItem>
             ))}
@@ -100,13 +106,19 @@ export const CityListClient = () => {
         </Select>
       </ListHeader>
 
-      <Card>
+      <Card className="bg-card border-border shadow-none">
         <Table>
           <TableHeader>
-            <TableRow>
-              <TableHead>Tên</TableHead>
-              <TableHead>Quốc gia</TableHead>
-              <TableHead className="text-center">Khách sạn</TableHead>
+            <TableRow className="border-border hover:bg-transparent">
+              <TableHead className="text-muted-foreground font-medium">
+                Tên
+              </TableHead>
+              <TableHead className="text-muted-foreground font-medium">
+                Quốc gia
+              </TableHead>
+              <TableHead className="text-center text-muted-foreground font-medium">
+                Khách sạn
+              </TableHead>
               <TableHead />
             </TableRow>
           </TableHeader>
@@ -137,12 +149,17 @@ interface CityRowProps {
 }
 
 const CityRow = ({ city, onEdit, onDelete }: CityRowProps) => (
-  <TableRow>
-    <TableCell className="font-medium">{city.name}</TableCell>
+  <TableRow className="border-border hover:bg-muted/40">
+    <TableCell className="font-medium text-foreground">{city.name}</TableCell>
     <TableCell>
-      <Badge variant="secondary">{city.country.name}</Badge>
+      <Badge
+        variant="outline"
+        className="bg-muted text-muted-foreground border-border font-medium text-xs"
+      >
+        {city.country.name}
+      </Badge>
     </TableCell>
-    <TableCell className="text-center text-sm">
+    <TableCell className="text-center text-sm text-muted-foreground">
       {city._count.addresses}
     </TableCell>
     <TableCell>

@@ -60,12 +60,16 @@ export const RoomTypeListClient = () => {
         addLabel="Thêm loại phòng"
         onAdd={openCreate}
       />
-      <Card>
+      <Card className="bg-card border-border shadow-none">
         <Table>
           <TableHeader>
-            <TableRow>
-              <TableHead>Tên</TableHead>
-              <TableHead className="text-center">Phòng dùng</TableHead>
+            <TableRow className="border-border hover:bg-transparent">
+              <TableHead className="text-muted-foreground font-medium">
+                Tên
+              </TableHead>
+              <TableHead className="text-center text-muted-foreground font-medium">
+                Phòng dùng
+              </TableHead>
               <TableHead />
             </TableRow>
           </TableHeader>
@@ -96,9 +100,11 @@ interface RoomTypeRowProps {
 }
 
 const RoomTypeRow = ({ roomType, onEdit, onDelete }: RoomTypeRowProps) => (
-  <TableRow>
-    <TableCell className="font-medium">{roomType.name}</TableCell>
-    <TableCell className="text-center text-sm">
+  <TableRow className="border-border hover:bg-muted/40">
+    <TableCell className="font-medium text-foreground">
+      {roomType.name}
+    </TableCell>
+    <TableCell className="text-center text-sm text-muted-foreground">
       {roomType._count.rooms}
     </TableCell>
     <TableCell>

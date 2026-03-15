@@ -60,14 +60,22 @@ export const AmenityListClient = () => {
         addLabel="Thêm tiện nghi"
         onAdd={openCreate}
       />
-      <Card>
+      <Card className="bg-card border-border shadow-none">
         <Table>
           <TableHeader>
-            <TableRow>
-              <TableHead>Icon</TableHead>
-              <TableHead>Tên</TableHead>
-              <TableHead className="text-center">Khách sạn dùng</TableHead>
-              <TableHead className="text-center">Phòng dùng</TableHead>
+            <TableRow className="border-border hover:bg-transparent">
+              <TableHead className="text-muted-foreground font-medium">
+                Icon
+              </TableHead>
+              <TableHead className="text-muted-foreground font-medium">
+                Tên
+              </TableHead>
+              <TableHead className="text-center text-muted-foreground font-medium">
+                Khách sạn dùng
+              </TableHead>
+              <TableHead className="text-center text-muted-foreground font-medium">
+                Phòng dùng
+              </TableHead>
               <TableHead />
             </TableRow>
           </TableHeader>
@@ -98,15 +106,17 @@ interface AmenityRowProps {
 }
 
 const AmenityRow = ({ amenity, onEdit, onDelete }: AmenityRowProps) => (
-  <TableRow>
+  <TableRow className="border-border hover:bg-muted/40">
     <TableCell>
       <span className="text-xl">{amenity.icon ?? "—"}</span>
     </TableCell>
-    <TableCell className="font-medium">{amenity.name}</TableCell>
-    <TableCell className="text-center text-sm">
+    <TableCell className="font-medium text-foreground">
+      {amenity.name}
+    </TableCell>
+    <TableCell className="text-center text-sm text-muted-foreground">
       {amenity._count.hotels}
     </TableCell>
-    <TableCell className="text-center text-sm">
+    <TableCell className="text-center text-sm text-muted-foreground">
       {amenity._count.rooms}
     </TableCell>
     <TableCell>

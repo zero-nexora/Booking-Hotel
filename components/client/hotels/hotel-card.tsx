@@ -5,7 +5,7 @@ import Image from "next/image";
 import { Star, MapPin, Wifi } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { formatCurrencyUSD } from "@/lib/utils";
+import { formatCurrencyUSD, toDateParam } from "@/lib/utils";
 import { useQueryStates } from "nuqs";
 import { hotelSearchParsers } from "@/lib/search-params/hotel-search";
 
@@ -20,8 +20,6 @@ type Hotel = {
   images: { url: string; alt?: string | null }[];
   address: { city: { name: string; country: { name: string } } };
   amenities: { amenity: { name: string; icon?: string | null } }[];
-  checkIn?: Date;
-  checkOut?: Date;
 };
 
 interface HotelCardProps {
@@ -35,12 +33,11 @@ export const HotelCard = ({ hotel, view, nights = 1 }: HotelCardProps) => {
 
   const hotelDetailUrl = () => {
     const searchParams = new URLSearchParams({
-      ...(params.checkIn && { checkIn: params.checkIn.toISOString() }),
-      ...(params.checkOut && { checkOut: params.checkOut.toISOString() }),
+      ...(params.checkIn && { checkIn: toDateParam(params.checkIn) }),
+      ...(params.checkOut && { checkOut: toDateParam(params.checkOut) }),
       adults: String(params.adults),
       children: String(params.children),
     });
-
     return `/hotels/${hotel.slug}?${searchParams.toString()}`;
   };
 
@@ -49,7 +46,7 @@ export const HotelCard = ({ hotel, view, nights = 1 }: HotelCardProps) => {
   if (view === "grid") {
     return (
       <Link href={hotelDetailUrl()} className="flex">
-        <div className="flex flex-col w-full rounded-2xl overflow-hidden border bg-card hover:shadow-md transition-shadow">
+        <div className="flex flex-col w-full rounded-2xl overflow-hidden border border-border bg-card hover:shadow-md">
           <div className="relative h-44 bg-muted overflow-hidden shrink-0">
             {hotel.images[0] ? (
               <Image
@@ -64,19 +61,21 @@ export const HotelCard = ({ hotel, view, nights = 1 }: HotelCardProps) => {
               </div>
             )}
             <Badge
-              variant="secondary"
-              className="absolute top-2 left-2 backdrop-blur-sm bg-background/80 text-xs gap-0.5"
+              variant="outline"
+              className="absolute top-2 left-2 backdrop-blur-sm bg-background/80 border-border text-foreground text-xs gap-0.5"
             >
               {Array.from({ length: hotel.starRating }).map((_, i) => (
                 <Star
                   key={i}
-                  className="w-2.5 h-2.5 fill-amber-400 text-amber-400"
+                  className="w-2.5 h-2.5 fill-primary text-primary"
                 />
               ))}
             </Badge>
           </div>
           <div className="flex flex-col flex-1 p-3.5">
-            <h3 className="font-semibold text-sm line-clamp-1">{hotel.name}</h3>
+            <h3 className="font-semibold text-sm line-clamp-1 text-foreground">
+              {hotel.name}
+            </h3>
             <div className="flex items-center gap-1 mt-0.5">
               <MapPin className="w-3 h-3 text-muted-foreground shrink-0" />
               <span className="text-xs text-muted-foreground truncate">
@@ -84,12 +83,12 @@ export const HotelCard = ({ hotel, view, nights = 1 }: HotelCardProps) => {
               </span>
             </div>
             <div className="mt-auto pt-3">
-              <div className="border-t pt-3 flex items-center justify-between gap-2">
+              <div className="border-t border-border pt-3 flex items-center justify-between gap-2">
                 <div>
                   {hotel.avgRating !== null ? (
                     <div className="flex items-center gap-1">
-                      <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
-                      <span className="text-xs font-semibold">
+                      <Star className="w-3 h-3 fill-primary text-primary" />
+                      <span className="text-xs font-semibold text-foreground">
                         {hotel.avgRating.toFixed(1)}
                       </span>
                       <span className="text-xs text-muted-foreground">
@@ -119,7 +118,7 @@ export const HotelCard = ({ hotel, view, nights = 1 }: HotelCardProps) => {
   }
 
   return (
-    <div className="rounded-2xl border bg-card hover:shadow-md transition-shadow overflow-hidden">
+    <div className="rounded-2xl border border-border bg-card hover:shadow-md overflow-hidden">
       <div className="flex">
         <div className="relative w-52 shrink-0 bg-muted">
           {hotel.images[0] ? (
@@ -135,21 +134,18 @@ export const HotelCard = ({ hotel, view, nights = 1 }: HotelCardProps) => {
             </div>
           )}
           <Badge
-            variant="secondary"
-            className="absolute top-2 left-2 backdrop-blur-sm bg-background/80 text-xs gap-0.5"
+            variant="outline"
+            className="absolute top-2 left-2 backdrop-blur-sm bg-background/80 border-border text-foreground text-xs gap-0.5"
           >
             {Array.from({ length: hotel.starRating }).map((_, i) => (
-              <Star
-                key={i}
-                className="w-2.5 h-2.5 fill-amber-400 text-amber-400"
-              />
+              <Star key={i} className="w-2.5 h-2.5 fill-primary text-primary" />
             ))}
           </Badge>
         </div>
 
         <div className="flex flex-col flex-1 p-4 gap-2 min-w-0">
           <div>
-            <h3 className="font-semibold text-sm leading-tight">
+            <h3 className="font-semibold text-sm leading-tight text-foreground">
               {hotel.name}
             </h3>
             <div className="flex items-center gap-1 mt-0.5">
@@ -165,7 +161,7 @@ export const HotelCard = ({ hotel, view, nights = 1 }: HotelCardProps) => {
               {hotel.amenities.slice(0, 4).map((a) => (
                 <span
                   key={a.amenity.name}
-                  className="flex items-center gap-1 text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full"
+                  className="flex items-center gap-1 text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full border border-border"
                 >
                   <Wifi className="w-2.5 h-2.5" />
                   {a.amenity.name}
@@ -174,7 +170,7 @@ export const HotelCard = ({ hotel, view, nights = 1 }: HotelCardProps) => {
             </div>
           )}
 
-          <div className="flex items-center justify-between mt-auto pt-2 border-t">
+          <div className="flex items-center justify-between mt-auto pt-2 border-t border-border">
             <div>
               {hotel.avgRating !== null ? (
                 <div className="flex items-center gap-1.5">
@@ -199,7 +195,7 @@ export const HotelCard = ({ hotel, view, nights = 1 }: HotelCardProps) => {
               {price && (
                 <div className="text-right">
                   <div className="flex items-baseline gap-0.5">
-                    <span className="text-lg font-bold">
+                    <span className="text-lg font-bold text-foreground">
                       {formatCurrencyUSD(price)}
                     </span>
                     <span className="text-xs text-muted-foreground">/đêm</span>
@@ -211,7 +207,11 @@ export const HotelCard = ({ hotel, view, nights = 1 }: HotelCardProps) => {
                   )}
                 </div>
               )}
-              <Button size="sm" asChild className="rounded-xl">
+              <Button
+                size="sm"
+                className="rounded-xl bg-primary text-primary-foreground hover:bg-primary/90"
+                asChild
+              >
                 <Link href={hotelDetailUrl()}>Xem chi tiết</Link>
               </Button>
             </div>

@@ -1,7 +1,10 @@
 import { useModalDialogStore } from "@/store/modal-dialog-store";
 import { RouterOutput } from "@/trpc/client";
 import { CityForm, CityFormValues } from "./city-form";
-import { useCreateCity, useUpdateCity } from "@/hooks/admin/use-admin-locations";
+import {
+  useCreateCity,
+  useUpdateCity,
+} from "@/hooks/admin/use-admin-locations";
 
 type Country = RouterOutput["admin"]["location"]["listCountries"][number];
 type City = RouterOutput["admin"]["location"]["listCities"][number];

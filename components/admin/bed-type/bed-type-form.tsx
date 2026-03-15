@@ -48,11 +48,17 @@ export const BedTypeForm = ({
           name="name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Tên loại giường</FormLabel>
+              <FormLabel className="text-foreground font-medium">
+                Tên loại giường
+              </FormLabel>
               <FormControl>
-                <Input {...field} placeholder="King, Queen, Single..." />
+                <Input
+                  {...field}
+                  placeholder="King, Queen, Single..."
+                  className="bg-background border-border text-foreground placeholder:text-muted-foreground focus-visible:ring-primary"
+                />
               </FormControl>
-              <FormMessage />
+              <FormMessage className="text-destructive" />
             </FormItem>
           )}
         />

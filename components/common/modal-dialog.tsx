@@ -23,12 +23,15 @@ export const ModalDialog = () => {
 
   return (
     <Dialog open onOpenChange={(open) => !open && handleClose()}>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="sm:max-w-lg bg-card border-border">
         <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
-          {description && <DialogDescription>{description}</DialogDescription>}
+          <DialogTitle className="text-foreground">{title}</DialogTitle>
+          {description && (
+            <DialogDescription className="text-muted-foreground">
+              {description}
+            </DialogDescription>
+          )}
         </DialogHeader>
-
         <div className="mt-4">{content}</div>
       </DialogContent>
     </Dialog>

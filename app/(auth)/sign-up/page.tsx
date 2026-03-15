@@ -50,9 +50,9 @@ const schema = z
 type Values = z.infer<typeof schema>;
 
 const inputCls =
-  "bg-secondary/40 border-border focus-visible:ring-1 focus-visible:ring-primary/40 focus-visible:border-primary placeholder:text-muted-foreground/50";
+  "bg-background border-border text-foreground placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-primary/50 focus-visible:border-primary";
 const labelCls =
-  "text-xs font-medium uppercase tracking-wide text-foreground/70";
+  "text-xs font-medium uppercase tracking-wide text-muted-foreground";
 
 const SignUpPage = () => {
   const router = useRouter();
@@ -121,7 +121,7 @@ const SignUpPage = () => {
                     {...field}
                   />
                 </FormControl>
-                <FormMessage />
+                <FormMessage className="text-destructive" />
               </FormItem>
             )}
           />
@@ -143,7 +143,7 @@ const SignUpPage = () => {
                       {...field}
                     />
                   </FormControl>
-                  <FormMessage />
+                  <FormMessage className="text-destructive" />
                 </FormItem>
               )}
             />
@@ -168,7 +168,7 @@ const SignUpPage = () => {
                       {...field}
                     />
                   </FormControl>
-                  <FormMessage />
+                  <FormMessage className="text-destructive" />
                 </FormItem>
               )}
             />
@@ -190,10 +190,10 @@ const SignUpPage = () => {
                   />
                 </FormControl>
                 <PasswordStrengthBar password={watchedPassword} />
-                <FormDescription className="text-xs text-muted-foreground/70">
+                <FormDescription className="text-xs text-muted-foreground">
                   Tối thiểu 8 ký tự, gồm chữ hoa và chữ số
                 </FormDescription>
-                <FormMessage />
+                <FormMessage className="text-destructive" />
               </FormItem>
             )}
           />
@@ -213,14 +213,14 @@ const SignUpPage = () => {
                     {...field}
                   />
                 </FormControl>
-                <FormMessage />
+                <FormMessage className="text-destructive" />
               </FormItem>
             )}
           />
 
           <Button
             type="submit"
-            className="w-full h-10 font-medium"
+            className="w-full h-10 font-medium bg-primary text-primary-foreground hover:bg-primary/90"
             disabled={isLoading}
           >
             {isLoading && <Loader2 className="size-4 animate-spin" />}
@@ -233,14 +233,14 @@ const SignUpPage = () => {
         Bằng cách đăng ký, bạn đồng ý với{" "}
         <Link
           href="/terms"
-          className="text-foreground/80 hover:text-foreground underline underline-offset-2"
+          className="text-foreground hover:text-foreground/80 underline underline-offset-2"
         >
           Điều khoản dịch vụ
         </Link>{" "}
         và{" "}
         <Link
           href="/privacy"
-          className="text-foreground/80 hover:text-foreground underline underline-offset-2"
+          className="text-foreground hover:text-foreground/80 underline underline-offset-2"
         >
           Chính sách bảo mật
         </Link>

@@ -21,7 +21,9 @@ export const ListHeader = ({
   <div className="space-y-3">
     <div className="flex items-center justify-between">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">{title}</h1>
+        <h1 className="text-2xl font-bold tracking-tight text-foreground">
+          {title}
+        </h1>
         {count !== undefined && (
           <p className="text-sm text-muted-foreground">
             {count} {countLabel ?? title.toLowerCase()}
@@ -29,7 +31,10 @@ export const ListHeader = ({
         )}
       </div>
       {onAdd && addLabel && (
-        <Button onClick={onAdd}>
+        <Button
+          onClick={onAdd}
+          className="bg-primary text-primary-foreground hover:bg-primary/90"
+        >
           <Plus className="w-4 h-4 mr-2" />
           {addLabel}
         </Button>

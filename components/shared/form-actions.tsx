@@ -19,14 +19,14 @@ export const FormActions = ({
       type="button"
       variant="outline"
       onClick={onCancel}
-      className={fullWidth ? "flex-1" : ""}
+      className={`border-border text-foreground hover:bg-muted hover:text-foreground ${fullWidth ? "flex-1" : ""}`}
     >
       Hủy
     </Button>
     <Button
       type="submit"
       disabled={isPending}
-      className={fullWidth ? "flex-1" : ""}
+      className={`bg-primary text-primary-foreground hover:bg-primary/90 ${fullWidth ? "flex-1" : ""}`}
     >
       {isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
       {submitLabel}

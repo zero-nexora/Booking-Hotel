@@ -2,8 +2,6 @@
 
 import { useEffect, useRef } from "react";
 import Link from "next/link";
-import { format } from "date-fns";
-import { vi } from "date-fns/locale";
 import {
   CheckCircle2,
   CalendarDays,
@@ -22,45 +20,18 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useBookingConfirmation } from "@/hooks/client/use-booking";
 import { BookingPrint } from "./booking-print";
-
-const STATUS_MAP: Record<
-  string,
-  {
-    label: string;
-    variant: "default" | "secondary" | "destructive" | "outline";
-  }
-> = {
-  PENDING: { label: "Đang chờ", variant: "secondary" },
-  CONFIRMED: { label: "Đã xác nhận", variant: "default" },
-  CHECKED_IN: { label: "Đã check-in", variant: "default" },
-  CHECKED_OUT: { label: "Đã check-out", variant: "outline" },
-  CANCELLED: { label: "Đã huỷ", variant: "destructive" },
-  NO_SHOW: { label: "Không đến", variant: "destructive" },
-};
-
-const PAYMENT_MAP: Record<
-  string,
-  {
-    label: string;
-    variant: "default" | "secondary" | "destructive" | "outline";
-  }
-> = {
-  UNPAID: { label: "Chưa thanh toán", variant: "destructive" },
-  PENDING: { label: "Đang xử lý", variant: "secondary" },
-  PAID: { label: "Đã thanh toán", variant: "default" },
-  REFUNDED: { label: "Đã hoàn tiền", variant: "outline" },
-  FAILED: { label: "Thất bại", variant: "destructive" },
-};
+import { StatusBadge } from "@/components/shared/status-badge";
+import { formatDateShort, formatCurrencyUSD } from "@/lib/utils";
 
 const CONFETTI_COLORS = [
-  "#f59e0b",
-  "#10b981",
-  "#3b82f6",
-  "#ec4899",
-  "#8b5cf6",
-  "#ef4444",
-  "#06b6d4",
-  "#f97316",
+  "#b89a6f",
+  "#c9a87c",
+  "#8c7355",
+  "#d4b896",
+  "#6b563e",
+  "#e0cdb0",
+  "#a0845c",
+  "#f0e0c8",
 ];
 
 type ConfettiShape = "rect" | "circle" | "ribbon";
@@ -79,8 +50,8 @@ type Particle = {
   shape: ConfettiShape;
 };
 
-function spawnBurst(canvas: HTMLCanvasElement, count: number): Particle[] {
-  return Array.from({ length: count }, () => {
+const spawnBurst = (canvas: HTMLCanvasElement, count: number): Particle[] =>
+  Array.from({ length: count }, () => {
     const side = Math.random() < 0.5 ? canvas.width * 0.2 : canvas.width * 0.8;
     return {
       x: side,
@@ -99,9 +70,8 @@ function spawnBurst(canvas: HTMLCanvasElement, count: number): Particle[] {
       ],
     };
   });
-}
 
-function useConfetti() {
+const useConfetti = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -119,7 +89,6 @@ function useConfetti() {
 
     let particles: Particle[] = [];
     particles.push(...spawnBurst(canvas, 130));
-
     const t2 = setTimeout(() => particles.push(...spawnBurst(canvas, 90)), 350);
     const t3 = setTimeout(() => particles.push(...spawnBurst(canvas, 70)), 750);
 
@@ -127,7 +96,6 @@ function useConfetti() {
 
     const tick = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-
       particles = particles.filter((p) => p.opacity > 0);
 
       for (const p of particles) {
@@ -157,15 +125,11 @@ function useConfetti() {
         } else {
           ctx.fillRect(-p.width / 2, -p.height / 2, p.width, p.height);
         }
-
         ctx.restore();
       }
 
-      if (particles.length > 0) {
-        rafId = requestAnimationFrame(tick);
-      } else {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-      }
+      if (particles.length > 0) rafId = requestAnimationFrame(tick);
+      else ctx.clearRect(0, 0, canvas.width, canvas.height);
     };
 
     rafId = requestAnimationFrame(tick);
@@ -179,7 +143,7 @@ function useConfetti() {
   }, []);
 
   return canvasRef;
-}
+};
 
 interface ConfirmationClientProps {
   bookingRef: string;
@@ -194,8 +158,6 @@ export const ConfirmationClient = ({ bookingRef }: ConfirmationClientProps) => {
 
   const item = booking.items[0];
   const nights = item?.nights ?? 0;
-  const statusInfo = STATUS_MAP[booking.status] ?? STATUS_MAP.PENDING;
-  const paymentInfo = PAYMENT_MAP[booking.paymentStatus] ?? PAYMENT_MAP.UNPAID;
 
   return (
     <>
@@ -213,7 +175,7 @@ export const ConfirmationClient = ({ bookingRef }: ConfirmationClientProps) => {
             </div>
           </div>
           <div>
-            <h1 className="text-2xl font-bold tracking-tight">
+            <h1 className="text-2xl font-bold tracking-tight text-foreground">
               Đặt phòng thành công!
             </h1>
             <p className="text-muted-foreground text-sm mt-1">
@@ -225,27 +187,25 @@ export const ConfirmationClient = ({ bookingRef }: ConfirmationClientProps) => {
           </div>
           <div className="inline-flex items-center gap-2 bg-muted rounded-xl px-4 py-2">
             <span className="text-xs text-muted-foreground">Mã đặt phòng</span>
-            <span className="font-mono font-bold tracking-wider text-sm">
+            <span className="font-mono font-bold tracking-wider text-sm text-foreground">
               {booking.bookingRef}
             </span>
           </div>
         </div>
 
         <div className="flex items-center justify-center gap-2 flex-wrap">
-          <Badge variant={statusInfo.variant} className="gap-1.5">
-            {statusInfo.label}
-          </Badge>
-          <Badge variant={paymentInfo.variant} className="gap-1.5">
-            {paymentInfo.label}
-          </Badge>
+          <StatusBadge status={booking.status} type="booking" />
+          <StatusBadge status={booking.paymentStatus} type="payment" />
         </div>
 
-        <div className="rounded-2xl border bg-card divide-y">
+        <div className="rounded-2xl border border-border bg-card divide-y divide-border">
           <div className="p-4 space-y-1">
             <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">
               Khách sạn
             </p>
-            <p className="font-semibold">{booking.hotel.name}</p>
+            <p className="font-semibold text-foreground">
+              {booking.hotel.name}
+            </p>
             <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
               <MapPin className="w-3.5 h-3.5 shrink-0" />
               <span>
@@ -263,8 +223,13 @@ export const ConfirmationClient = ({ bookingRef }: ConfirmationClientProps) => {
               </p>
               <div className="flex items-center gap-1.5">
                 <BedDouble className="w-3.5 h-3.5 text-muted-foreground" />
-                <span className="font-medium text-sm">{item.room.name}</span>
-                <Badge variant="outline" className="text-xs">
+                <span className="font-medium text-sm text-foreground">
+                  {item.room.name}
+                </span>
+                <Badge
+                  variant="outline"
+                  className="text-xs border-border text-muted-foreground"
+                >
                   {item.room.roomType.name}
                 </Badge>
               </div>
@@ -278,10 +243,8 @@ export const ConfirmationClient = ({ bookingRef }: ConfirmationClientProps) => {
               </p>
               <div className="flex items-center gap-1.5">
                 <CalendarDays className="w-3.5 h-3.5 text-muted-foreground" />
-                <span className="text-sm font-semibold">
-                  {format(new Date(booking.checkIn), "dd/MM/yyyy", {
-                    locale: vi,
-                  })}
+                <span className="text-sm font-semibold text-foreground">
+                  {formatDateShort(booking.checkIn)}
                 </span>
               </div>
             </div>
@@ -291,10 +254,8 @@ export const ConfirmationClient = ({ bookingRef }: ConfirmationClientProps) => {
               </p>
               <div className="flex items-center gap-1.5">
                 <CalendarDays className="w-3.5 h-3.5 text-muted-foreground" />
-                <span className="text-sm font-semibold">
-                  {format(new Date(booking.checkOut), "dd/MM/yyyy", {
-                    locale: vi,
-                  })}
+                <span className="text-sm font-semibold text-foreground">
+                  {formatDateShort(booking.checkOut)}
                 </span>
               </div>
             </div>
@@ -311,7 +272,7 @@ export const ConfirmationClient = ({ bookingRef }: ConfirmationClientProps) => {
             <div className="space-y-1.5">
               <div className="flex items-center gap-1.5 text-sm">
                 <User className="w-3.5 h-3.5 text-muted-foreground" />
-                <span>{booking.guestName}</span>
+                <span className="text-foreground">{booking.guestName}</span>
               </div>
               <div className="flex items-center gap-1.5 text-sm">
                 <Mail className="w-3.5 h-3.5 text-muted-foreground" />
@@ -343,15 +304,19 @@ export const ConfirmationClient = ({ bookingRef }: ConfirmationClientProps) => {
           )}
 
           <div className="p-4 flex items-center justify-between">
-            <p className="text-sm font-medium">Tổng thanh toán</p>
+            <p className="text-sm font-medium text-foreground">
+              Tổng thanh toán
+            </p>
             <p className="text-lg font-bold text-primary">
-              ${Number(booking.totalAmount)} {booking.currency}
+              {formatCurrencyUSD(Number(booking.totalAmount))}
             </p>
           </div>
         </div>
 
-        <div className="rounded-2xl bg-muted/40 border p-4 space-y-3">
-          <p className="text-sm font-semibold">Bước tiếp theo</p>
+        <div className="rounded-2xl bg-muted/40 border border-border p-4 space-y-3">
+          <p className="text-sm font-semibold text-foreground">
+            Bước tiếp theo
+          </p>
           <div className="space-y-2 text-sm text-muted-foreground">
             <div className="flex items-start gap-2">
               <Mail className="w-3.5 h-3.5 mt-0.5 shrink-0 text-primary" />
@@ -387,14 +352,21 @@ export const ConfirmationClient = ({ bookingRef }: ConfirmationClientProps) => {
         </div>
 
         <div className="flex flex-col sm:flex-row gap-3">
-          <Button className="flex-1 rounded-xl gap-2" asChild>
+          <Button
+            className="flex-1 rounded-xl gap-2 bg-primary text-primary-foreground hover:bg-primary/90"
+            asChild
+          >
             <Link href="/account/bookings">
               <BookOpen className="w-4 h-4" />
               Xem đặt phòng của tôi
             </Link>
           </Button>
           <BookingPrint booking={booking} />
-          <Button variant="ghost" className="rounded-xl gap-2" asChild>
+          <Button
+            variant="ghost"
+            className="rounded-xl gap-2 text-muted-foreground hover:text-foreground hover:bg-muted"
+            asChild
+          >
             <Link href="/">
               <Home className="w-4 h-4" />
               Về trang chủ
@@ -406,22 +378,20 @@ export const ConfirmationClient = ({ bookingRef }: ConfirmationClientProps) => {
   );
 };
 
-function ConfirmationSkeleton() {
-  return (
-    <div className="max-w-2xl mx-auto px-4 py-10 space-y-6">
-      <div className="flex flex-col items-center gap-3">
-        <Skeleton className="w-16 h-16 rounded-full" />
-        <Skeleton className="h-8 w-64" />
-        <Skeleton className="h-4 w-48" />
-        <Skeleton className="h-10 w-40 rounded-xl" />
-      </div>
-      <Skeleton className="h-64 rounded-2xl" />
-      <Skeleton className="h-32 rounded-2xl" />
-      <div className="flex gap-3">
-        <Skeleton className="h-11 flex-1 rounded-xl" />
-        <Skeleton className="h-11 w-32 rounded-xl" />
-        <Skeleton className="h-11 w-32 rounded-xl" />
-      </div>
+const ConfirmationSkeleton = () => (
+  <div className="max-w-2xl mx-auto px-4 py-10 space-y-6">
+    <div className="flex flex-col items-center gap-3">
+      <Skeleton className="w-16 h-16 rounded-full bg-muted" />
+      <Skeleton className="h-8 w-64 bg-muted" />
+      <Skeleton className="h-4 w-48 bg-muted" />
+      <Skeleton className="h-10 w-40 rounded-xl bg-muted" />
     </div>
-  );
-}
+    <Skeleton className="h-64 rounded-2xl bg-muted" />
+    <Skeleton className="h-32 rounded-2xl bg-muted" />
+    <div className="flex gap-3">
+      <Skeleton className="h-11 flex-1 rounded-xl bg-muted" />
+      <Skeleton className="h-11 w-32 rounded-xl bg-muted" />
+      <Skeleton className="h-11 w-32 rounded-xl bg-muted" />
+    </div>
+  </div>
+);

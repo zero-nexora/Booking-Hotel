@@ -32,7 +32,7 @@ export const ConfirmDialog = () => {
     onCancel,
   } = confirmDialog;
 
-  async function handleConfirm() {
+  const handleConfirm = async () => {
     setIsPending(true);
     try {
       await onConfirm();
@@ -40,32 +40,39 @@ export const ConfirmDialog = () => {
       setIsPending(false);
       closeConfirm();
     }
-  }
+  };
 
-  function handleCancel() {
+  const handleCancel = () => {
     onCancel?.();
     closeConfirm();
-  }
+  };
 
   return (
     <AlertDialog open onOpenChange={(open) => !open && handleCancel()}>
-      <AlertDialogContent>
+      <AlertDialogContent className="bg-card border-border">
         <AlertDialogHeader>
-          <AlertDialogTitle>{title}</AlertDialogTitle>
-          <AlertDialogDescription>{description}</AlertDialogDescription>
+          <AlertDialogTitle className="text-foreground">
+            {title}
+          </AlertDialogTitle>
+          <AlertDialogDescription className="text-muted-foreground">
+            {description}
+          </AlertDialogDescription>
         </AlertDialogHeader>
-
         <AlertDialogFooter>
-          <AlertDialogCancel onClick={handleCancel} disabled={isPending}>
+          <AlertDialogCancel
+            onClick={handleCancel}
+            disabled={isPending}
+            className="border-border text-foreground hover:bg-muted hover:text-foreground"
+          >
             {cancelLabel}
           </AlertDialogCancel>
-
           <AlertDialogAction
             onClick={handleConfirm}
             disabled={isPending}
             className={cn(
-              variant === "destructive" &&
-                buttonVariants({ variant: "destructive" }),
+              variant === "destructive"
+                ? buttonVariants({ variant: "destructive" })
+                : "bg-primary text-primary-foreground hover:bg-primary/90",
             )}
           >
             {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}

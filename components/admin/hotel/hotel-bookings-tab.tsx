@@ -16,33 +16,20 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
 import { Pagination } from "@/components/shared/pagination";
 import { SearchInput } from "@/components/shared/search-input";
+import { StatusBadge } from "@/components/shared/status-badge";
 import { useAdminBookingList } from "@/hooks/admin/use-admin-bookings";
 import { adminBookingParsers } from "@/lib/search-params/admin-bookings";
 import { useQueryStates } from "nuqs";
 import { useCallback } from "react";
-import { format } from "date-fns";
 import { RouterOutput } from "@/trpc/client";
 import { BookingStatus, PaymentStatus } from "@/generated/prisma/enums";
 import { TableSkeleton } from "@/components/shared/table-skeleton";
 import { DEFAULT_PAGE } from "@/lib/constants";
-import { formatCurrencyUSD } from "@/lib/utils";
+import { formatDateShort, formatCurrencyUSD } from "@/lib/utils";
 
 type Booking = RouterOutput["admin"]["booking"]["list"]["items"][number];
-
-const BOOKING_STATUS_VARIANT: Record<
-  string,
-  "default" | "secondary" | "destructive" | "outline"
-> = {
-  PENDING: "secondary",
-  CONFIRMED: "default",
-  CHECKED_IN: "default",
-  CHECKED_OUT: "outline",
-  CANCELLED: "destructive",
-  NO_SHOW: "destructive",
-};
 
 const BOOKING_STATUS_LABEL: Record<string, string> = {
   PENDING: "Chờ xác nhận",
@@ -51,17 +38,6 @@ const BOOKING_STATUS_LABEL: Record<string, string> = {
   CHECKED_OUT: "Đã check-out",
   CANCELLED: "Đã hủy",
   NO_SHOW: "Không đến",
-};
-
-const PAYMENT_STATUS_VARIANT: Record<
-  string,
-  "default" | "secondary" | "destructive" | "outline"
-> = {
-  UNPAID: "secondary",
-  PENDING: "secondary",
-  PAID: "default",
-  REFUNDED: "outline",
-  FAILED: "destructive",
 };
 
 const PAYMENT_STATUS_LABEL: Record<string, string> = {
@@ -73,29 +49,24 @@ const PAYMENT_STATUS_LABEL: Record<string, string> = {
 };
 
 const BookingRow = ({ booking }: { booking: Booking }) => (
-  <TableRow>
-    <TableCell className="font-mono text-xs">
+  <TableRow className="border-border hover:bg-muted/40">
+    <TableCell className="font-mono text-xs text-muted-foreground">
       {booking.bookingRef.slice(0, 8).toUpperCase()}
     </TableCell>
     <TableCell>
-      <p className="text-sm font-medium">{booking.guestName}</p>
+      <p className="text-sm font-medium text-foreground">{booking.guestName}</p>
       <p className="text-xs text-muted-foreground">{booking.guestEmail}</p>
     </TableCell>
     <TableCell className="text-sm text-muted-foreground">
-      {format(new Date(booking.checkIn), "dd/MM/yy")} →{" "}
-      {format(new Date(booking.checkOut), "dd/MM/yy")}
+      {formatDateShort(booking.checkIn)} → {formatDateShort(booking.checkOut)}
     </TableCell>
     <TableCell>
-      <Badge variant={BOOKING_STATUS_VARIANT[booking.status]}>
-        {BOOKING_STATUS_LABEL[booking.status]}
-      </Badge>
+      <StatusBadge status={booking.status} type="booking" />
     </TableCell>
     <TableCell>
-      <Badge variant={PAYMENT_STATUS_VARIANT[booking.paymentStatus]}>
-        {PAYMENT_STATUS_LABEL[booking.paymentStatus]}
-      </Badge>
+      <StatusBadge status={booking.paymentStatus} type="payment" />
     </TableCell>
-    <TableCell className="text-sm text-right">
+    <TableCell className="text-sm text-right font-medium text-foreground">
       {formatCurrencyUSD(Number(booking.totalAmount))}
     </TableCell>
   </TableRow>
@@ -116,10 +87,7 @@ export const HotelBookingsTab = ({ hotelId }: HotelBookingsTabProps) => {
 
   const handleStatusChange = useCallback(
     (v: string) =>
-      setParams({
-        status: v === "all" ? null : (v as BookingStatus),
-        page: 1,
-      }),
+      setParams({ status: v === "all" ? null : (v as BookingStatus), page: 1 }),
     [setParams],
   );
 
@@ -155,13 +123,19 @@ export const HotelBookingsTab = ({ hotelId }: HotelBookingsTabProps) => {
           value={params.status ?? "all"}
           onValueChange={handleStatusChange}
         >
-          <SelectTrigger className="w-44">
+          <SelectTrigger className="w-44 border-border bg-background text-foreground">
             <SelectValue placeholder="Trạng thái" />
           </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Tất cả trạng thái</SelectItem>
+          <SelectContent className="bg-card border-border">
+            <SelectItem value="all" className="text-foreground hover:bg-muted">
+              Tất cả trạng thái
+            </SelectItem>
             {Object.entries(BOOKING_STATUS_LABEL).map(([value, label]) => (
-              <SelectItem key={value} value={value}>
+              <SelectItem
+                key={value}
+                value={value}
+                className="text-foreground hover:bg-muted"
+              >
                 {label}
               </SelectItem>
             ))}
@@ -171,13 +145,19 @@ export const HotelBookingsTab = ({ hotelId }: HotelBookingsTabProps) => {
           value={params.paymentStatus ?? "all"}
           onValueChange={handlePaymentStatusChange}
         >
-          <SelectTrigger className="w-40">
+          <SelectTrigger className="w-40 border-border bg-background text-foreground">
             <SelectValue placeholder="Thanh toán" />
           </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Tất cả TT</SelectItem>
+          <SelectContent className="bg-card border-border">
+            <SelectItem value="all" className="text-foreground hover:bg-muted">
+              Tất cả TT
+            </SelectItem>
             {Object.entries(PAYMENT_STATUS_LABEL).map(([value, label]) => (
-              <SelectItem key={value} value={value}>
+              <SelectItem
+                key={value}
+                value={value}
+                className="text-foreground hover:bg-muted"
+              >
                 {label}
               </SelectItem>
             ))}
@@ -185,16 +165,28 @@ export const HotelBookingsTab = ({ hotelId }: HotelBookingsTabProps) => {
         </Select>
       </div>
 
-      <Card>
+      <Card className="bg-card border-border shadow-none">
         <Table>
           <TableHeader>
-            <TableRow>
-              <TableHead>Mã booking</TableHead>
-              <TableHead>Khách</TableHead>
-              <TableHead>Thời gian</TableHead>
-              <TableHead>Trạng thái</TableHead>
-              <TableHead>Thanh toán</TableHead>
-              <TableHead className="text-right">Tổng tiền</TableHead>
+            <TableRow className="border-border hover:bg-transparent">
+              <TableHead className="text-muted-foreground font-medium">
+                Mã booking
+              </TableHead>
+              <TableHead className="text-muted-foreground font-medium">
+                Khách
+              </TableHead>
+              <TableHead className="text-muted-foreground font-medium">
+                Thời gian
+              </TableHead>
+              <TableHead className="text-muted-foreground font-medium">
+                Trạng thái
+              </TableHead>
+              <TableHead className="text-muted-foreground font-medium">
+                Thanh toán
+              </TableHead>
+              <TableHead className="text-right text-muted-foreground font-medium">
+                Tổng tiền
+              </TableHead>
             </TableRow>
           </TableHeader>
           {isLoading ? (

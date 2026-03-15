@@ -1,12 +1,11 @@
 "use client";
 
 import Image from "next/image";
-import { format, differenceInDays } from "date-fns";
-import { vi } from "date-fns/locale";
+import { differenceInDays } from "date-fns";
 import { Building2, Users, CalendarDays, Clock } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
-import { formatCurrencyUSD, formatDateShort } from "@/lib/utils";
+import { formatCurrencyUSD, formatDateShort, formatTime } from "@/lib/utils";
 
 interface BookingSummaryProps {
   hotelName: string;
@@ -24,7 +23,7 @@ interface BookingSummaryProps {
   expiresAt?: Date;
 }
 
-export function BookingSummary({
+export const BookingSummary = ({
   hotelName,
   hotelImage,
   roomName,
@@ -38,12 +37,12 @@ export function BookingSummary({
   checkInTime,
   checkOutTime,
   expiresAt,
-}: BookingSummaryProps) {
+}: BookingSummaryProps) => {
   const nights = differenceInDays(checkOut, checkIn);
   const total = pricePerNight * nights;
 
   return (
-    <div className="rounded-2xl border bg-card overflow-hidden shadow-sm">
+    <div className="rounded-2xl border border-border bg-card overflow-hidden shadow-none">
       <div className="relative h-36 bg-muted">
         {hotelImage ? (
           <Image
@@ -57,19 +56,19 @@ export function BookingSummary({
             <Building2 className="w-8 h-8 text-muted-foreground" />
           </div>
         )}
-        <div className="absolute inset-0 bg-linear-to-t from-black/60 to-transparent" />
+        <div className="absolute inset-0 bg-linear-to-t from-foreground/60 to-transparent" />
         <div className="absolute bottom-3 left-3 right-3">
-          <p className="text-white font-semibold text-sm leading-tight line-clamp-1">
+          <p className="text-background font-semibold text-sm leading-tight line-clamp-1">
             {hotelName}
           </p>
           <div className="flex items-center gap-1.5 mt-0.5">
             <Badge
-              variant="secondary"
-              className="text-xs bg-white/20 text-white border-0 backdrop-blur-sm"
+              variant="outline"
+              className="text-xs bg-background/20 text-background border-background/30 backdrop-blur-sm"
             >
               {roomType}
             </Badge>
-            <span className="text-white/80 text-xs line-clamp-1">
+            <span className="text-background/80 text-xs line-clamp-1">
               {roomName}
             </span>
           </div>
@@ -78,27 +77,30 @@ export function BookingSummary({
 
       <div className="p-4 space-y-4">
         <div className="grid grid-cols-2 gap-2">
-          <div className="rounded-xl bg-muted/50 p-3">
+          <div className="rounded-xl bg-muted/40 border border-border p-3">
             <p className="text-[10px] text-muted-foreground uppercase tracking-wide font-medium mb-0.5">
               Nhận phòng
             </p>
-            <p className="text-sm font-semibold">{formatDateShort(checkIn)}</p>
+            <p className="text-sm font-semibold text-foreground">
+              {formatDateShort(checkIn)}
+            </p>
             {checkInTime && (
               <p className="text-xs text-muted-foreground">{checkInTime}</p>
             )}
           </div>
-          <div className="rounded-xl bg-muted/50 p-3">
+          <div className="rounded-xl bg-muted/40 border border-border p-3">
             <p className="text-[10px] text-muted-foreground uppercase tracking-wide font-medium mb-0.5">
               Trả phòng
             </p>
-            <p className="text-sm font-semibold">{formatDateShort(checkOut)}</p>
+            <p className="text-sm font-semibold text-foreground">
+              {formatDateShort(checkOut)}
+            </p>
             {checkOutTime && (
               <p className="text-xs text-muted-foreground">{checkOutTime}</p>
             )}
           </div>
         </div>
 
-        {/* Details */}
         <div className="space-y-2 text-sm">
           <div className="flex items-center justify-between text-muted-foreground">
             <div className="flex items-center gap-1.5">
@@ -118,7 +120,7 @@ export function BookingSummary({
           </div>
         </div>
 
-        <Separator />
+        <Separator className="bg-border" />
 
         <div className="space-y-2 text-sm">
           <div className="flex justify-between text-muted-foreground">
@@ -128,7 +130,7 @@ export function BookingSummary({
             <span>{formatCurrencyUSD(total)}</span>
           </div>
           <div className="flex justify-between font-semibold text-base">
-            <span>Tổng cộng</span>
+            <span className="text-foreground">Tổng cộng</span>
             <span className="text-primary">
               {formatCurrencyUSD(total)} {currency}
             </span>
@@ -137,13 +139,13 @@ export function BookingSummary({
 
         {expiresAt && (
           <>
-            <Separator />
-            <div className="flex items-start gap-2 text-xs text-amber-600 bg-amber-50 dark:bg-amber-950/30 dark:text-amber-400 rounded-xl p-3">
-              <Clock className="w-3.5 h-3.5 mt-0.5 shrink-0" />
+            <Separator className="bg-border" />
+            <div className="flex items-start gap-2 text-xs text-secondary-foreground bg-secondary rounded-xl p-3 border border-border">
+              <Clock className="w-3.5 h-3.5 mt-0.5 shrink-0 text-primary" />
               <p>
                 Phòng được giữ đến{" "}
-                <span className="font-semibold">
-                  {format(expiresAt, "HH:mm", { locale: vi })}
+                <span className="font-semibold text-foreground">
+                  {formatTime(expiresAt)}
                 </span>
                 . Vui lòng hoàn tất trong thời gian này.
               </p>
@@ -153,4 +155,4 @@ export function BookingSummary({
       </div>
     </div>
   );
-}
+};

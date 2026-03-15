@@ -25,7 +25,7 @@ interface ImageCardProps {
 }
 
 const ImageCard = ({ image, onDelete }: ImageCardProps) => (
-  <div className="group relative rounded-lg overflow-hidden border aspect-video">
+  <div className="group relative rounded-lg overflow-hidden border border-border aspect-video">
     <Image
       src={image.url}
       alt={image.alt ?? ""}
@@ -33,16 +33,16 @@ const ImageCard = ({ image, onDelete }: ImageCardProps) => (
       className="object-cover"
     />
     {image.isPrimary && (
-      <div className="absolute top-2 left-2 z-10 bg-amber-400 text-white rounded px-1.5 py-0.5 flex items-center gap-1 text-xs font-medium">
-        <Star className="w-3 h-3 fill-white" />
+      <div className="absolute top-2 left-2 z-10 bg-primary text-primary-foreground rounded px-1.5 py-0.5 flex items-center gap-1 text-xs font-medium">
+        <Star className="w-3 h-3 fill-primary-foreground" />
         Chính
       </div>
     )}
-    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center z-10">
+    <div className="absolute inset-0 bg-foreground/50 opacity-0 group-hover:opacity-100 flex items-center justify-center z-10">
       <Button
         variant="destructive"
         size="icon"
-        className="h-8 w-8"
+        className="h-8 w-8 bg-destructive text-destructive-foreground hover:bg-destructive/90"
         onClick={() => onDelete(image)}
       >
         <Trash2 className="w-3.5 h-3.5" />
@@ -91,7 +91,7 @@ export const HotelImagesTab = ({ hotelId, images }: HotelImagesTabProps) => {
         />
       </div>
       {images.length === 0 ? (
-        <Card className="flex items-center justify-center h-48 text-muted-foreground text-sm">
+        <Card className="bg-card border-border shadow-none flex items-center justify-center h-48 text-muted-foreground text-sm">
           Chưa có ảnh nào
         </Card>
       ) : (

@@ -48,11 +48,17 @@ export const CountryForm = ({
           name="name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Tên quốc gia</FormLabel>
+              <FormLabel className="text-foreground font-medium">
+                Tên quốc gia
+              </FormLabel>
               <FormControl>
-                <Input {...field} placeholder="Việt Nam, Nhật Bản..." />
+                <Input
+                  {...field}
+                  placeholder="Việt Nam, Nhật Bản..."
+                  className="bg-background border-border text-foreground placeholder:text-muted-foreground focus-visible:ring-primary"
+                />
               </FormControl>
-              <FormMessage />
+              <FormMessage className="text-destructive" />
             </FormItem>
           )}
         />

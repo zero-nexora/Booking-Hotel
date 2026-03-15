@@ -31,7 +31,6 @@ const guestSchema = z.object({
 });
 
 type GuestValues = z.infer<typeof guestSchema>;
-
 type Step = "guest" | "payment";
 
 interface BookingClientProps {
@@ -82,13 +81,19 @@ export const BookingClient = ({
   });
 
   if (isLoading) return <BookingPageSkeleton />;
+
   if (!hotel || !checkIn || !checkOut) {
     return (
       <div className="max-w-4xl mx-auto px-4 py-16 text-center">
         <p className="text-muted-foreground">
           Thông tin đặt phòng không hợp lệ.
         </p>
-        <Button variant="outline" size="sm" className="mt-4" asChild>
+        <Button
+          variant="outline"
+          size="sm"
+          className="mt-4 border-border text-foreground hover:bg-muted"
+          asChild
+        >
           <Link href={`/hotels/${hotelSlug}`}>Quay lại khách sạn</Link>
         </Button>
       </div>
@@ -102,7 +107,12 @@ export const BookingClient = ({
         <p className="text-muted-foreground">
           Phòng không tồn tại hoặc đã được đặt.
         </p>
-        <Button variant="outline" size="sm" className="mt-4" asChild>
+        <Button
+          variant="outline"
+          size="sm"
+          className="mt-4 border-border text-foreground hover:bg-muted"
+          asChild
+        >
           <Link href={`/hotels/${hotelSlug}`}>Chọn phòng khác</Link>
         </Button>
       </div>
@@ -112,7 +122,6 @@ export const BookingClient = ({
   const pricePerNight = Number(room.basePrice.toString());
   const nights = differenceInDays(checkOut, checkIn);
   const total = pricePerNight * nights;
-
   const hotelImage = hotel.images[0]?.url;
 
   const handleGuestSubmit = async (values: GuestValues) => {
@@ -142,9 +151,7 @@ export const BookingClient = ({
     router.push(`/booking/confirmation/${intentData.bookingRef}`);
   };
 
-  const handlePaymentError = (message: string) => {
-    toast.error(message);
-  };
+  const handlePaymentError = (message: string) => toast.error(message);
 
   const handleExpired = () => {
     toast.error("Phiên đặt phòng đã hết hạn. Vui lòng thử lại.");
@@ -155,7 +162,12 @@ export const BookingClient = ({
   return (
     <div className="max-w-4xl mx-auto px-4 py-6 space-y-6">
       <div className="flex items-center gap-2 text-sm text-muted-foreground">
-        <Button variant="ghost" size="sm" className="gap-1.5 -ml-2 h-8" asChild>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="gap-1.5 -ml-2 h-8 text-muted-foreground hover:text-foreground hover:bg-muted"
+          asChild
+        >
           <Link href={`/hotels/${hotelSlug}`}>
             <ArrowLeft className="w-3.5 h-3.5" />
             Quay lại
@@ -192,7 +204,7 @@ export const BookingClient = ({
         />
       )}
 
-      <div className="flex wrapper gap-6 items-start">
+      <div className="flex gap-6 items-start">
         <div className="flex-1 min-w-0 space-y-6">
           {step === "guest" && (
             <Form {...form}>
@@ -203,10 +215,9 @@ export const BookingClient = ({
                 <Section title="Thông tin khách lưu trú">
                   <GuestInfoForm />
                 </Section>
-
                 <Button
                   type="submit"
-                  className="w-full rounded-xl h-11 gap-2 text-base"
+                  className="w-full rounded-xl h-11 gap-2 text-base bg-primary text-primary-foreground hover:bg-primary/90"
                   disabled={createIntent.isPending}
                 >
                   {createIntent.isPending
@@ -260,15 +271,13 @@ const Section = ({
 }: {
   title: string;
   children: React.ReactNode;
-}) => {
-  return (
-    <div className="rounded-2xl border bg-card p-5 space-y-4">
-      <h2 className="font-semibold text-sm">{title}</h2>
-      <Separator />
-      {children}
-    </div>
-  );
-};
+}) => (
+  <div className="rounded-2xl border border-border bg-card p-5 space-y-4">
+    <h2 className="font-semibold text-sm text-foreground">{title}</h2>
+    <Separator className="bg-border" />
+    {children}
+  </div>
+);
 
 const StepBadge = ({
   icon,
@@ -282,45 +291,41 @@ const StepBadge = ({
   active: boolean;
   done: boolean;
   number: number;
-}) => {
-  return (
-    <div className="flex items-center gap-2 shrink-0">
-      <div
-        className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-colors ${
-          active
-            ? "bg-primary text-primary-foreground"
-            : done
-              ? "bg-primary/20 text-primary"
-              : "bg-muted text-muted-foreground"
-        }`}
-      >
-        {done ? "✓" : number}
-      </div>
-      <span
-        className={`text-sm font-medium box-hidden ${
-          active ? "text-foreground" : "text-muted-foreground"
-        }`}
-      >
-        {label}
-      </span>
+}) => (
+  <div className="flex items-center gap-2 shrink-0">
+    <div
+      className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${
+        active
+          ? "bg-primary text-primary-foreground"
+          : done
+            ? "bg-primary/20 text-primary"
+            : "bg-muted text-muted-foreground"
+      }`}
+    >
+      {done ? "✓" : number}
     </div>
-  );
-};
+    <span
+      className={`text-sm font-medium box-hidden ${
+        active ? "text-foreground" : "text-muted-foreground"
+      }`}
+    >
+      {label}
+    </span>
+  </div>
+);
 
-const BookingPageSkeleton = () => {
-  return (
-    <div className="max-w-4xl mx-auto px-4 py-6 space-y-6">
-      <Skeleton className="h-8 w-48" />
-      <Skeleton className="h-10 w-full" />
-      <div className="flex gap-6">
-        <div className="flex-1 space-y-4">
-          <Skeleton className="h-64 rounded-2xl" />
-          <Skeleton className="h-12 rounded-xl" />
-        </div>
-        <div className="w-80 shrink-0">
-          <Skeleton className="h-80 rounded-2xl" />
-        </div>
+const BookingPageSkeleton = () => (
+  <div className="max-w-4xl mx-auto px-4 py-6 space-y-6">
+    <Skeleton className="h-8 w-48 bg-muted" />
+    <Skeleton className="h-10 w-full bg-muted" />
+    <div className="flex gap-6">
+      <div className="flex-1 space-y-4">
+        <Skeleton className="h-64 rounded-2xl bg-muted" />
+        <Skeleton className="h-12 rounded-xl bg-muted" />
+      </div>
+      <div className="w-80 shrink-0">
+        <Skeleton className="h-80 rounded-2xl bg-muted" />
       </div>
     </div>
-  );
-};
+  </div>
+);

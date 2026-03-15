@@ -68,8 +68,10 @@ export const AvailableRooms = ({
 
   if (!rooms.length) {
     return (
-      <div className="rounded-2xl border bg-muted/40 p-8 text-center">
-        <p className="font-medium text-sm">Không có phòng trống</p>
+      <div className="rounded-2xl border border-border bg-muted/40 p-8 text-center">
+        <p className="font-medium text-sm text-foreground">
+          Không có phòng trống
+        </p>
         <p className="text-sm text-muted-foreground mt-1">
           {hasDates
             ? `Không còn phòng trống từ ${formatDateShort(checkIn!)} đến ${formatDateShort(checkOut!)}`
@@ -89,7 +91,7 @@ export const AvailableRooms = ({
           return (
             <div
               key={room.id}
-              className="rounded-2xl border bg-card overflow-hidden"
+              className="rounded-2xl border border-border bg-card overflow-hidden"
             >
               <div className="flex">
                 <div className="relative w-52 shrink-0 bg-muted">
@@ -109,8 +111,8 @@ export const AvailableRooms = ({
                     </div>
                   )}
                   <Badge
-                    variant="secondary"
-                    className="absolute top-2 left-2 bg-background/80 backdrop-blur-sm text-xs"
+                    variant="outline"
+                    className="absolute top-2 left-2 bg-background/80 backdrop-blur-sm border-border text-foreground text-xs"
                   >
                     {room.roomType.name}
                   </Badge>
@@ -118,7 +120,7 @@ export const AvailableRooms = ({
 
                 <div className="flex flex-col flex-1 p-4 gap-2 min-w-0">
                   <div>
-                    <h3 className="font-semibold text-sm leading-tight">
+                    <h3 className="font-semibold text-sm leading-tight text-foreground">
                       {room.name}
                     </h3>
                     <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1.5">
@@ -155,7 +157,7 @@ export const AvailableRooms = ({
                       {room.amenities.slice(0, 4).map((a) => (
                         <span
                           key={a.amenity.name}
-                          className="flex items-center gap-1 text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full"
+                          className="flex items-center gap-1 text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full border border-border"
                         >
                           <Wifi className="w-2.5 h-2.5" />
                           {a.amenity.name}
@@ -164,10 +166,10 @@ export const AvailableRooms = ({
                     </div>
                   )}
 
-                  <div className="flex items-center justify-between mt-auto pt-2 border-t">
+                  <div className="flex items-center justify-between mt-auto pt-2 border-t border-border">
                     <div>
                       <div className="flex items-baseline gap-0.5">
-                        <span className="text-lg font-bold">
+                        <span className="text-lg font-bold text-foreground">
                           {formatCurrencyUSD(price)}
                         </span>
                         <span className="text-xs text-muted-foreground">
@@ -182,7 +184,11 @@ export const AvailableRooms = ({
                     </div>
 
                     {hasDates ? (
-                      <Button size="sm" asChild className="rounded-xl gap-1">
+                      <Button
+                        size="sm"
+                        asChild
+                        className="rounded-xl gap-1 bg-primary text-primary-foreground hover:bg-primary/90"
+                      >
                         <Link href={buildBookingUrl(room)}>
                           Chọn phòng
                           <ChevronRight className="w-3.5 h-3.5" />
@@ -202,7 +208,10 @@ export const AvailableRooms = ({
                             </Button>
                           </span>
                         </TooltipTrigger>
-                        <TooltipContent side="top">
+                        <TooltipContent
+                          side="top"
+                          className="bg-card border-border text-foreground"
+                        >
                           Vui lòng chọn ngày nhận và trả phòng
                         </TooltipContent>
                       </Tooltip>

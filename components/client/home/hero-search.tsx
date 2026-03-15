@@ -11,7 +11,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Calendar as CalendarUI } from "@/components/ui/calendar";
-import { cn, formatDateFull, toDateStr } from "@/lib/utils";
+import { cn, formatDateFull, toDateParam } from "@/lib/utils";
 
 export const HeroSearch = () => {
   const router = useRouter();
@@ -25,8 +25,8 @@ export const HeroSearch = () => {
   const handleSearch = () => {
     const params = new URLSearchParams();
     if (city) params.set("city", city);
-    if (checkIn) params.set("checkIn", toDateStr(checkIn));
-    if (checkOut) params.set("checkOut", toDateStr(checkOut));
+    if (checkIn) params.set("checkIn", toDateParam(checkIn));
+    if (checkOut) params.set("checkOut", toDateParam(checkOut));
     params.set("adults", String(adults));
     params.set("children", String(children));
     router.push(`/hotels?${params.toString()}`);
@@ -35,9 +35,7 @@ export const HeroSearch = () => {
   return (
     <div className="w-full max-w-3xl mx-auto">
       <div className="bg-background/95 backdrop-blur-sm rounded-2xl shadow-2xl border border-white/10 overflow-hidden">
-        {/* Main row */}
         <div className="flex flex-col sm:flex-row">
-          {/* City */}
           <div className="flex items-center gap-3 flex-1 px-4 py-3.5 border-b sm:border-b-0 sm:border-r border-border/60">
             <MapPin className="w-4 h-4 text-primary shrink-0" />
             <div className="flex-1 min-w-0">

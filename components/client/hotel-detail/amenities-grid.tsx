@@ -47,12 +47,14 @@ export const AmenitiesGrid = ({ amenities }: AmenitiesGridProps) => {
         return (
           <div
             key={amenity.name}
-            className="flex items-center gap-2.5 p-3 rounded-xl border bg-card"
+            className="flex items-center gap-2.5 p-3 rounded-xl border border-border bg-card"
           >
             <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
               <Icon className="w-4 h-4 text-primary" />
             </div>
-            <span className="text-sm font-medium">{amenity.name}</span>
+            <span className="text-sm font-medium text-foreground">
+              {amenity.name}
+            </span>
           </div>
         );
       })}

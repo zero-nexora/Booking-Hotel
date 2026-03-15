@@ -11,7 +11,13 @@ import {
 } from "@/components/ui/popover";
 import { Calendar as CalendarUI } from "@/components/ui/calendar";
 import { Separator } from "@/components/ui/separator";
-import { calcNights, cn, formatCurrencyUSD, formatDateShort } from "@/lib/utils";
+import {
+  calcNights,
+  cn,
+  formatCurrencyUSD,
+  formatDateShort,
+  toDateParam,
+} from "@/lib/utils";
 import { Card } from "@/components/ui/card";
 
 interface BookingSidebarProps {
@@ -23,14 +29,14 @@ interface BookingSidebarProps {
   defaultChildren?: number;
 }
 
-export function BookingSidebar({
+export const BookingSidebar = ({
   minPrice,
   hotelSlug,
   defaultCheckIn,
   defaultCheckOut,
   defaultAdults = 2,
   defaultChildren = 0,
-}: BookingSidebarProps) {
+}: BookingSidebarProps) => {
   const router = useRouter();
   const pathname = usePathname();
 
@@ -45,9 +51,9 @@ export function BookingSidebar({
 
   const updateUrlDates = (cin?: Date, cout?: Date) => {
     const params = new URLSearchParams(window.location.search);
-    if (cin) params.set("checkIn", cin.toISOString());
+    if (cin) params.set("checkIn", toDateParam(cin));
     else params.delete("checkIn");
-    if (cout) params.set("checkOut", cout.toISOString());
+    if (cout) params.set("checkOut", toDateParam(cout));
     else params.delete("checkOut");
     params.set("adults", String(adults));
     params.set("children", String(children));
@@ -60,11 +66,11 @@ export function BookingSidebar({
   };
 
   return (
-    <Card className="rounded-2xl border bg-card p-5 shadow-sm">
+    <Card className="rounded-2xl border border-border bg-card p-5 shadow-none">
       {minPrice && (
         <div>
           <div className="flex items-baseline gap-1">
-            <span className="text-2xl font-bold">
+            <span className="text-2xl font-bold text-foreground">
               {formatCurrencyUSD(minPrice)}
             </span>
             <span className="text-sm text-muted-foreground">/đêm</span>
@@ -73,12 +79,12 @@ export function BookingSidebar({
         </div>
       )}
 
-      <Separator />
+      <Separator className="bg-border" />
 
-      <div className="rounded-xl border overflow-hidden">
+      <div className="rounded-xl border border-border overflow-hidden">
         <Popover>
           <PopoverTrigger asChild>
-            <button className="w-full flex items-center gap-2.5 px-3 py-2.5 hover:bg-muted transition-colors text-left border-b">
+            <button className="w-full flex items-center gap-2.5 px-3 py-2.5 hover:bg-muted text-left border-b border-border">
               <Calendar className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
               <div className="flex-1 min-w-0">
                 <p className="text-[10px] text-muted-foreground uppercase tracking-wide font-medium">
@@ -95,7 +101,10 @@ export function BookingSidebar({
               </div>
             </button>
           </PopoverTrigger>
-          <PopoverContent className="w-auto p-0" align="start">
+          <PopoverContent
+            className="w-auto p-0 bg-card border-border"
+            align="start"
+          >
             <CalendarUI
               mode="single"
               selected={checkIn}
@@ -112,7 +121,7 @@ export function BookingSidebar({
 
         <Popover>
           <PopoverTrigger asChild>
-            <button className="w-full flex items-center gap-2.5 px-3 py-2.5 hover:bg-muted transition-colors text-left">
+            <button className="w-full flex items-center gap-2.5 px-3 py-2.5 hover:bg-muted text-left">
               <Calendar className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
               <div className="flex-1 min-w-0">
                 <p className="text-[10px] text-muted-foreground uppercase tracking-wide font-medium">
@@ -129,7 +138,10 @@ export function BookingSidebar({
               </div>
             </button>
           </PopoverTrigger>
-          <PopoverContent className="w-auto p-0" align="start">
+          <PopoverContent
+            className="w-auto p-0 bg-card border-border"
+            align="start"
+          >
             <CalendarUI
               mode="single"
               selected={checkOut}
@@ -144,27 +156,28 @@ export function BookingSidebar({
         </Popover>
       </div>
 
-      {/* Guests */}
       <Popover open={guestOpen} onOpenChange={setGuestOpen}>
         <PopoverTrigger asChild>
-          <button className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl border hover:bg-muted transition-colors text-left">
+          <button className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl border border-border hover:bg-muted text-left">
             <Users className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
             <div>
               <p className="text-[10px] text-muted-foreground uppercase tracking-wide font-medium">
                 Khách
               </p>
-              <p className="text-sm font-medium">
+              <p className="text-sm font-medium text-foreground">
                 {adults} người lớn{children > 0 ? `, ${children} trẻ em` : ""}
               </p>
             </div>
           </button>
         </PopoverTrigger>
-        <PopoverContent className="w-64 p-4" align="start">
+        <PopoverContent
+          className="w-64 p-4 bg-card border-border"
+          align="start"
+        >
           <div className="space-y-3">
             {[
               {
                 label: "Người lớn",
-                key: "adults" as const,
                 min: 1,
                 max: 10,
                 value: adults,
@@ -172,7 +185,6 @@ export function BookingSidebar({
               },
               {
                 label: "Trẻ em",
-                key: "children" as const,
                 min: 0,
                 max: 6,
                 value: children,
@@ -180,24 +192,24 @@ export function BookingSidebar({
               },
             ].map(({ label, min, max, value, set }) => (
               <div key={label} className="flex items-center justify-between">
-                <span className="text-sm">{label}</span>
+                <span className="text-sm text-foreground">{label}</span>
                 <div className="flex items-center gap-2">
                   <Button
                     variant="outline"
                     size="icon"
-                    className="h-7 w-7 rounded-full"
+                    className="h-7 w-7 rounded-full border-border text-foreground hover:bg-muted hover:text-foreground"
                     onClick={() => set(Math.max(min, value - 1))}
                     disabled={value <= min}
                   >
                     <Minus className="w-3 h-3" />
                   </Button>
-                  <span className="w-5 text-center text-sm font-medium">
+                  <span className="w-5 text-center text-sm font-medium text-foreground">
                     {value}
                   </span>
                   <Button
                     variant="outline"
                     size="icon"
-                    className="h-7 w-7 rounded-full"
+                    className="h-7 w-7 rounded-full border-border text-foreground hover:bg-muted hover:text-foreground"
                     onClick={() => set(Math.min(max, value + 1))}
                     disabled={value >= max}
                   >
@@ -209,7 +221,7 @@ export function BookingSidebar({
           </div>
           <Button
             size="sm"
-            className="w-full mt-3"
+            className="w-full mt-3 bg-primary text-primary-foreground hover:bg-primary/90"
             onClick={() => setGuestOpen(false)}
           >
             Xác nhận
@@ -217,24 +229,27 @@ export function BookingSidebar({
         </PopoverContent>
       </Popover>
 
-      {/* Price summary */}
       {totalPrice && nights && (
-        <div className="rounded-xl bg-muted/50 p-3 space-y-1.5 text-sm">
+        <div className="rounded-xl bg-muted/40 border border-border p-3 space-y-1.5 text-sm">
           <div className="flex justify-between text-muted-foreground">
             <span>
               {formatCurrencyUSD(minPrice || 0)} x {nights} đêm
             </span>
             <span>{formatCurrencyUSD(totalPrice)}</span>
           </div>
-          <Separator />
-          <div className="flex justify-between font-semibold">
+          <Separator className="bg-border" />
+          <div className="flex justify-between font-semibold text-foreground">
             <span>Tổng cộng</span>
             <span>{formatCurrencyUSD(totalPrice)}</span>
           </div>
         </div>
       )}
 
-      <Button className="w-full rounded-xl" size="lg" onClick={scrollToRooms}>
+      <Button
+        className="w-full rounded-xl bg-primary text-primary-foreground hover:bg-primary/90"
+        size="lg"
+        onClick={scrollToRooms}
+      >
         Xem phòng trống
       </Button>
 
@@ -243,4 +258,4 @@ export function BookingSidebar({
       </p>
     </Card>
   );
-}
+};
