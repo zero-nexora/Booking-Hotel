@@ -30,6 +30,7 @@ export const HotelDetailClient = ({
   const { data: hotel, isLoading } = useHotelDetail(slug, checkIn, checkOut);
 
   if (isLoading) return <HotelDetailSkeleton />;
+
   if (!hotel) return notFound();
 
   const minPrice = hotel.rooms.length

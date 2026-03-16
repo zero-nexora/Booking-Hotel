@@ -1,26 +1,37 @@
 import { Ratelimit } from "@upstash/ratelimit";
+import { TRPCError } from "@trpc/server";
 import { redis } from "./redis";
 
-export const authRateLimit = new Ratelimit({
-  redis,
-  limiter: Ratelimit.slidingWindow(10, "1 m"),
-  prefix: "ratelimit_auth",
-});
+type WindowUnit = "ms" | "s" | "m" | "h" | "d";
+type WindowStr = `${number} ${WindowUnit}`;
 
-export const bookingRateLimit = new Ratelimit({
-  redis,
-  limiter: Ratelimit.slidingWindow(5, "5 m"),
-  prefix: "ratelimit_booking",
-});
+const createLimiter = (tokens: number, window: WindowStr, prefix: string) =>
+  new Ratelimit({
+    redis,
+    limiter: Ratelimit.slidingWindow(tokens, window),
+    prefix,
+  });
 
-export const searchRateLimit = new Ratelimit({
-  redis,
-  limiter: Ratelimit.slidingWindow(60, "1 m"),
-  prefix: "ratelimit_search",
-});
+export const rateLimiters = {
+  auth: createLimiter(10, "1 m", "rl:auth"),
+  booking: createLimiter(5, "5 m", "rl:booking"),
+  search: createLimiter(60, "1 m", "rl:search"),
+  review: createLimiter(3, "10 m", "rl:review"),
+  adminMutation: createLimiter(40, "1 m", "rl:admin-mutation"),
+  userMutation: createLimiter(20, "1 m", "rl:user-mutation"),
+  userCancel: createLimiter(5, "10 m", "rl:user-cancel"),
+} as const;
 
-export const reviewRateLimit = new Ratelimit({
-  redis,
-  limiter: Ratelimit.slidingWindow(3, "10 m"),
-  prefix: "ratelimit_review",
-});
+export type RateLimiterKey = keyof typeof rateLimiters;
+
+export const checkRateLimit = async (
+  limiter: Ratelimit,
+  identifier: string,
+): Promise<void> => {
+  const { success } = await limiter.limit(identifier);
+  if (!success)
+    throw new TRPCError({
+      code: "TOO_MANY_REQUESTS",
+      message: "Quá nhiều yêu cầu, vui lòng thử lại sau",
+    });
+};

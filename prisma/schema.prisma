@@ -248,10 +248,10 @@ model BedType {
 }
 
 model RoomBed {
-  id         String  @id @default(cuid())
-  roomId     String
-  bedTypeId  String
-  quantity   Int     @default(1)
+  id        String @id @default(cuid())
+  roomId    String
+  bedTypeId String
+  quantity  Int    @default(1)
 
   room    Room    @relation(fields: [roomId], references: [id], onDelete: Cascade)
   bedType BedType @relation(fields: [bedTypeId], references: [id])
@@ -448,3 +448,6 @@ enum ReviewStatus {
   APPROVED
   REJECTED
 }
+
+// isDeleted   Boolean     @default(false)
+// deletedAt   DateTime?

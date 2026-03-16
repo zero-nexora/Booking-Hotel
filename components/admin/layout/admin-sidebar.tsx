@@ -81,6 +81,7 @@ export const AdminSidebar = ({
     openConfirm({
       title: "Đăng xuất",
       description: "Bạn có chắc chắn muốn đăng xuất không?",
+      variant: "destructive",
       onConfirm: handleSignOut,
     });
   };

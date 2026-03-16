@@ -10,17 +10,9 @@ import { PopularDestinations } from "./popular-destinations";
 import { HowItWorks } from "./how-it-works";
 import { TopAmenities } from "./top-amenities";
 import { ReviewsHighlight } from "./reviews-highlight";
-import heroBg from "@/public/images/hero-bg.jpg";
 import HeroBannerDark from "@/public/images/hero-banner-dark.svg";
 import HeroBannerLight from "@/public/images/hero-banner-light.svg";
 import { useTheme } from "next-themes";
-
-const STATS = [
-  { value: "500+", label: "Khách sạn" },
-  { value: "50K+", label: "Lượt đặt phòng" },
-  { value: "4.9★", label: "Đánh giá" },
-  { value: "24/7", label: "Hỗ trợ" },
-];
 
 const SectionHeader = ({
   title,
@@ -70,31 +62,7 @@ export const HomeClient = () => {
         />
 
         <div className="relative z-10 max-w-6xl mx-auto px-4 py-24 sm:py-36 text-center">
-          <h1 className="text-3xl sm:text-5xl font-bold text-white leading-tight mb-4">
-            Tìm chỗ nghỉ{" "}
-            <span style={{ color: "rgba(255,210,80,0.95)" }}>hoàn hảo</span> cho
-            mỗi chuyến đi
-          </h1>
-          <p className="text-white/60 text-base sm:text-lg max-w-lg mx-auto mb-10">
-            Hàng nghìn khách sạn chất lượng, giá tốt — đặt phòng chỉ trong vài
-            bước.
-          </p>
-
           <HeroSearch />
-
-          <div className="flex justify-center gap-8 sm:gap-12 mt-10 flex-wrap">
-            {STATS.map(({ value, label }) => (
-              <div key={label}>
-                <p
-                  className="text-xl font-bold"
-                  style={{ color: "rgba(255,210,80,0.95)" }}
-                >
-                  {value}
-                </p>
-                <p className="text-xs text-white/40 mt-0.5">{label}</p>
-              </div>
-            ))}
-          </div>
         </div>
       </section>
 
@@ -143,3 +111,4 @@ export const HomeClient = () => {
     </div>
   );
 };
+

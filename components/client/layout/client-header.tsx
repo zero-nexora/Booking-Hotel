@@ -62,6 +62,7 @@ export const ClientHeader = () => {
     openConfirm({
       title: "Đăng xuất",
       description: "Bạn có chắc chắn muốn đăng xuất không?",
+      variant: "destructive",
       onConfirm: handleSignOut,
     });
   };
@@ -91,7 +92,7 @@ export const ClientHeader = () => {
           {user ? (
             <DropdownMenu modal={false}>
               <DropdownMenuTrigger asChild>
-                <button className="box-hidden items-center gap-2 rounded-lg px-2 py-1.5 text-sm font-medium text-foreground hover:bg-muted">
+                <button className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm font-medium text-foreground hover:bg-muted">
                   <Avatar className="size-7">
                     <AvatarImage src={user.image ?? undefined} />
                     <AvatarFallback className="bg-primary/10 text-primary text-xs font-semibold">

@@ -13,4 +13,4 @@ export async function GET(req: Request) {
   return NextResponse.json({ success: true });
 }
 
-// curl "https://your-app.vercel.app/api/cron/setup-crons?secret=your_secret"
+// curl "https://booking-hotel-puce.vercel.app/api/cron/setup-crons?secret=your_secret"

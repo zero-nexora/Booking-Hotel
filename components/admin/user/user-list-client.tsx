@@ -164,7 +164,7 @@ export const UserListClient = () => {
             </TableBody>
           )}
         </Table>
-        {data && (
+        {data && data.totalPages > 1 && (
           <Pagination
             page={params.page}
             totalPages={data.totalPages}

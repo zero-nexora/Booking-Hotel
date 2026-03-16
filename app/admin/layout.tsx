@@ -2,8 +2,6 @@ import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/auth";
 import { AdminShell } from "@/components/admin/layout/admin-shell";
 
-export const dynamic = "force-dynamic";
-
 const AdminLayout = async ({ children }: { children: React.ReactNode }) => {
   let session;
   try {
