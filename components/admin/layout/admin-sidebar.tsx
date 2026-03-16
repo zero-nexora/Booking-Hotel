@@ -29,7 +29,7 @@ import { authClient } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
 import { Logo } from "@/components/common/logo";
 import Image from "next/image";
-import hotelIcon from "../../../public/images/hotel-icon.png";
+import LogoIcon from "../../../public/images/logo-icon.svg";
 import { useConfirmDialogStore } from "@/store/confirm-dialog-store";
 
 const navItems = [
@@ -112,7 +112,7 @@ export const AdminSidebar = ({
           onClick={() => router.push("/")}
         >
           {collapsed ? (
-            <Image alt="logo" src={hotelIcon} width={36} height={36} />
+            <Image alt="logo" src={LogoIcon} width={36} height={36} />
           ) : (
             <Logo />
           )}

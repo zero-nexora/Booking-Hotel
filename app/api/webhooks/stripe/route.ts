@@ -6,6 +6,7 @@ import {
   sendBookingConfirmation,
   sendBookingCancellation,
   sendPaymentFailed,
+  sendRefundFailed,
 } from "@/lib/email";
 import { format } from "date-fns";
 import Stripe from "stripe";
@@ -37,6 +38,9 @@ export async function POST(req: NextRequest) {
         break;
       case "charge.refunded":
         await onChargeRefunded(event.data.object as Stripe.Charge);
+        break;
+      case "charge.refund.updated":
+        await onRefundFailed(event.data.object as Stripe.Refund);
         break;
     }
   } catch (err) {
@@ -266,4 +270,64 @@ async function onChargeRefunded(charge: Stripe.Charge) {
     cancelReason: booking.cancelReason ?? undefined,
     hotelsUrl: `${env.NEXT_PUBLIC_APP_URL}/hotels`,
   }).catch((err) => console.error("[email] booking-cancellation failed", err));
+}
+
+async function onRefundFailed(refund: Stripe.Refund) {
+  if (refund.status !== "failed") return;
+
+  const payment = await prisma.payment.findUnique({
+    where: { stripeRefundId: refund.id },
+    select: {
+      id: true,
+      status: true,
+      bookingId: true,
+      booking: {
+        select: {
+          bookingRef: true,
+          checkIn: true,
+          checkOut: true,
+          totalAmount: true,
+          currency: true,
+          guestName: true,
+          guestEmail: true,
+          items: { select: { room: { select: { name: true } } } },
+          hotel: { select: { name: true } },
+        },
+      },
+    },
+  });
+
+  if (!payment) return;
+  if (payment.status === "FAILED") return;
+
+  await prisma.$transaction([
+    prisma.payment.update({
+      where: { id: payment.id },
+      data: {
+        status: "FAILED",
+        failureMessage: refund.failure_reason ?? "Hoàn tiền thất bại",
+      },
+    }),
+    prisma.booking.update({
+      where: { id: payment.bookingId },
+      data: { paymentStatus: "FAILED" },
+    }),
+  ]);
+
+  const { booking } = payment;
+  const item = booking.items[0];
+  if (!booking.guestEmail || !item) return;
+
+  await sendRefundFailed({
+    to: booking.guestEmail,
+    name: booking.guestName,
+    bookingRef: booking.bookingRef,
+    hotelName: booking.hotel.name,
+    roomName: item.room.name,
+    checkIn: format(booking.checkIn, "dd/MM/yyyy"),
+    checkOut: format(booking.checkOut, "dd/MM/yyyy"),
+    totalAmount: Number(booking.totalAmount).toLocaleString("vi-VN"),
+    currency: booking.currency,
+    supportUrl: `${env.NEXT_PUBLIC_APP_URL}/support`,
+  }).catch((err) => console.error("[email] refund-failed failed", err));
 }

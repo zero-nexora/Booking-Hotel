@@ -164,3 +164,23 @@ export const sendPaymentFailed = async (opts: {
     react: PaymentFailedEmail(opts),
   });
 };
+
+export const sendRefundFailed = async (opts: {
+  to: string;
+  name: string;
+  bookingRef: string;
+  hotelName: string;
+  roomName: string;
+  checkIn: string;
+  checkOut: string;
+  totalAmount: string;
+  currency: string;
+  supportUrl: string;
+}) => {
+  const { RefundFailedEmail } = await import("../emails/refund-failed");
+  return sendEmail({
+    to: opts.to,
+    subject: `Hoàn tiền thất bại cho đặt phòng #${opts.bookingRef}`,
+    react: RefundFailedEmail(opts),
+  });
+};

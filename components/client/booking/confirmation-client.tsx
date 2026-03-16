@@ -195,7 +195,7 @@ export const ConfirmationClient = ({ bookingRef }: ConfirmationClientProps) => {
 
         <div className="flex items-center justify-center gap-2 flex-wrap">
           <StatusBadge status={booking.status} type="booking" />
-          <StatusBadge status={booking.paymentStatus} type="payment" />
+          <StatusBadge status={booking.payments[0].status} type="payment" />
         </div>
 
         <div className="rounded-2xl border border-border bg-card divide-y divide-border">

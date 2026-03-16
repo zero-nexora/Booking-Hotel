@@ -1,6 +1,9 @@
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
 import { TRPCError } from "@trpc/server";
+import { sendReviewRequest } from "@/lib/email";
+import { format } from "date-fns";
+import { env } from "@/lib/env";
 
 export const reviewRouter = createTRPCRouter({
   create: protectedProcedure
@@ -33,7 +36,7 @@ export const reviewRouter = createTRPCRouter({
         });
       }
 
-      return ctx.db.review.create({
+      const review = await ctx.db.review.create({
         data: {
           bookingId: booking.id,
           hotelId: booking.hotelId,
@@ -44,6 +47,28 @@ export const reviewRouter = createTRPCRouter({
           status: "PENDING",
         },
       });
+
+      const bookingDetail = await ctx.db.booking.findUnique({
+        where: { id: booking.id },
+        include: {
+          hotel: true,
+          items: { include: { room: true }, take: 1 },
+        },
+      });
+
+      const item = bookingDetail?.items[0];
+      if (bookingDetail && item && ctx.user.email) {
+        await sendReviewRequest({
+          to: ctx.user.email,
+          name: ctx.user.name,
+          hotelName: bookingDetail.hotel.name,
+          roomName: item.room.name,
+          checkOut: format(bookingDetail.checkOut, "dd/MM/yyyy"),
+          reviewUrl: `${env.NEXT_PUBLIC_APP_URL}/account/bookings/${input.bookingRef}/review`,
+        }).catch((err) => console.error("[email] review-request failed", err));
+      }
+
+      return review;
     }),
 
   myReviews: protectedProcedure
