@@ -7,24 +7,68 @@ import {
   calcTotal,
   getBookingExpiresAt,
   getDatesInRange,
-  buildCursorWhere,
 } from "@/lib/utils";
 import { Prisma } from "@/generated/prisma/client";
 import { calcRefundAmount, calcRefundPolicy } from "@/lib/refund-policy";
 import { stripe } from "@/lib/stripe";
+import { checkRateLimit, rateLimiters } from "@/lib/rate-limit";
+import {
+  assertFound,
+  buildCursorWhere,
+  cursorInput,
+  popNextCursor,
+} from "@/trpc/helpers";
+import { sendBookingCancellation } from "@/lib/email";
+import { format } from "date-fns";
+import { env } from "@/lib/env";
 
-function isPrismaUniqueError(e: unknown): boolean {
-  return (
-    e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002"
-  );
-}
+const isPrismaUniqueError = (e: unknown): boolean =>
+  e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002";
 
-const GuestInfoSchema = z.object({
+const guestInfoSchema = z.object({
   guestName: z.string().min(1),
   guestEmail: z.string().email(),
   guestPhone: z.string().optional(),
   specialRequests: z.string().optional(),
 });
+
+type RefundRecord = {
+  stripeRefundId: string;
+  amount: Prisma.Decimal;
+  refundAmount: number;
+  currency: string;
+};
+
+const myBookingsInclude = {
+  hotel: {
+    include: { images: { where: { isPrimary: true }, take: 1 } },
+  },
+  items: {
+    include: { room: { include: { roomType: true } } },
+  },
+  _count: { select: { payments: true } },
+} as const;
+
+const bookingDetailInclude = {
+  hotel: {
+    include: {
+      address: { include: { city: { include: { country: true } } } },
+      policy: true,
+    },
+  },
+  items: {
+    include: {
+      room: {
+        include: {
+          roomType: true,
+          images: { where: { isPrimary: true }, take: 1 },
+        },
+      },
+    },
+  },
+  payments: { orderBy: { createdAt: "asc" as const } },
+  review: true,
+} as const;
 
 export const bookingRouter = createTRPCRouter({
   createIntent: protectedProcedure
@@ -36,10 +80,12 @@ export const bookingRouter = createTRPCRouter({
         checkOut: z.date(),
         adults: z.number().int().min(1),
         children: z.number().int().min(0).default(0),
-        ...GuestInfoSchema.shape,
+        ...guestInfoSchema.shape,
       }),
     )
     .mutation(async ({ ctx, input }) => {
+      await checkRateLimit(rateLimiters.booking, ctx.user.id);
+
       const { hotelSlug, roomSlug, checkIn, checkOut, adults, children } =
         input;
 
@@ -122,12 +168,11 @@ export const bookingRouter = createTRPCRouter({
             })),
           });
         } catch (e) {
-          if (isPrismaUniqueError(e)) {
+          if (isPrismaUniqueError(e))
             throw new TRPCError({
               code: "CONFLICT",
               message: "Phòng đã được đặt trong khoảng thời gian này",
             });
-          }
           throw e;
         }
 
@@ -203,18 +248,14 @@ export const bookingRouter = createTRPCRouter({
               policy: true,
             },
           },
-          items: {
-            include: {
-              room: { include: { roomType: true } },
-            },
-          },
+          items: { include: { room: { include: { roomType: true } } } },
           payments: { orderBy: { createdAt: "desc" } },
         },
       });
-      if (!booking) throw new TRPCError({ code: "NOT_FOUND" });
-      if (booking.userId !== ctx.user.id)
+      assertFound(booking);
+      if (booking!.userId !== ctx.user.id)
         throw new TRPCError({ code: "FORBIDDEN" });
-      return booking;
+      return booking!;
     }),
 
   myBookings: protectedProcedure
@@ -230,41 +271,23 @@ export const bookingRouter = createTRPCRouter({
             "NO_SHOW",
           ])
           .optional(),
-        cursor: z.object({ id: z.string(), updatedAt: z.date() }).optional(),
+        cursor: cursorInput,
         limit: z.number().int().default(10),
       }),
     )
     .query(async ({ ctx, input }) => {
       const cursorWhere = buildCursorWhere(input.cursor);
-      const where = {
-        userId: ctx.user.id,
-        ...(input.status && { status: input.status }),
-        ...cursorWhere,
-      };
-
       const bookings = await ctx.db.booking.findMany({
-        where,
+        where: {
+          userId: ctx.user.id,
+          ...(input.status && { status: input.status }),
+          ...cursorWhere,
+        },
         take: input.limit + 1,
         orderBy: [{ updatedAt: "desc" }, { id: "desc" }],
-        include: {
-          hotel: {
-            include: { images: { where: { isPrimary: true }, take: 1 } },
-          },
-          items: {
-            include: { room: { include: { roomType: true } } },
-          },
-          _count: { select: { payments: true } },
-        },
+        include: myBookingsInclude,
       });
-
-      let nextCursor: { id: string; updatedAt: Date } | null = null;
-      if (bookings.length > input.limit) {
-        bookings.pop();
-        const last = bookings[bookings.length - 1];
-        nextCursor = { id: last.id, updatedAt: last.updatedAt };
-      }
-
-      return { items: bookings, nextCursor };
+      return popNextCursor(bookings, input.limit);
     }),
 
   bookingDetail: protectedProcedure
@@ -272,31 +295,12 @@ export const bookingRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       const booking = await ctx.db.booking.findUnique({
         where: { bookingRef: input.bookingRef },
-        include: {
-          hotel: {
-            include: {
-              address: { include: { city: { include: { country: true } } } },
-              policy: true,
-            },
-          },
-          items: {
-            include: {
-              room: {
-                include: {
-                  roomType: true,
-                  images: { where: { isPrimary: true }, take: 1 },
-                },
-              },
-            },
-          },
-          payments: { orderBy: { createdAt: "asc" } },
-          review: true,
-        },
+        include: bookingDetailInclude,
       });
-      if (!booking) throw new TRPCError({ code: "NOT_FOUND" });
-      if (booking.userId !== ctx.user.id)
+      assertFound(booking);
+      if (booking!.userId !== ctx.user.id)
         throw new TRPCError({ code: "FORBIDDEN" });
-      return booking;
+      return booking!;
     }),
 
   cancel: protectedProcedure
@@ -307,10 +311,13 @@ export const bookingRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
+      await checkRateLimit(rateLimiters.userCancel, ctx.user.id);
+
       const booking = await ctx.db.booking.findUnique({
         where: { bookingRef: input.bookingRef },
         select: {
           id: true,
+          bookingRef: true,
           userId: true,
           status: true,
           checkIn: true,
@@ -339,31 +346,27 @@ export const bookingRouter = createTRPCRouter({
         },
       });
 
-      if (!booking) throw new TRPCError({ code: "NOT_FOUND" });
-      if (booking.userId !== ctx.user.id)
+      assertFound(booking);
+      if (booking!.userId !== ctx.user.id)
         throw new TRPCError({ code: "FORBIDDEN" });
-      if (!["PENDING", "CONFIRMED"].includes(booking.status)) {
+      if (!["PENDING", "CONFIRMED"].includes(booking!.status))
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: "Không thể huỷ đặt phòng ở trạng thái này",
         });
-      }
 
       const now = new Date();
-      const bookingItemIds = booking.items.map((i) => i.id);
-
-      const policy = calcRefundPolicy(booking.checkIn, booking.createdAt, now);
+      const bookingItemIds = booking!.items.map((i) => i.id);
+      const policy = calcRefundPolicy(
+        booking!.checkIn,
+        booking!.createdAt,
+        now,
+      );
       const refundPercent =
-        booking.payments.length > 0 ? policy.refundPercent : 0;
+        booking!.payments.length > 0 ? policy.refundPercent : 0;
 
-      const refunds: {
-        stripeRefundId: string;
-        amount: Prisma.Decimal;
-        refundAmount: number;
-        currency: string;
-      }[] = [];
-
-      for (const payment of booking.payments) {
+      const refunds: RefundRecord[] = [];
+      for (const payment of booking!.payments) {
         if (!payment.stripePaymentIntentId) continue;
         if (refundPercent === 0) break;
 
@@ -393,7 +396,7 @@ export const bookingRouter = createTRPCRouter({
 
       await ctx.db.$transaction([
         ctx.db.booking.update({
-          where: { id: booking.id },
+          where: { id: booking!.id },
           data: {
             status: "CANCELLED",
             cancelledAt: now,
@@ -402,7 +405,7 @@ export const bookingRouter = createTRPCRouter({
           },
         }),
         ctx.db.bookingItem.updateMany({
-          where: { bookingId: booking.id },
+          where: { bookingId: booking!.id },
           data: { status: "CANCELLED" },
         }),
         ctx.db.roomAvailability.updateMany({
@@ -417,18 +420,39 @@ export const bookingRouter = createTRPCRouter({
         ...refunds.map((r) =>
           ctx.db.payment.create({
             data: {
-              bookingId: booking.id,
+              bookingId: booking!.id,
               userId: ctx.user.id,
               type: "REFUND",
-              status: "REFUNDED",
+              status: "PENDING",
               amount: new Prisma.Decimal(r.refundAmount),
               currency: r.currency,
               stripeRefundId: r.stripeRefundId,
-              refundedAt: now,
             },
           }),
         ),
       ]);
+
+      const item = booking!.items[0];
+      if (booking!.guestEmail && item) {
+        const refundTotal = refunds.reduce((sum, r) => sum + r.refundAmount, 0);
+        await sendBookingCancellation({
+          to: booking!.guestEmail,
+          name: booking!.guestName,
+          bookingRef: booking!.bookingRef ?? input.bookingRef,
+          hotelName: booking!.hotel.name,
+          roomName: item.room.name,
+          checkIn: format(booking!.checkIn, "dd/MM/yyyy"),
+          checkOut: format(booking!.checkOut, "dd/MM/yyyy"),
+          totalAmount: Number(booking!.totalAmount).toLocaleString("vi-VN"),
+          currency: booking!.currency,
+          refundAmount:
+            refundTotal > 0 ? refundTotal.toLocaleString("vi-VN") : "0",
+          cancelReason: input.cancelReason,
+          hotelsUrl: `${env.NEXT_PUBLIC_APP_URL}/hotels`,
+        }).catch((err) =>
+          console.error("[email] booking-cancellation failed", err),
+        );
+      }
 
       return {
         success: true,
@@ -454,15 +478,17 @@ export const bookingRouter = createTRPCRouter({
     };
   }),
 
-  recentBookings: protectedProcedure.query(async ({ ctx }) => {
-    return ctx.db.booking.findMany({
+  recentBookings: protectedProcedure.query(({ ctx }) =>
+    ctx.db.booking.findMany({
       where: { userId: ctx.user.id },
       take: 5,
       orderBy: { createdAt: "desc" },
       include: {
-        hotel: { include: { images: { where: { isPrimary: true }, take: 1 } } },
+        hotel: {
+          include: { images: { where: { isPrimary: true }, take: 1 } },
+        },
         items: { include: { room: true }, take: 1 },
       },
-    });
-  }),
+    }),
+  ),
 });

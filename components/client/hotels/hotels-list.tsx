@@ -1,14 +1,14 @@
 "use client";
 
 import { useQueryStates } from "nuqs";
-import { Loader2, SearchX } from "lucide-react";
+import { SearchX } from "lucide-react";
 import { useHotelSearch } from "@/hooks/client/use-hotels";
 import { HotelCard } from "./hotel-card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { calcNights, cn } from "@/lib/utils";
 import { hotelSearchParsers } from "@/lib/search-params/hotel-search";
-import { useInfiniteScroll } from "@/hooks/use-infinity-scroll";
 import { HotelsMapView } from "./hotel-map-view";
+import { LoadMoreTrigger } from "@/components/shared/load-more-trigger";
 
 export const HotelsList = () => {
   const [params] = useQueryStates(hotelSearchParsers);
@@ -20,12 +20,6 @@ export const HotelsList = () => {
 
   const { data, isLoading, isFetchingNextPage, hasNextPage, fetchNextPage } =
     useHotelSearch(params);
-
-  const { sentinelRef } = useInfiniteScroll({
-    hasNextPage,
-    isFetchingNextPage,
-    fetchNextPage,
-  });
 
   const hotels = data?.pages.flatMap((p) => p.items) ?? [];
   const view = (params.view ?? "list") as "list" | "grid" | "map";
@@ -97,13 +91,11 @@ export const HotelsList = () => {
         ))}
       </div>
 
-      <div ref={sentinelRef} className="h-4 mt-4" />
-
-      {isFetchingNextPage && (
-        <div className="flex justify-center py-6">
-          <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
-        </div>
-      )}
+      <LoadMoreTrigger
+        fetchNextPage={fetchNextPage}
+        hasNextPage={hasNextPage}
+        isFetchingNextPage={isFetchingNextPage}
+      />
 
       {!hasNextPage && hotels.length > 0 && (
         <p className="text-center text-xs text-muted-foreground py-6">

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useQueryStates } from "nuqs";
 import { Calendar, MapPin, Users, Search, Minus, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -13,10 +13,25 @@ import {
 import { Calendar as CalendarUI } from "@/components/ui/calendar";
 import { cn, formatDateShort } from "@/lib/utils";
 import { hotelSearchParsers } from "@/lib/search-params/hotel-search";
+import { useDebounce } from "@/hooks/use-debounce";
 
 export const HotelsSearchBar = () => {
   const [params, setParams] = useQueryStates(hotelSearchParsers);
+
+  const [local, setLocal] = useState(params.search);
+  const debounced = useDebounce(local);
   const [guestOpen, setGuestOpen] = useState(false);
+
+  useEffect(() => {
+    setParams({ search: debounced });
+  }, [debounced, setParams]);
+
+  const handleSearchChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setLocal(e.target.value);
+    },
+    [setLocal],
+  );
 
   const checkIn = params.checkIn ?? undefined;
   const checkOut = params.checkOut ?? undefined;
@@ -27,8 +42,8 @@ export const HotelsSearchBar = () => {
         <MapPin className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
         <Input
           placeholder="Điểm đến..."
-          value={params.city ?? ""}
-          onChange={(e) => setParams({ city: e.target.value || null })}
+          value={local ?? ""}
+          onChange={handleSearchChange}
           className="border-0 p-0 h-auto bg-transparent focus-visible:ring-0 text-sm text-foreground placeholder:text-muted-foreground"
         />
       </div>

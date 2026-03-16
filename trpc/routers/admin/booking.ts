@@ -187,22 +187,20 @@ export const adminBookingRouter = createTRPCRouter({
       return buildPaginatedResult(items, total, input);
     }),
 
-  events: adminProcedure
-    .input(bookingFilterInput)
-    .query(({ ctx, input }) =>
-      ctx.db.booking.findMany({
-        where: buildBookingWhere(input),
-        orderBy: { checkIn: "asc" },
-        select: {
-          id: true,
-          guestName: true,
-          status: true,
-          checkIn: true,
-          checkOut: true,
-          hotel: { select: { name: true } },
-        },
-      }),
-    ),
+  events: adminProcedure.input(bookingFilterInput).query(({ ctx, input }) =>
+    ctx.db.booking.findMany({
+      where: buildBookingWhere(input),
+      orderBy: { checkIn: "asc" },
+      select: {
+        id: true,
+        guestName: true,
+        status: true,
+        checkIn: true,
+        checkOut: true,
+        hotel: { select: { name: true } },
+      },
+    }),
+  ),
 
   detail: adminProcedure
     .input(z.object({ id: z.string() }))
@@ -311,11 +309,10 @@ export const adminBookingRouter = createTRPCRouter({
               bookingId: booking!.id,
               userId: booking!.id,
               type: "REFUND",
-              status: "REFUNDED",
+              status: "PENDING",
               amount: r.amount,
               currency: r.currency,
               stripeRefundId: r.stripeRefundId,
-              refundedAt: now,
             },
           }),
         ),

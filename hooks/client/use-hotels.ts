@@ -10,8 +10,7 @@ export function useHotelSearch(params: HotelSearchParams) {
   return useInfiniteQuery(
     trpc.client.hotel.search.infiniteQueryOptions(
       {
-        city: params.city || undefined,
-        country: params.country || undefined,
+        search: params.search || undefined,
         checkIn: params.checkIn ?? undefined,
         checkOut: params.checkOut ?? undefined,
         adults: params.adults,

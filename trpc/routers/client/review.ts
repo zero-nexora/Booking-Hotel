@@ -4,6 +4,13 @@ import { TRPCError } from "@trpc/server";
 import { sendReviewRequest } from "@/lib/email";
 import { format } from "date-fns";
 import { env } from "@/lib/env";
+import { checkRateLimit, rateLimiters } from "@/lib/rate-limit";
+import {
+  assertFound,
+  buildCursorWhere,
+  cursorInput,
+  popNextCursor,
+} from "@/trpc/helpers";
 
 export const reviewRouter = createTRPCRouter({
   create: protectedProcedure
@@ -16,30 +23,31 @@ export const reviewRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
+      await checkRateLimit(rateLimiters.review, ctx.user.id);
+
       const booking = await ctx.db.booking.findUnique({
         where: { bookingRef: input.bookingRef },
         include: { review: true },
       });
-      if (!booking) throw new TRPCError({ code: "NOT_FOUND" });
-      if (booking.userId !== ctx.user.id)
+      assertFound(booking);
+
+      if (booking!.userId !== ctx.user.id)
         throw new TRPCError({ code: "FORBIDDEN" });
-      if (booking.status !== "CHECKED_OUT") {
+      if (booking!.status !== "CHECKED_OUT")
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: "Chỉ có thể đánh giá sau khi check-out",
         });
-      }
-      if (booking.review) {
+      if (booking!.review)
         throw new TRPCError({
           code: "CONFLICT",
           message: "Bạn đã đánh giá booking này rồi",
         });
-      }
 
       const review = await ctx.db.review.create({
         data: {
-          bookingId: booking.id,
-          hotelId: booking.hotelId,
+          bookingId: booking!.id,
+          hotelId: booking!.hotelId,
           userId: ctx.user.id,
           overallRating: input.overallRating,
           title: input.title,
@@ -49,7 +57,7 @@ export const reviewRouter = createTRPCRouter({
       });
 
       const bookingDetail = await ctx.db.booking.findUnique({
-        where: { id: booking.id },
+        where: { id: booking!.id },
         include: {
           hotel: true,
           items: { include: { room: true }, take: 1 },
@@ -74,24 +82,14 @@ export const reviewRouter = createTRPCRouter({
   myReviews: protectedProcedure
     .input(
       z.object({
-        cursor: z.object({ id: z.string(), updatedAt: z.date() }).optional(),
+        cursor: cursorInput,
         limit: z.number().int().default(10),
       }),
     )
     .query(async ({ ctx, input }) => {
-      const where: Record<string, unknown> = {
-        userId: ctx.user.id,
-        status: "APPROVED",
-      };
-      if (input.cursor) {
-        where.OR = [
-          { updatedAt: { lt: input.cursor.updatedAt } },
-          { updatedAt: input.cursor.updatedAt, id: { lt: input.cursor.id } },
-        ];
-      }
-
+      const cursorWhere = buildCursorWhere(input.cursor);
       const reviews = await ctx.db.review.findMany({
-        where,
+        where: { userId: ctx.user.id, status: "APPROVED", ...cursorWhere },
         take: input.limit + 1,
         orderBy: [{ updatedAt: "desc" }, { id: "desc" }],
         include: {
@@ -103,37 +101,26 @@ export const reviewRouter = createTRPCRouter({
           },
         },
       });
-
-      let nextCursor: { id: string; updatedAt: Date } | null = null;
-      if (reviews.length > input.limit) {
-        reviews.pop();
-        const last = reviews[reviews.length - 1];
-        nextCursor = { id: last.id, updatedAt: last.updatedAt };
-      }
-
-      return { items: reviews, nextCursor };
+      return popNextCursor(reviews, input.limit);
     }),
 
   getForBooking: protectedProcedure
     .input(z.object({ bookingRef: z.string() }))
     .query(async ({ ctx, input }) => {
       const booking = await ctx.db.booking.findUnique({
-        where: {
-          bookingRef: input.bookingRef,
-        },
+        where: { bookingRef: input.bookingRef },
         include: {
-          review: {
-            where: {
-              status: "APPROVED",
-            },
-          },
+          review: { where: { status: "APPROVED" } },
           hotel: { select: { name: true } },
-          items: { include: { room: { select: { name: true } } }, take: 1 },
+          items: {
+            include: { room: { select: { name: true } } },
+            take: 1,
+          },
         },
       });
-      if (!booking) throw new TRPCError({ code: "NOT_FOUND" });
-      if (booking.userId !== ctx.user.id)
+      assertFound(booking);
+      if (booking!.userId !== ctx.user.id)
         throw new TRPCError({ code: "FORBIDDEN" });
-      return booking;
+      return booking!;
     }),
 });

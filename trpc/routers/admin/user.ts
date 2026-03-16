@@ -1,21 +1,31 @@
-import { adminProcedure, createTRPCRouter } from "@/trpc/init";
-import { TRPCError } from "@trpc/server";
 import { z } from "zod";
+import { TRPCError } from "@trpc/server";
+import { adminProcedure, createTRPCRouter } from "@/trpc/init";
+import { checkRateLimit, rateLimiters } from "@/lib/rate-limit";
+import { buildPaginatedResult, getSkip, paginationInput } from "@/trpc/helpers";
+
+const userListSelect = {
+  id: true,
+  name: true,
+  email: true,
+  phone: true,
+  role: true,
+  image: true,
+  emailVerified: true,
+  createdAt: true,
+  _count: { select: { bookings: true, reviews: true } },
+} as const;
 
 export const adminUserRouter = createTRPCRouter({
   list: adminProcedure
     .input(
-      z.object({
-        page: z.number().min(1).default(1),
-        limit: z.number().min(1).max(100).default(20),
+      paginationInput.extend({
         search: z.string().optional(),
         role: z.enum(["ADMIN", "CUSTOMER"]).optional(),
       }),
     )
     .query(async ({ ctx, input }) => {
-      const { page, limit, search, role } = input;
-      const skip = (page - 1) * limit;
-
+      const { search, role } = input;
       const where = {
         ...(role && { role }),
         ...(search && {
@@ -30,31 +40,15 @@ export const adminUserRouter = createTRPCRouter({
       const [items, total] = await Promise.all([
         ctx.db.user.findMany({
           where,
-          skip,
-          take: limit,
+          skip: getSkip(input),
+          take: input.limit,
           orderBy: { createdAt: "desc" },
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            phone: true,
-            role: true,
-            image: true,
-            emailVerified: true,
-            createdAt: true,
-            _count: { select: { bookings: true, reviews: true } },
-          },
+          select: userListSelect,
         }),
         ctx.db.user.count({ where }),
       ]);
 
-      return {
-        items,
-        total,
-        page,
-        limit,
-        totalPages: Math.ceil(total / limit),
-      };
+      return buildPaginatedResult(items, total, input);
     }),
 
   setRole: adminProcedure
@@ -65,6 +59,8 @@ export const adminUserRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
+      await checkRateLimit(rateLimiters.adminMutation, ctx.user.id);
+
       if (input.userId === ctx.user.id)
         throw new TRPCError({
           code: "FORBIDDEN",

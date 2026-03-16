@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useCallback } from "react";
 
-interface UseInfiniteScrollOptions {
+export interface UseInfiniteScrollOptions {
   hasNextPage: boolean;
   isFetchingNextPage: boolean;
   fetchNextPage: () => void;

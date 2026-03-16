@@ -4,7 +4,6 @@ import prisma from "@/lib/prisma";
 import { env } from "@/lib/env";
 import {
   sendBookingConfirmation,
-  sendBookingCancellation,
   sendPaymentFailed,
   sendRefundFailed,
 } from "@/lib/email";
@@ -40,7 +39,7 @@ export async function POST(req: NextRequest) {
         await onChargeRefunded(event.data.object as Stripe.Charge);
         break;
       case "charge.refund.updated":
-        await onRefundFailed(event.data.object as Stripe.Refund);
+        await onRefundUpdated(event.data.object as Stripe.Refund);
         break;
     }
   } catch (err) {
@@ -57,7 +56,6 @@ async function onPaymentSucceeded(pi: Stripe.PaymentIntent) {
     select: {
       id: true,
       status: true,
-      bookingId: true,
       booking: {
         select: {
           id: true,
@@ -157,7 +155,6 @@ async function onPaymentFailed(pi: Stripe.PaymentIntent) {
     select: {
       id: true,
       status: true,
-      bookingId: true,
       booking: {
         select: {
           bookingRef: true,
@@ -215,64 +212,45 @@ async function onChargeRefunded(charge: Stripe.Charge) {
     where: { stripePaymentIntentId: piId, type: "CHARGE" },
     select: {
       bookingId: true,
-      booking: {
-        select: {
-          paymentStatus: true,
-          bookingRef: true,
-          checkIn: true,
-          checkOut: true,
-          totalAmount: true,
-          currency: true,
-          guestName: true,
-          guestEmail: true,
-          cancelReason: true,
-          items: { select: { room: { select: { name: true } } } },
-          hotel: { select: { name: true } },
-        },
-      },
+      booking: { select: { paymentStatus: true } },
     },
   });
 
   if (!chargePayment) return;
-  if (chargePayment.booking.paymentStatus === "REFUNDED") return;
 
   const refundIds = (charge.refunds?.data ?? []).map((r) => r.id);
+  if (refundIds.length === 0) return;
+
+  const pendingRefunds = await prisma.payment.findMany({
+    where: {
+      stripeRefundId: { in: refundIds },
+      type: "REFUND",
+      status: "PENDING",
+    },
+    select: { id: true },
+  });
+
+  if (pendingRefunds.length === 0) return;
+
+  const now = new Date();
 
   await prisma.$transaction([
     prisma.payment.updateMany({
-      where: { stripeRefundId: { in: refundIds } },
-      data: { status: "REFUNDED", refundedAt: new Date() },
+      where: { id: { in: pendingRefunds.map((p) => p.id) } },
+      data: { status: "REFUNDED", refundedAt: now },
     }),
-    prisma.booking.update({
-      where: { id: chargePayment.bookingId },
-      data: { paymentStatus: "REFUNDED" },
-    }),
+    ...(chargePayment.booking.paymentStatus !== "REFUNDED"
+      ? [
+          prisma.booking.update({
+            where: { id: chargePayment.bookingId },
+            data: { paymentStatus: "REFUNDED" },
+          }),
+        ]
+      : []),
   ]);
-
-  const { booking } = chargePayment;
-  const item = booking.items[0];
-  if (!booking.guestEmail || !item) return;
-
-  const refundTotal =
-    charge.refunds?.data.reduce((sum, r) => sum + r.amount, 0) ?? 0;
-
-  await sendBookingCancellation({
-    to: booking.guestEmail,
-    name: booking.guestName,
-    bookingRef: booking.bookingRef,
-    hotelName: booking.hotel.name,
-    roomName: item.room.name,
-    checkIn: format(booking.checkIn, "dd/MM/yyyy"),
-    checkOut: format(booking.checkOut, "dd/MM/yyyy"),
-    totalAmount: Number(booking.totalAmount).toLocaleString("vi-VN"),
-    currency: booking.currency,
-    refundAmount: (refundTotal / 100).toLocaleString("vi-VN"),
-    cancelReason: booking.cancelReason ?? undefined,
-    hotelsUrl: `${env.NEXT_PUBLIC_APP_URL}/hotels`,
-  }).catch((err) => console.error("[email] booking-cancellation failed", err));
 }
 
-async function onRefundFailed(refund: Stripe.Refund) {
+async function onRefundUpdated(refund: Stripe.Refund) {
   if (refund.status !== "failed") return;
 
   const payment = await prisma.payment.findUnique({

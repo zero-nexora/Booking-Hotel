@@ -1,22 +1,30 @@
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { adminProcedure, baseProcedure, createTRPCRouter } from "@/trpc/init";
-import { CACHE_KEYS, invalidateCache } from "@/lib/redis";
+import { getOrSet, invalidateCache, CACHE_KEYS, TTL } from "@/lib/redis";
+import { checkRateLimit, rateLimiters } from "@/lib/rate-limit";
 
 const invalidateRoomTypeCache = () =>
   invalidateCache(CACHE_KEYS.ROOM_TYPES_ALL);
 
 export const adminRoomTypeRouter = createTRPCRouter({
   list: baseProcedure.query(({ ctx }) =>
-    ctx.db.roomType.findMany({
-      orderBy: { name: "asc" },
-      include: { _count: { select: { rooms: true } } },
-    }),
+    getOrSet(
+      CACHE_KEYS.ROOM_TYPES_ALL,
+      () =>
+        ctx.db.roomType.findMany({
+          orderBy: { name: "asc" },
+          include: { _count: { select: { rooms: true } } },
+        }),
+      TTL.LONG,
+    ),
   ),
 
   create: adminProcedure
     .input(z.object({ name: z.string().min(2).max(50) }))
     .mutation(async ({ ctx, input }) => {
+      await checkRateLimit(rateLimiters.adminMutation, ctx.user.id);
+
       const exists = await ctx.db.roomType.findUnique({
         where: { name: input.name },
       });
@@ -34,6 +42,8 @@ export const adminRoomTypeRouter = createTRPCRouter({
   update: adminProcedure
     .input(z.object({ id: z.string(), name: z.string().min(2).max(50) }))
     .mutation(async ({ ctx, input }) => {
+      await checkRateLimit(rateLimiters.adminMutation, ctx.user.id);
+
       const duplicate = await ctx.db.roomType.findFirst({
         where: { name: input.name, id: { not: input.id } },
       });
@@ -54,6 +64,8 @@ export const adminRoomTypeRouter = createTRPCRouter({
   delete: adminProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
+      await checkRateLimit(rateLimiters.adminMutation, ctx.user.id);
+
       const count = await ctx.db.room.count({
         where: { roomTypeId: input.id },
       });

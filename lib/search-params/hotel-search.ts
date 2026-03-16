@@ -10,8 +10,7 @@ import {
 import { DEFAULT_PAGE_SIZE } from "../constants";
 
 export const hotelSearchParsers = {
-  city: parseAsString.withDefault(""),
-  country: parseAsString.withDefault(""),
+  search: parseAsString.withDefault(""),
   checkIn: parseAsIsoDate,
   checkOut: parseAsIsoDate,
   adults: parseAsInteger.withDefault(1),

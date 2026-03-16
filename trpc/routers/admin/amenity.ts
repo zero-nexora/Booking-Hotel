@@ -1,16 +1,22 @@
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { adminProcedure, baseProcedure, createTRPCRouter } from "@/trpc/init";
-import { CACHE_KEYS, invalidateCache } from "@/lib/redis";
+import { getOrSet, invalidateCache, CACHE_KEYS, TTL } from "@/lib/redis";
+import { checkRateLimit, rateLimiters } from "@/lib/rate-limit";
 
 const invalidateAmenityCache = () => invalidateCache(CACHE_KEYS.AMENITIES_ALL);
 
 export const adminAmenityRouter = createTRPCRouter({
   list: baseProcedure.query(({ ctx }) =>
-    ctx.db.amenity.findMany({
-      orderBy: { name: "asc" },
-      include: { _count: { select: { hotels: true, rooms: true } } },
-    }),
+    getOrSet(
+      CACHE_KEYS.AMENITIES_ALL,
+      () =>
+        ctx.db.amenity.findMany({
+          orderBy: { name: "asc" },
+          include: { _count: { select: { hotels: true, rooms: true } } },
+        }),
+      TTL.LONG,
+    ),
   ),
 
   create: adminProcedure
@@ -21,6 +27,8 @@ export const adminAmenityRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
+      await checkRateLimit(rateLimiters.adminMutation, ctx.user.id);
+
       const exists = await ctx.db.amenity.findUnique({
         where: { name: input.name },
       });
@@ -44,6 +52,8 @@ export const adminAmenityRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
+      await checkRateLimit(rateLimiters.adminMutation, ctx.user.id);
+
       if (input.name) {
         const duplicate = await ctx.db.amenity.findFirst({
           where: { name: input.name, id: { not: input.id } },
@@ -64,12 +74,12 @@ export const adminAmenityRouter = createTRPCRouter({
   delete: adminProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      const hotelCount = await ctx.db.hotelAmenity.count({
-        where: { amenityId: input.id },
-      });
-      const roomCount = await ctx.db.roomAmenity.count({
-        where: { amenityId: input.id },
-      });
+      await checkRateLimit(rateLimiters.adminMutation, ctx.user.id);
+
+      const [hotelCount, roomCount] = await Promise.all([
+        ctx.db.hotelAmenity.count({ where: { amenityId: input.id } }),
+        ctx.db.roomAmenity.count({ where: { amenityId: input.id } }),
+      ]);
 
       if (hotelCount > 0 || roomCount > 0)
         throw new TRPCError({

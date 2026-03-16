@@ -1,9 +1,16 @@
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { adminProcedure, createTRPCRouter } from "@/trpc/init";
-import { invalidateCache } from "@/lib/redis";
+import { invalidateCache, CACHE_KEYS } from "@/lib/redis";
 import { generateUniqueSlug } from "@/lib/slugify";
 import { PrismaClient } from "@/generated/prisma/client";
+import { checkRateLimit, rateLimiters } from "@/lib/rate-limit";
+import {
+  assertFound,
+  buildPaginatedResult,
+  getSkip,
+  paginationInput,
+} from "@/trpc/helpers";
 
 const bedInput = z.object({
   bedTypeId: z.string(),
@@ -46,13 +53,14 @@ const roomListSelect = {
 } as const;
 
 const invalidateRoomCache = (hotelSlug: string) =>
-  invalidateCache(`hotel:${hotelSlug}`);
+  invalidateCache(CACHE_KEYS.HOTEL_DETAIL(hotelSlug));
 
-async function validateBeds(
+const validateBeds = async (
   db: PrismaClient,
   beds: { bedTypeId: string; quantity: number }[],
-) {
+): Promise<void> => {
   const ids = beds.map((b) => b.bedTypeId);
+
   if (new Set(ids).size !== ids.length)
     throw new TRPCError({
       code: "BAD_REQUEST",
@@ -63,32 +71,30 @@ async function validateBeds(
     where: { id: { in: ids } },
     select: { id: true },
   });
+
   if (found.length !== ids.length) {
-    const foundIds = new Set(found.map((b: any) => b.id));
+    const foundIds = new Set(found.map((b) => b.id));
     const missing = ids.filter((id) => !foundIds.has(id));
     throw new TRPCError({
       code: "NOT_FOUND",
       message: `Loại giường không tồn tại: ${missing.join(", ")}`,
     });
   }
-}
+};
 
 export const adminRoomRouter = createTRPCRouter({
   list: adminProcedure
     .input(
-      z.object({
-        hotelId: z.string(),
-        page: z.number().int().min(1).default(1),
+      paginationInput.pick({ page: true, limit: true }).extend({
         limit: z.number().int().min(1).max(100).default(10),
+        hotelId: z.string(),
         search: z.string().optional(),
         isActive: z.boolean().optional(),
         roomTypeId: z.string().optional(),
       }),
     )
     .query(async ({ ctx, input }) => {
-      const { hotelId, page, limit, search, isActive, roomTypeId } = input;
-      const skip = (page - 1) * limit;
-
+      const { hotelId, search, isActive, roomTypeId } = input;
       const where = {
         hotelId,
         ...(isActive !== undefined && { isActive }),
@@ -101,21 +107,15 @@ export const adminRoomRouter = createTRPCRouter({
       const [items, total] = await Promise.all([
         ctx.db.room.findMany({
           where,
-          skip,
-          take: limit,
+          skip: getSkip(input),
+          take: input.limit,
           orderBy: { createdAt: "desc" },
           select: roomListSelect,
         }),
         ctx.db.room.count({ where }),
       ]);
 
-      return {
-        items,
-        total,
-        page,
-        limit,
-        totalPages: Math.ceil(total / limit),
-      };
+      return buildPaginatedResult(items, total, input);
     }),
 
   detail: adminProcedure
@@ -131,8 +131,7 @@ export const adminRoomRouter = createTRPCRouter({
           hotel: { select: { id: true, name: true, slug: true } },
         },
       });
-      if (!room) throw new TRPCError({ code: "NOT_FOUND" });
-      return room;
+      return assertFound(room);
     }),
 
   create: adminProcedure
@@ -153,6 +152,8 @@ export const adminRoomRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
+      await checkRateLimit(rateLimiters.adminMutation, ctx.user.id);
+
       const { hotelId, name, beds, amenityIds, images, ...data } = input;
 
       const [hotel, roomType] = await Promise.all([
@@ -227,13 +228,15 @@ export const adminRoomRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
+      await checkRateLimit(rateLimiters.adminMutation, ctx.user.id);
+
       const { id, beds, amenityIds, ...data } = input;
 
       const room = await ctx.db.room.findUnique({
         where: { id },
         include: { hotel: { select: { slug: true } } },
       });
-      if (!room) throw new TRPCError({ code: "NOT_FOUND" });
+      assertFound(room);
 
       if (data.roomTypeId) {
         const rt = await ctx.db.roomType.findUnique({
@@ -273,23 +276,20 @@ export const adminRoomRouter = createTRPCRouter({
           await tx.room.update({ where: { id }, data: scalarData });
       });
 
-      await invalidateRoomCache(room.hotel.slug);
+      await invalidateRoomCache(room!.hotel.slug);
       return { success: true };
     }),
 
   addImages: adminProcedure
-    .input(
-      z.object({
-        roomId: z.string(),
-        images: z.array(imageInput).min(1),
-      }),
-    )
+    .input(z.object({ roomId: z.string(), images: z.array(imageInput).min(1) }))
     .mutation(async ({ ctx, input }) => {
+      await checkRateLimit(rateLimiters.adminMutation, ctx.user.id);
+
       const room = await ctx.db.room.findUnique({
         where: { id: input.roomId },
         include: { hotel: { select: { slug: true } } },
       });
-      if (!room) throw new TRPCError({ code: "NOT_FOUND" });
+      assertFound(room);
 
       if (input.images.some((img) => img.isPrimary))
         await ctx.db.roomImage.updateMany({
@@ -301,32 +301,36 @@ export const adminRoomRouter = createTRPCRouter({
         data: input.images.map((img) => ({ ...img, roomId: input.roomId })),
       });
 
-      await invalidateRoomCache(room.hotel.slug);
+      await invalidateRoomCache(room!.hotel.slug);
       return { success: true };
     }),
 
   deleteImage: adminProcedure
     .input(z.object({ imageId: z.string() }))
     .mutation(async ({ ctx, input }) => {
+      await checkRateLimit(rateLimiters.adminMutation, ctx.user.id);
+
       const image = await ctx.db.roomImage.findUnique({
         where: { id: input.imageId },
         include: { room: { include: { hotel: { select: { slug: true } } } } },
       });
-      if (!image) throw new TRPCError({ code: "NOT_FOUND" });
+      assertFound(image);
 
       await ctx.db.roomImage.delete({ where: { id: input.imageId } });
-      await invalidateRoomCache(image.room.hotel.slug);
+      await invalidateRoomCache(image!.room.hotel.slug);
       return { success: true };
     }),
 
   delete: adminProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
+      await checkRateLimit(rateLimiters.adminMutation, ctx.user.id);
+
       const room = await ctx.db.room.findUnique({
         where: { id: input.id },
         include: { hotel: { select: { slug: true } } },
       });
-      if (!room) throw new TRPCError({ code: "NOT_FOUND" });
+      assertFound(room);
 
       const activeBookings = await ctx.db.bookingItem.count({
         where: {
@@ -334,6 +338,7 @@ export const adminRoomRouter = createTRPCRouter({
           status: { in: ["PENDING", "CONFIRMED", "CHECKED_IN"] },
         },
       });
+
       if (activeBookings)
         throw new TRPCError({
           code: "PRECONDITION_FAILED",
@@ -341,7 +346,7 @@ export const adminRoomRouter = createTRPCRouter({
         });
 
       await ctx.db.room.delete({ where: { id: input.id } });
-      await invalidateRoomCache(room.hotel.slug);
+      await invalidateRoomCache(room!.hotel.slug);
       return { success: true };
     }),
 
@@ -372,11 +377,13 @@ export const adminRoomRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
+      await checkRateLimit(rateLimiters.adminMutation, ctx.user.id);
+
       const room = await ctx.db.room.findUnique({
         where: { id: input.roomId },
         select: { id: true },
       });
-      if (!room) throw new TRPCError({ code: "NOT_FOUND" });
+      assertFound(room);
 
       if (input.status === "AVAILABLE") {
         const booked = await ctx.db.roomAvailability.findMany({

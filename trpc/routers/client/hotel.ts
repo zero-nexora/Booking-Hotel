@@ -2,10 +2,12 @@ import { z } from "zod";
 import { createTRPCRouter, baseProcedure } from "@/trpc/init";
 import { TRPCError } from "@trpc/server";
 import { Prisma } from "@/generated/prisma/client";
+import { getOrSet, CACHE_KEYS, TTL } from "@/lib/redis";
+import { checkRateLimit, rateLimiters } from "@/lib/rate-limit";
+import { popNextCursor, buildCursorWhere, cursorInput } from "@/trpc/helpers";
 
-const HotelSearchInput = z.object({
-  city: z.string().optional(),
-  country: z.string().optional(),
+const hotelSearchInput = z.object({
+  search: z.string().optional(),
   checkIn: z.date().optional(),
   checkOut: z.date().optional(),
   adults: z.number().int().min(1).default(1),
@@ -20,91 +22,126 @@ const HotelSearchInput = z.object({
   sort: z
     .enum(["price_asc", "price_desc", "rating", "stars"])
     .default("price_asc"),
-  cursor: z.object({ id: z.string(), updatedAt: z.date() }).optional(),
+  cursor: cursorInput,
   limit: z.number().int().min(1).max(50).default(12),
 });
 
+const hotelPublicInclude = {
+  images: { where: { isPrimary: true }, take: 1 },
+  address: { include: { city: { include: { country: true } } } },
+  amenities: { include: { amenity: true }, take: 5 },
+  reviews: {
+    where: { status: "APPROVED" as const },
+    select: { overallRating: true },
+  },
+} as const;
+
+const computeAvgRating = (
+  reviews: { overallRating: number }[],
+): number | null =>
+  reviews.length > 0
+    ? reviews.reduce((s, r) => s + r.overallRating, 0) / reviews.length
+    : null;
+
 export const hotelRouter = createTRPCRouter({
-  featured: baseProcedure.query(async ({ ctx }) => {
-    const hotels = await ctx.db.hotel.findMany({
-      where: { status: "ACTIVE" },
-      take: 6,
-      orderBy: { createdAt: "desc" },
-      include: {
-        images: { where: { isPrimary: true }, take: 1 },
-        address: { include: { city: { include: { country: true } } } },
-        reviews: {
-          where: { status: "APPROVED" },
-          select: { overallRating: true },
-        },
-      },
-    });
-
-    return hotels.map((h) => ({
-      ...h,
-      avgRating:
-        h.reviews.length > 0
-          ? h.reviews.reduce((s, r) => s + r.overallRating, 0) /
-            h.reviews.length
-          : null,
-      reviewCount: h.reviews.length,
-    }));
-  }),
-
-  popularDestinations: baseProcedure.query(async ({ ctx }) => {
-    const cities = await ctx.db.city.findMany({
-      include: {
-        country: true,
-        addresses: {
+  featured: baseProcedure.query(({ ctx }) =>
+    getOrSet(
+      CACHE_KEYS.HOTELS_FEATURED,
+      async () => {
+        const hotels = await ctx.db.hotel.findMany({
+          where: { status: "ACTIVE" },
+          take: 6,
+          orderBy: { createdAt: "desc" },
           include: {
-            hotel: { where: { status: "ACTIVE" }, select: { id: true } },
+            images: { where: { isPrimary: true }, take: 1 },
+            address: { include: { city: { include: { country: true } } } },
+            reviews: {
+              where: { status: "APPROVED" },
+              select: { overallRating: true },
+            },
           },
-        },
+        });
+        return hotels.map((h) => ({
+          ...h,
+          avgRating: computeAvgRating(h.reviews),
+          reviewCount: h.reviews.length,
+        }));
       },
-    });
+      TTL.LONG,
+    ),
+  ),
 
-    return cities
-      .map((c) => ({
-        id: c.id,
-        name: c.name,
-        country: c.country.name,
-        hotelCount: c.addresses.filter((a) => a.hotel).length,
-      }))
-      .filter((c) => c.hotelCount > 0)
-      .sort((a, b) => b.hotelCount - a.hotelCount)
-      .slice(0, 8);
-  }),
-
-  topAmenities: baseProcedure.query(async ({ ctx }) => {
-    const amenities = await ctx.db.amenity.findMany({
-      include: { hotels: { select: { hotelId: true } } },
-    });
-    return amenities
-      .map((a) => ({ ...a, usageCount: a.hotels.length }))
-      .sort((a, b) => b.usageCount - a.usageCount)
-      .slice(0, 12);
-  }),
-
-  highlightedReviews: baseProcedure.query(async ({ ctx }) => {
-    return ctx.db.review.findMany({
-      where: { status: "APPROVED", overallRating: { gte: 4 } },
-      take: 6,
-      orderBy: { overallRating: "desc" },
-      include: {
-        user: { select: { name: true, image: true } },
-        hotel: {
-          include: { images: { where: { isPrimary: true }, take: 1 } },
-        },
+  popularDestinations: baseProcedure.query(({ ctx }) =>
+    getOrSet(
+      CACHE_KEYS.HOTELS_POPULAR_DESTINATIONS,
+      async () => {
+        const cities = await ctx.db.city.findMany({
+          include: {
+            country: true,
+            addresses: {
+              include: {
+                hotel: { where: { status: "ACTIVE" }, select: { id: true } },
+              },
+            },
+          },
+        });
+        return cities
+          .map((c) => ({
+            id: c.id,
+            name: c.name,
+            country: c.country.name,
+            hotelCount: c.addresses.filter((a) => a.hotel).length,
+          }))
+          .filter((c) => c.hotelCount > 0)
+          .sort((a, b) => b.hotelCount - a.hotelCount)
+          .slice(0, 8);
       },
-    });
-  }),
+      TTL.LONG,
+    ),
+  ),
+
+  topAmenities: baseProcedure.query(({ ctx }) =>
+    getOrSet(
+      CACHE_KEYS.HOTELS_TOP_AMENITIES,
+      async () => {
+        const amenities = await ctx.db.amenity.findMany({
+          include: { hotels: { select: { hotelId: true } } },
+        });
+        return amenities
+          .map((a) => ({ ...a, usageCount: a.hotels.length }))
+          .sort((a, b) => b.usageCount - a.usageCount)
+          .slice(0, 12);
+      },
+      TTL.LONG,
+    ),
+  ),
+
+  highlightedReviews: baseProcedure.query(({ ctx }) =>
+    getOrSet(
+      CACHE_KEYS.HOTELS_HIGHLIGHTED_REVIEWS,
+      () =>
+        ctx.db.review.findMany({
+          where: { status: "APPROVED", overallRating: { gte: 4 } },
+          take: 6,
+          orderBy: { overallRating: "desc" },
+          include: {
+            user: { select: { name: true, image: true } },
+            hotel: {
+              include: { images: { where: { isPrimary: true }, take: 1 } },
+            },
+          },
+        }),
+      TTL.MEDIUM,
+    ),
+  ),
 
   search: baseProcedure
-    .input(HotelSearchInput)
+    .input(hotelSearchInput)
     .query(async ({ ctx, input }) => {
+      await checkRateLimit(rateLimiters.search, "hotel-search");
+
       const {
-        city,
-        country,
+        search,
         checkIn,
         checkOut,
         minPrice,
@@ -127,12 +164,9 @@ export const hotelRouter = createTRPCRouter({
           ...(maxPrice !== undefined && { lte: maxPrice }),
         };
       }
-      if (bedTypes?.length) {
+      if (bedTypes?.length)
         roomWhere.beds = { some: { bedType: { name: { in: bedTypes } } } };
-      }
-      if (roomTypes?.length) {
-        roomWhere.roomType = { name: { in: roomTypes } };
-      }
+      if (roomTypes?.length) roomWhere.roomType = { name: { in: roomTypes } };
       if (checkIn && checkOut) {
         const dates: Date[] = [];
         const cur = new Date(checkIn);
@@ -145,35 +179,47 @@ export const hotelRouter = createTRPCRouter({
         };
       }
 
+      const isPriceSort = sort === "price_asc" || sort === "price_desc";
+
       const hotelWhere: Prisma.HotelWhereInput = {
         status: "ACTIVE",
         rooms: { some: roomWhere },
       };
 
       if (stars?.length) hotelWhere.starRating = { in: stars };
-      if (amenities?.length) {
+      if (amenities?.length)
         hotelWhere.amenities = {
           some: { amenity: { name: { in: amenities } } },
         };
-      }
-      if (city || country) {
-        hotelWhere.address = {
-          city: {
-            ...(city && { name: { contains: city, mode: "insensitive" } }),
-            ...(country && {
-              country: { name: { contains: country, mode: "insensitive" } },
-            }),
-          },
-        };
-      }
-      if (cursor) {
-        hotelWhere.OR = [
-          { updatedAt: { lt: cursor.updatedAt } },
-          { updatedAt: { equals: cursor.updatedAt }, id: { lt: cursor.id } },
-        ];
+
+      const andConditions: Prisma.HotelWhereInput[] = [];
+
+      if (search) {
+        andConditions.push({
+          OR: [
+            {
+              address: {
+                city: { name: { contains: search, mode: "insensitive" } },
+              },
+            },
+            {
+              address: {
+                city: {
+                  country: { name: { contains: search, mode: "insensitive" } },
+                },
+              },
+            },
+          ],
+        });
       }
 
-      const isPriceSort = sort === "price_asc" || sort === "price_desc";
+      if (!isPriceSort && cursor) {
+        andConditions.push(buildCursorWhere(cursor)!);
+      }
+
+      if (andConditions.length) {
+        hotelWhere.AND = andConditions;
+      }
 
       const orderBy: Prisma.HotelOrderByWithRelationInput[] =
         sort === "stars"
@@ -185,13 +231,7 @@ export const hotelRouter = createTRPCRouter({
         take: isPriceSort ? 500 : limit + 1,
         orderBy,
         include: {
-          images: { where: { isPrimary: true }, take: 1 },
-          address: { include: { city: { include: { country: true } } } },
-          amenities: { include: { amenity: true }, take: 5 },
-          reviews: {
-            where: { status: "APPROVED" },
-            select: { overallRating: true },
-          },
+          ...hotelPublicInclude,
           rooms: {
             where: roomWhere,
             orderBy: { basePrice: "asc" },
@@ -203,18 +243,13 @@ export const hotelRouter = createTRPCRouter({
 
       let results = rows.map((h) => ({
         ...h,
-        avgRating:
-          h.reviews.length > 0
-            ? h.reviews.reduce((s, r) => s + r.overallRating, 0) /
-              h.reviews.length
-            : null,
+        avgRating: computeAvgRating(h.reviews),
         reviewCount: h.reviews.length,
         minPrice: h.rooms[0]?.basePrice ?? null,
       }));
 
-      if (minRating !== undefined) {
+      if (minRating !== undefined)
         results = results.filter((h) => (h.avgRating ?? 0) >= minRating);
-      }
 
       if (isPriceSort) {
         results.sort((a, b) => {
@@ -222,17 +257,15 @@ export const hotelRouter = createTRPCRouter({
           const pb = Number(b.minPrice ?? Infinity);
           return sort === "price_asc" ? pa - pb : pb - pa;
         });
+
+        if (cursor) {
+          const cursorIndex = results.findIndex((r) => r.id === cursor.id);
+          if (cursorIndex !== -1) results = results.slice(cursorIndex + 1);
+        }
       }
 
-      let nextCursor: { id: string; updatedAt: Date } | null = null;
-
-      if (results.length > limit) {
-        results = results.slice(0, limit);
-        const last = results[results.length - 1];
-        if (last) nextCursor = { id: last.id, updatedAt: last.updatedAt };
-      }
-
-      return { items: results, nextCursor };
+      const { items, nextCursor } = popNextCursor(results, limit);
+      return { items, nextCursor };
     }),
 
   detail: baseProcedure
@@ -244,124 +277,131 @@ export const hotelRouter = createTRPCRouter({
       }),
     )
     .query(async ({ ctx, input }) => {
-      const hotel = await ctx.db.hotel.findUnique({
-        where: { slug: input.slug, status: "ACTIVE" },
-        include: {
-          images: { orderBy: [{ isPrimary: "desc" }, { sortOrder: "asc" }] },
-          address: { include: { city: { include: { country: true } } } },
-          policy: true,
-          amenities: { include: { amenity: true } },
-          rooms: {
-            where: {
-              isActive: true,
-              availability: {
-                every: {
-                  date: { gte: input.checkIn, lte: input.checkOut },
-                  status: "AVAILABLE",
+      return getOrSet(
+        CACHE_KEYS.HOTEL_DETAIL(
+          `${input.slug}:${input.checkIn?.toISOString() ?? ""}:${input.checkOut?.toISOString() ?? ""}`,
+        ),
+        async () => {
+          const hotel = await ctx.db.hotel.findUnique({
+            where: { slug: input.slug, status: "ACTIVE" },
+            include: {
+              images: {
+                orderBy: [{ isPrimary: "desc" }, { sortOrder: "asc" }],
+              },
+              address: {
+                include: { city: { include: { country: true } } },
+              },
+              policy: true,
+              amenities: { include: { amenity: true } },
+              rooms: {
+                where: {
+                  isActive: true,
+                  availability: {
+                    every: {
+                      date: { gte: input.checkIn, lte: input.checkOut },
+                      status: "AVAILABLE",
+                    },
+                  },
+                },
+                include: {
+                  roomType: true,
+                  images: { where: { isPrimary: true }, take: 1 },
+                  beds: { include: { bedType: true } },
+                  amenities: { include: { amenity: true } },
+                  availability:
+                    input.checkIn && input.checkOut
+                      ? {
+                          where: {
+                            date: { gte: input.checkIn, lt: input.checkOut },
+                          },
+                        }
+                      : undefined,
                 },
               },
+              _count: {
+                select: { reviews: { where: { status: "APPROVED" } } },
+              },
             },
-            include: {
-              roomType: true,
-              images: { where: { isPrimary: true }, take: 1 },
-              beds: { include: { bedType: true } },
-              amenities: { include: { amenity: true } },
-              availability:
-                input.checkIn && input.checkOut
-                  ? {
-                      where: {
-                        date: { gte: input.checkIn, lt: input.checkOut },
-                      },
-                    }
-                  : undefined,
-            },
-          },
-          _count: { select: { reviews: { where: { status: "APPROVED" } } } },
+          });
+
+          if (!hotel)
+            throw new TRPCError({
+              code: "NOT_FOUND",
+              message: "Khách sạn không tồn tại",
+            });
+
+          const allApprovedReviews = await ctx.db.review.aggregate({
+            where: { hotelId: hotel.id, status: "APPROVED" },
+            _avg: { overallRating: true },
+            _count: true,
+          });
+
+          let availableRooms = hotel.rooms;
+          if (input.checkIn && input.checkOut) {
+            const nights = Math.round(
+              (input.checkOut.getTime() - input.checkIn.getTime()) /
+                (1000 * 60 * 60 * 24),
+            );
+            availableRooms = hotel.rooms.filter(
+              (r) =>
+                r.availability?.every((a) => a.status === "AVAILABLE") !==
+                false,
+            );
+            availableRooms = availableRooms.map((r) => ({
+              ...r,
+              totalPrice: Number(r.basePrice) * nights,
+              nights,
+            })) as typeof availableRooms;
+          }
+
+          return {
+            ...hotel,
+            rooms: availableRooms,
+            avgRating: allApprovedReviews._avg.overallRating,
+            reviewCount: allApprovedReviews._count,
+          };
         },
-      });
-
-      if (!hotel)
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Khách sạn không tồn tại",
-        });
-
-      const allApprovedReviews = await ctx.db.review.aggregate({
-        where: { hotelId: hotel.id, status: "APPROVED" },
-        _avg: { overallRating: true },
-        _count: true,
-      });
-
-      let availableRooms = hotel.rooms;
-      if (input.checkIn && input.checkOut) {
-        const nights = Math.round(
-          (input.checkOut.getTime() - input.checkIn.getTime()) /
-            (1000 * 60 * 60 * 24),
-        );
-        availableRooms = hotel.rooms.filter((r) => {
-          const available = r.availability?.every(
-            (a) => a.status === "AVAILABLE",
-          );
-          return available !== false;
-        });
-        availableRooms = availableRooms.map((r) => ({
-          ...r,
-          totalPrice: Number(r.basePrice) * nights,
-          nights,
-        })) as typeof availableRooms;
-      }
-
-      return {
-        ...hotel,
-        rooms: availableRooms,
-        avgRating: allApprovedReviews._avg.overallRating,
-        reviewCount: allApprovedReviews._count,
-      };
+        TTL.SHORT,
+      );
     }),
 
   reviews: baseProcedure
     .input(
       z.object({
         hotelId: z.string(),
-        cursor: z.object({ id: z.string(), updatedAt: z.date() }).optional(),
+        cursor: cursorInput,
         limit: z.number().int().default(10),
       }),
     )
     .query(async ({ ctx, input }) => {
-      const where: Record<string, unknown> = {
-        hotelId: input.hotelId,
-        status: "APPROVED",
-      };
-      if (input.cursor) {
-        where.OR = [
-          { updatedAt: { lt: input.cursor.updatedAt } },
-          { updatedAt: input.cursor.updatedAt, id: { lt: input.cursor.id } },
-        ];
-      }
-
+      const cursorWhere = buildCursorWhere(input.cursor);
       const reviews = await ctx.db.review.findMany({
-        where,
+        where: {
+          hotelId: input.hotelId,
+          status: "APPROVED",
+          ...cursorWhere,
+        },
         take: input.limit + 1,
         orderBy: [{ updatedAt: "desc" }, { id: "desc" }],
         include: { user: { select: { name: true, image: true } } },
       });
-
-      let nextCursor: { id: string; updatedAt: Date } | null = null;
-      if (reviews.length > input.limit) {
-        reviews.pop();
-        const last = reviews[reviews.length - 1];
-        nextCursor = { id: last.id, updatedAt: last.updatedAt };
-      }
-
-      return { items: reviews, nextCursor };
+      return popNextCursor(reviews, input.limit);
     }),
 
-  filterOptions: baseProcedure.query(async ({ ctx }) => {
-    const [amenities, bedTypes, roomTypes] = await Promise.all([
-      ctx.db.amenity.findMany({ select: { id: true, name: true, icon: true } }),
-      ctx.db.bedType.findMany({ select: { id: true, name: true } }),
-      ctx.db.roomType.findMany({ select: { id: true, name: true } }),
-    ]);
-    return { amenities, bedTypes, roomTypes };
-  }),
+  filterOptions: baseProcedure.query(({ ctx }) =>
+    getOrSet(
+      CACHE_KEYS.HOTELS_FILTER_OPTIONS,
+      async () => {
+        const [amenities, bedTypes, roomTypes] = await Promise.all([
+          ctx.db.amenity.findMany({
+            select: { id: true, name: true, icon: true },
+          }),
+          ctx.db.bedType.findMany({ select: { id: true, name: true } }),
+          ctx.db.roomType.findMany({ select: { id: true, name: true } }),
+        ]);
+        return { amenities, bedTypes, roomTypes };
+      },
+      TTL.LONG,
+    ),
+  ),
 });
