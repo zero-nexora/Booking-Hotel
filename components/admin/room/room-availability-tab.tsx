@@ -20,17 +20,16 @@ import {
   useRoomAvailability,
   useSetRoomAvailability,
 } from "@/hooks/admin/use-admin-rooms";
-import { cn } from "@/lib/utils";
-import { toDateStr, formatDateDisplay, formatMonthYear } from "@/lib/utils";
+import { cn, formatDateShort, formatDateCompact } from "@/lib/utils";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 type AvailabilityStatus = "AVAILABLE" | "LOCKED" | "BOOKED" | "MAINTENANCE";
 
 const STATUS_COLOR: Record<AvailabilityStatus, string> = {
-  AVAILABLE: "#059669",
-  LOCKED: "#d97706",
-  BOOKED: "#2563eb",
-  MAINTENANCE: "#dc2626",
+  AVAILABLE: "#b89a6f",
+  LOCKED: "#c9a87c",
+  BOOKED: "#6b5040",
+  MAINTENANCE: "#8c3a3a",
 };
 
 const STATUS_LABEL: Record<AvailabilityStatus, string> = {
@@ -41,14 +40,10 @@ const STATUS_LABEL: Record<AvailabilityStatus, string> = {
 };
 
 const STATUS_BADGE_CLASS: Record<AvailabilityStatus, string> = {
-  AVAILABLE:
-    "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/30 dark:text-emerald-400 dark:border-emerald-800",
-  LOCKED:
-    "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-800",
-  BOOKED:
-    "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/30 dark:text-blue-400 dark:border-blue-800",
-  MAINTENANCE:
-    "bg-red-50 text-red-700 border-red-200 dark:bg-red-950/30 dark:text-red-400 dark:border-red-800",
+  AVAILABLE: "bg-primary/10 text-primary border-primary/20",
+  LOCKED: "bg-secondary text-secondary-foreground border-border",
+  BOOKED: "bg-accent text-accent-foreground border-border",
+  MAINTENANCE: "bg-destructive/10 text-destructive border-destructive/20",
 };
 
 interface RoomAvailabilityTabProps {
@@ -58,9 +53,7 @@ interface RoomAvailabilityTabProps {
 export const RoomAvailabilityTab = ({ roomId }: RoomAvailabilityTabProps) => {
   const calendarRef = useRef<FullCalendar>(null);
   const [currentMonth, setCurrentMonth] = useState(new Date());
-  const [selected, setSelected] = useState<{ start: Date; end: Date } | null>(
-    null,
-  );
+  const [selected, setSelected] = useState<{ start: Date; end: Date } | null>(null);
 
   const from = startOfMonth(currentMonth);
   const to = endOfMonth(currentMonth);
@@ -71,7 +64,7 @@ export const RoomAvailabilityTab = ({ roomId }: RoomAvailabilityTabProps) => {
   const events = availability.map((a) => ({
     id: a.id,
     title: STATUS_LABEL[a.status as AvailabilityStatus],
-    start: toDateStr(a.date),
+    start: formatDateShort(a.date),
     allDay: true,
     backgroundColor: STATUS_COLOR[a.status as AvailabilityStatus],
     borderColor: STATUS_COLOR[a.status as AvailabilityStatus],
@@ -101,13 +94,9 @@ export const RoomAvailabilityTab = ({ roomId }: RoomAvailabilityTabProps) => {
 
     while (cursor < selected.end) {
       const dateStr = format(cursor, "yyyy-MM-dd");
-      const existing = availability.find((a) => toDateStr(a.date) === dateStr);
+      const existing = availability.find((a) => format(new Date(a.date), "yyyy-MM-dd") === dateStr);
 
-      if (
-        !existing ||
-        existing.status === "AVAILABLE" ||
-        existing.status === "MAINTENANCE"
-      ) {
+      if (!existing || existing.status === "AVAILABLE" || existing.status === "MAINTENANCE") {
         dateStrings.push(dateStr);
       }
 
@@ -129,35 +118,22 @@ export const RoomAvailabilityTab = ({ roomId }: RoomAvailabilityTabProps) => {
     calendarRef.current?.getApi().unselect();
   };
 
-  const displayEnd = selected
-    ? new Date(selected.end.getTime() - 86_400_000)
-    : null;
+  const displayEnd = selected ? new Date(selected.end.getTime() - 86_400_000) : null;
 
   const isSingleDay =
     selected && displayEnd
-      ? format(selected.start, "yyyy-MM-dd") ===
-        format(displayEnd, "yyyy-MM-dd")
+      ? format(selected.start, "yyyy-MM-dd") === format(displayEnd, "yyyy-MM-dd")
       : false;
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div className="flex items-center gap-1.5 flex-wrap">
-          {(
-            [
-              "AVAILABLE",
-              "LOCKED",
-              "BOOKED",
-              "MAINTENANCE",
-            ] as AvailabilityStatus[]
-          ).map((s) => (
+          {(["AVAILABLE", "LOCKED", "BOOKED", "MAINTENANCE"] as AvailabilityStatus[]).map((s) => (
             <Badge
               key={s}
               variant="outline"
-              className={cn(
-                "text-xs font-medium px-2 py-0.5",
-                STATUS_BADGE_CLASS[s],
-              )}
+              className={cn("text-xs font-medium px-2 py-0.5", STATUS_BADGE_CLASS[s])}
             >
               <span
                 className="inline-block w-1.5 h-1.5 rounded-full mr-1.5 shrink-0"
@@ -172,14 +148,14 @@ export const RoomAvailabilityTab = ({ roomId }: RoomAvailabilityTabProps) => {
           <div className="flex items-center gap-2 border border-border rounded-lg px-3 py-1.5 bg-muted/40">
             <span className="text-xs font-medium tabular-nums text-muted-foreground">
               {isSingleDay
-                ? formatDateDisplay(selected.start)
-                : `${formatDateDisplay(selected.start)} – ${formatDateDisplay(displayEnd)}`}
+                ? formatDateShort(selected.start)
+                : `${formatDateShort(selected.start)} – ${formatDateShort(displayEnd)}`}
             </span>
             <div className="w-px h-4 bg-border" />
             <Button
               size="sm"
               variant="ghost"
-              className="h-6 px-2 text-xs text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-950/30"
+              className="h-6 px-2 text-xs text-primary hover:text-primary hover:bg-primary/10"
               disabled={setAvailability.isPending}
               onClick={() => void handleSetStatus("AVAILABLE")}
             >
@@ -188,7 +164,7 @@ export const RoomAvailabilityTab = ({ roomId }: RoomAvailabilityTabProps) => {
             <Button
               size="sm"
               variant="ghost"
-              className="h-6 px-2 text-xs text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/30"
+              className="h-6 px-2 text-xs text-destructive hover:text-destructive hover:bg-destructive/10"
               disabled={setAvailability.isPending}
               onClick={() => void handleSetStatus("MAINTENANCE")}
             >
@@ -197,7 +173,7 @@ export const RoomAvailabilityTab = ({ roomId }: RoomAvailabilityTabProps) => {
             <Button
               size="sm"
               variant="ghost"
-              className="h-6 px-2 text-xs text-muted-foreground"
+              className="h-6 px-2 text-xs text-muted-foreground hover:text-foreground hover:bg-muted"
               onClick={() => {
                 setSelected(null);
                 calendarRef.current?.getApi().unselect();
@@ -209,16 +185,16 @@ export const RoomAvailabilityTab = ({ roomId }: RoomAvailabilityTabProps) => {
         )}
       </div>
 
-      <Card className="overflow-hidden">
+      <Card className="bg-card border-border shadow-none overflow-hidden">
         <div className="flex items-center justify-between px-5 py-3 border-b border-border bg-muted/30">
-          <span className="text-sm font-semibold capitalize tracking-tight">
-            {formatMonthYear(currentMonth)}
+          <span className="text-sm font-semibold capitalize tracking-tight text-foreground">
+            {formatDateCompact(currentMonth)}
           </span>
           <div className="flex gap-0.5">
             <Button
               variant="ghost"
               size="icon"
-              className="h-7 w-7 rounded-md"
+              className="h-7 w-7 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted"
               onClick={handlePrev}
             >
               <ChevronLeft className="w-3.5 h-3.5" />
@@ -226,7 +202,7 @@ export const RoomAvailabilityTab = ({ roomId }: RoomAvailabilityTabProps) => {
             <Button
               variant="ghost"
               size="icon"
-              className="h-7 w-7 rounded-md"
+              className="h-7 w-7 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted"
               onClick={handleNext}
             >
               <ChevronRight className="w-3.5 h-3.5" />

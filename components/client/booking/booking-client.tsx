@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -79,6 +79,17 @@ export const BookingClient = ({
       specialRequests: "",
     },
   });
+
+  useEffect(() => {
+    if (me) {
+      form.reset({
+        guestName: me.name ?? "",
+        guestEmail: me.email ?? "",
+        guestPhone: me.phone ?? "",
+        specialRequests: "",
+      });
+    }
+  }, [me]);
 
   if (isLoading) return <BookingPageSkeleton />;
 

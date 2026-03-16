@@ -1,7 +1,6 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { format } from "date-fns";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -18,6 +17,7 @@ import { RoomImagesTab } from "./room-images-tab";
 import { RoomAvailabilityTab } from "./room-availability-tab";
 import { RouterOutput } from "@/trpc/client";
 import { EditRoomForm } from "../hotel/room-form-sheet";
+import { formatCurrencyUSD, formatDateShort } from "@/lib/utils";
 
 type RoomDetail = RouterOutput["admin"]["room"]["detail"];
 
@@ -92,23 +92,23 @@ const RoomHeader = ({ room, hotelId, onEdit, onDelete }: RoomHeaderProps) => {
 const RoomStats = ({ room }: { room: RoomDetail }) => (
   <div className="grid grid-cols-4 gap-4">
     <Card>
-      <CardContent className="pt-6">
+      <CardContent className="pt-2">
         <p className="text-sm text-muted-foreground">Sức chứa</p>
         <p className="text-3xl font-bold">{room.capacity}</p>
         <p className="text-xs text-muted-foreground mt-1">khách</p>
       </CardContent>
     </Card>
     <Card>
-      <CardContent className="pt-6">
+      <CardContent className="pt-2">
         <p className="text-sm text-muted-foreground">Giá cơ bản</p>
         <p className="text-2xl font-bold">
-          ${Number(room.basePrice).toLocaleString("en-US")}
+          {formatCurrencyUSD(Number(room.basePrice))}
         </p>
         <p className="text-xs text-muted-foreground mt-1">USD / đêm</p>
       </CardContent>
     </Card>
     <Card>
-      <CardContent className="pt-6">
+      <CardContent className="pt-2">
         <p className="text-sm text-muted-foreground">Diện tích</p>
         <p className="text-3xl font-bold">{room.sizeM2 ?? "—"}</p>
         {room.sizeM2 && (
@@ -117,7 +117,7 @@ const RoomStats = ({ room }: { room: RoomDetail }) => (
       </CardContent>
     </Card>
     <Card>
-      <CardContent className="pt-6">
+      <CardContent className="pt-2">
         <p className="text-sm text-muted-foreground">Tầng</p>
         <p className="text-3xl font-bold">{room.floor ?? "—"}</p>
       </CardContent>
@@ -146,7 +146,7 @@ const RoomInfoTab = ({ room }: { room: RoomDetail }) => (
         </div>
         <div className="flex justify-between">
           <span className="text-muted-foreground">Ngày tạo</span>
-          <span>{format(new Date(room.createdAt), "dd/MM/yyyy")}</span>
+          <span>{formatDateShort(room.createdAt)}</span>
         </div>
       </CardContent>
     </Card>
@@ -258,10 +258,7 @@ export const RoomDetailClient = ({
           <RoomInfoTab room={room} />
         </TabsContent>
         <TabsContent value="images" className="mt-4">
-          <RoomImagesTab
-            roomId={roomId}
-            images={room.images}
-          />
+          <RoomImagesTab roomId={roomId} images={room.images} />
         </TabsContent>
         <TabsContent value="availability" className="mt-4">
           <RoomAvailabilityTab roomId={roomId} />

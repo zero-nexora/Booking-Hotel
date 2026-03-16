@@ -15,6 +15,7 @@ const sendEmail = async ({
 }) => {
   const { data, error } = await resend.emails.send({
     from: FROM,
+    // to,
     to: "hien_dth235651@student.agu.edu.vn",
     subject,
     react,

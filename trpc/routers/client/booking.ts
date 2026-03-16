@@ -11,8 +11,7 @@ import {
 } from "@/lib/utils";
 import { Prisma } from "@/generated/prisma/client";
 import { calcRefundAmount, calcRefundPolicy } from "@/lib/refund-policy";
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+import { stripe } from "@/lib/stripe";
 
 function isPrismaUniqueError(e: unknown): boolean {
   return (

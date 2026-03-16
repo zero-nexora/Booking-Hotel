@@ -20,10 +20,10 @@ Staywise có quyền sửa đổi các điều khoản này vào bất kỳ lúc
     title: "2. Mô tả dịch vụ",
     content: `Staywise là nền tảng đặt phòng khách sạn trực tuyến, cung cấp:
 
-• Tìm kiếm và so sánh khách sạn trên toàn quốc
-• Đặt phòng trực tuyến an toàn qua cổng thanh toán Stripe
-• Quản lý đặt phòng và lịch sử lưu trú
-• Hệ thống đánh giá và phản hồi từ khách hàng thực tế
+- Tìm kiếm và so sánh khách sạn trên toàn quốc
+- Đặt phòng trực tuyến an toàn qua cổng thanh toán Stripe
+- Quản lý đặt phòng và lịch sử lưu trú
+- Hệ thống đánh giá và phản hồi từ khách hàng thực tế
 
 Chúng tôi đóng vai trò là trung gian giữa khách hàng và cơ sở lưu trú. Staywise không trực tiếp sở hữu hay vận hành các khách sạn được liệt kê trên nền tảng.`,
   },
@@ -31,9 +31,9 @@ Chúng tôi đóng vai trò là trung gian giữa khách hàng và cơ sở lưu
     title: "3. Tài khoản người dùng",
     content: `Để sử dụng đầy đủ các tính năng, bạn cần tạo tài khoản với thông tin chính xác và đầy đủ. Bạn có trách nhiệm:
 
-• Bảo mật thông tin đăng nhập và mật khẩu
-• Thông báo ngay cho chúng tôi nếu phát hiện truy cập trái phép
-• Chịu trách nhiệm về mọi hoạt động diễn ra dưới tài khoản của bạn
+- Bảo mật thông tin đăng nhập và mật khẩu
+- Thông báo ngay cho chúng tôi nếu phát hiện truy cập trái phép
+- Chịu trách nhiệm về mọi hoạt động diễn ra dưới tài khoản của bạn
 
 Staywise có quyền tạm ngừng hoặc chấm dứt tài khoản vi phạm điều khoản sử dụng.`,
   },
@@ -41,10 +41,10 @@ Staywise có quyền tạm ngừng hoặc chấm dứt tài khoản vi phạm đ
     title: "4. Chính sách đặt phòng và thanh toán",
     content: `Khi đặt phòng, bạn đồng ý với các điều kiện sau:
 
-• Thông tin đặt phòng (tên, ngày, số khách) phải chính xác
-• Thanh toán được xử lý an toàn qua Stripe
-• Đặt phòng được xác nhận ngay sau khi thanh toán thành công
-• Phòng được giữ trong 15 phút kể từ khi bắt đầu quy trình thanh toán
+- Thông tin đặt phòng (tên, ngày, số khách) phải chính xác
+- Thanh toán được xử lý an toàn qua Stripe
+- Đặt phòng được xác nhận ngay sau khi thanh toán thành công
+- Phòng được giữ trong 15 phút kể từ khi bắt đầu quy trình thanh toán
 
 Staywise không chịu trách nhiệm về sai sót do người dùng cung cấp thông tin không chính xác.`,
   },
@@ -53,9 +53,9 @@ Staywise không chịu trách nhiệm về sai sót do người dùng cung cấp
     content: `Chính sách huỷ phòng phụ thuộc vào từng khách sạn và được hiển thị rõ ràng trước khi đặt phòng.
 
 Đối với các đặt phòng đủ điều kiện huỷ:
-• Hoàn tiền đầy đủ nếu huỷ trong thời hạn cho phép
-• Thời gian hoàn tiền về tài khoản: 5–10 ngày làm việc tùy ngân hàng
-• Không hoàn tiền nếu huỷ sau thời hạn quy định hoặc không đến nhận phòng (no-show)
+- Hoàn tiền đầy đủ nếu huỷ trong thời hạn cho phép
+- Thời gian hoàn tiền về tài khoản: 5–10 ngày làm việc tùy ngân hàng
+- Không hoàn tiền nếu huỷ sau thời hạn quy định hoặc không đến nhận phòng (no-show)
 
 Trong trường hợp khách sạn không thể cung cấp phòng đã đặt, chúng tôi sẽ hỗ trợ tìm phòng thay thế hoặc hoàn tiền đầy đủ.`,
   },
@@ -72,9 +72,9 @@ Hình ảnh khách sạn được cung cấp bởi các đối tác và chủ s�
     content: `Staywise cung cấp dịch vụ "nguyên trạng" và không bảo đảm dịch vụ hoạt động liên tục, không có lỗi.
 
 Chúng tôi không chịu trách nhiệm về:
-• Tổn thất gián tiếp phát sinh từ việc sử dụng hoặc không thể sử dụng dịch vụ
-• Hành động hoặc thiếu sót của các cơ sở lưu trú đối tác
-• Lỗi kỹ thuật hoặc gián đoạn dịch vụ ngoài tầm kiểm soát của chúng tôi
+- Tổn thất gián tiếp phát sinh từ việc sử dụng hoặc không thể sử dụng dịch vụ
+- Hành động hoặc thiếu sót của các cơ sở lưu trú đối tác
+- Lỗi kỹ thuật hoặc gián đoạn dịch vụ ngoài tầm kiểm soát của chúng tôi
 
 Trách nhiệm tối đa của Staywise trong bất kỳ trường hợp nào không vượt quá giá trị đặt phòng liên quan.`,
   },
@@ -94,40 +94,40 @@ Email: legal@staywise.vn
   },
 ];
 
-const TermsPage = () => {
-  return (
-    <div className="max-w-3xl mx-auto px-4 py-12">
-      <div className="flex items-center gap-3 mb-2">
-        <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-          <FileText className="w-4.5 h-4.5 text-primary" />
-        </div>
-        <h1 className="text-2xl font-bold tracking-tight">
-          Điều khoản sử dụng
-        </h1>
+const TermsPage = () => (
+  <div className="max-w-3xl mx-auto px-4 py-12">
+    <div className="flex items-center gap-3 mb-2">
+      <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+        <FileText className="w-4 h-4 text-primary" />
       </div>
-      <p className="text-sm text-muted-foreground ml-12 mb-8">
-        Cập nhật lần cuối: {LAST_UPDATED}
-      </p>
-
-      <div className="bg-muted/40 border rounded-xl p-4 mb-8 text-sm text-muted-foreground leading-relaxed">
-        Vui lòng đọc kỹ các điều khoản này trước khi sử dụng dịch vụ Staywise.
-        Việc tiếp tục sử dụng dịch vụ đồng nghĩa với việc bạn chấp nhận các điều
-        khoản dưới đây.
-      </div>
-
-      <div className="space-y-8">
-        {sections.map((section, i) => (
-          <div key={i}>
-            <h2 className="text-base font-semibold mb-3">{section.title}</h2>
-            <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-line">
-              {section.content}
-            </p>
-            {i < sections.length - 1 && <Separator className="mt-8" />}
-          </div>
-        ))}
-      </div>
+      <h1 className="text-2xl font-bold tracking-tight text-foreground">
+        Điều khoản sử dụng
+      </h1>
     </div>
-  );
-};
+    <p className="text-sm text-muted-foreground ml-12 mb-8">
+      Cập nhật lần cuối: {LAST_UPDATED}
+    </p>
+
+    <div className="bg-muted/40 border border-border rounded-xl p-4 mb-8 text-sm text-muted-foreground leading-relaxed">
+      Vui lòng đọc kỹ các điều khoản này trước khi sử dụng dịch vụ Staywise.
+      Việc tiếp tục sử dụng dịch vụ đồng nghĩa với việc bạn chấp nhận các điều
+      khoản dưới đây.
+    </div>
+
+    <div className="space-y-8">
+      {sections.map((section, i) => (
+        <div key={i}>
+          <h2 className="text-base font-semibold mb-3 text-foreground">
+            {section.title}
+          </h2>
+          <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-line">
+            {section.content}
+          </p>
+          {i < sections.length - 1 && <Separator className="mt-8 bg-border" />}
+        </div>
+      ))}
+    </div>
+  </div>
+);
 
 export default TermsPage;
