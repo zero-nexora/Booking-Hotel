@@ -31,16 +31,8 @@ import { useConfirmDialogStore } from "@/store/confirm-dialog-store";
 
 const navLinks = [
   { label: "Khách sạn", href: "/hotels" },
-  { label: "Điểm đến", href: "/hotels?view=map" },
+  { label: "Bản đồ", href: "/hotels?view=map" },
 ];
-
-const navItemClass = (active: boolean) =>
-  cn(
-    "text-sm font-medium px-1 py-0.5 border-b-2",
-    active
-      ? "text-foreground border-primary"
-      : "text-muted-foreground border-transparent hover:text-foreground hover:border-border",
-  );
 
 export const ClientHeader = () => {
   const { openConfirm } = useConfirmDialogStore();
@@ -58,7 +50,7 @@ export const ClientHeader = () => {
     router.push("/sign-in");
   };
 
-  const handleOpenConfirmLogout = async () => {
+  const handleOpenConfirmLogout = () => {
     openConfirm({
       title: "Đăng xuất",
       description: "Bạn có chắc chắn muốn đăng xuất không?",
@@ -66,6 +58,8 @@ export const ClientHeader = () => {
       onConfirm: handleSignOut,
     });
   };
+
+  const initials = user?.name?.charAt(0).toUpperCase() ?? "U";
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/80">
@@ -79,7 +73,12 @@ export const ClientHeader = () => {
             <Link
               key={link.href}
               href={link.href}
-              className={navItemClass(currentUrl === link.href)}
+              className={cn(
+                "text-sm font-medium transition-colors px-1 py-0.5 border-b-2",
+                currentUrl === link.href
+                  ? "text-foreground border-primary"
+                  : "text-muted-foreground border-transparent hover:text-foreground hover:border-border",
+              )}
             >
               {link.label}
             </Link>
@@ -92,84 +91,72 @@ export const ClientHeader = () => {
           {user ? (
             <DropdownMenu modal={false}>
               <DropdownMenuTrigger asChild>
-                <button className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm font-medium text-foreground hover:bg-muted">
+                <button className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm font-medium hover:bg-muted transition-colors">
                   <Avatar className="size-7">
                     <AvatarImage src={user.image ?? undefined} />
                     <AvatarFallback className="bg-primary/10 text-primary text-xs font-semibold">
-                      {user.name?.charAt(0).toUpperCase()}
+                      {initials}
                     </AvatarFallback>
                   </Avatar>
-                  <span className="max-w-32 truncate">{user.name}</span>
+                  <span className="hidden sm:block max-w-32 truncate text-foreground">
+                    {user.name}
+                  </span>
                   <ChevronDown className="size-3.5 text-muted-foreground" />
                 </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent
-                align="end"
-                className="w-52 bg-card border-border text-foreground"
-              >
+              <DropdownMenuContent align="end" className="w-52">
                 <DropdownMenuItem asChild>
                   <Link
                     href="/account"
-                    className="flex items-center gap-2 cursor-pointer text-foreground hover:bg-muted"
+                    className="flex items-center gap-2 cursor-pointer"
                   >
-                    <User className="size-4" />
-                    Tài khoản
+                    <User className="size-4" /> Tài khoản
                   </Link>
                 </DropdownMenuItem>
-                {user.role === "ADMIN" && (
-                  <DropdownMenuItem asChild>
-                    <Link
-                      href="/admin"
-                      className="flex items-center gap-2 cursor-pointer text-foreground hover:bg-muted"
-                    >
-                      <LayoutDashboard className="size-4" />
-                      Trang quản trị
-                    </Link>
-                  </DropdownMenuItem>
-                )}
                 <DropdownMenuItem asChild>
                   <Link
                     href="/account/bookings"
-                    className="flex items-center gap-2 cursor-pointer text-foreground hover:bg-muted"
+                    className="flex items-center gap-2 cursor-pointer"
                   >
-                    <BookOpen className="size-4" />
-                    Đặt phòng của tôi
+                    <BookOpen className="size-4" /> Đặt phòng của tôi
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <Link
                     href="/account/reviews"
-                    className="flex items-center gap-2 cursor-pointer text-foreground hover:bg-muted"
+                    className="flex items-center gap-2 cursor-pointer"
                   >
-                    <Star className="size-4" />
-                    Đánh giá của tôi
+                    <Star className="size-4" /> Đánh giá của tôi
                   </Link>
                 </DropdownMenuItem>
-                <DropdownMenuSeparator className="bg-border" />
+                {user.role === "ADMIN" && (
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem asChild>
+                      <Link
+                        href="/admin"
+                        className="flex items-center gap-2 cursor-pointer"
+                      >
+                        <LayoutDashboard className="size-4" /> Quản trị
+                      </Link>
+                    </DropdownMenuItem>
+                  </>
+                )}
+                <DropdownMenuSeparator />
                 <DropdownMenuItem
-                  className="flex items-center gap-2 cursor-pointer text-destructive hover:bg-destructive/10 hover:text-destructive focus:bg-destructive/10 focus:text-destructive"
+                  className="flex items-center gap-2 cursor-pointer text-destructive focus:text-destructive focus:bg-destructive/10"
                   onClick={handleOpenConfirmLogout}
                 >
-                  <LogOut className="size-4" />
-                  Đăng xuất
+                  <LogOut className="size-4" /> Đăng xuất
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
-            <div className="box-hidden items-center gap-2">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-muted-foreground hover:text-foreground hover:bg-muted"
-                asChild
-              >
+            <div className="hidden md:flex items-center gap-2">
+              <Button variant="ghost" size="sm" asChild>
                 <Link href="/sign-in">Đăng nhập</Link>
               </Button>
-              <Button
-                size="sm"
-                className="bg-primary text-primary-foreground hover:bg-primary/90"
-                asChild
-              >
+              <Button size="sm" asChild>
                 <Link href="/sign-up">Đăng ký</Link>
               </Button>
             </div>
@@ -177,22 +164,13 @@ export const ClientHeader = () => {
 
           <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
             <SheetTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="md:hidden size-9 text-muted-foreground hover:text-foreground hover:bg-muted"
-              >
+              <Button variant="ghost" size="icon" className="md:hidden size-9">
                 <Menu className="size-4" />
               </Button>
             </SheetTrigger>
-            <SheetContent
-              side="right"
-              className="w-72 bg-background border-border p-0"
-            >
+            <SheetContent side="right" className="w-72 p-0">
               <div className="flex items-center h-14 px-4 border-b border-border">
-                <span className="text-sm font-semibold text-foreground">
-                  Menu
-                </span>
+                <Logo />
               </div>
               <nav className="flex flex-col p-4 gap-1">
                 {navLinks.map((link) => (
@@ -201,7 +179,7 @@ export const ClientHeader = () => {
                     href={link.href}
                     onClick={() => setMobileOpen(false)}
                     className={cn(
-                      "flex items-center h-10 px-3 rounded-lg text-sm font-medium",
+                      "flex items-center h-10 px-3 rounded-lg text-sm font-medium transition-colors",
                       currentUrl === link.href
                         ? "bg-primary/10 text-primary"
                         : "text-muted-foreground hover:bg-muted hover:text-foreground",
@@ -210,12 +188,39 @@ export const ClientHeader = () => {
                     {link.label}
                   </Link>
                 ))}
-                {!user && (
+
+                {user ? (
+                  <div className="flex flex-col gap-1 mt-4 pt-4 border-t border-border">
+                    <Link
+                      href="/account"
+                      onClick={() => setMobileOpen(false)}
+                      className="flex items-center gap-2 h-10 px-3 rounded-lg text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground"
+                    >
+                      <User className="size-4" /> Tài khoản
+                    </Link>
+                    <Link
+                      href="/account/bookings"
+                      onClick={() => setMobileOpen(false)}
+                      className="flex items-center gap-2 h-10 px-3 rounded-lg text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground"
+                    >
+                      <BookOpen className="size-4" /> Đặt phòng của tôi
+                    </Link>
+                    <button
+                      onClick={() => {
+                        setMobileOpen(false);
+                        handleOpenConfirmLogout();
+                      }}
+                      className="flex items-center gap-2 h-10 px-3 rounded-lg text-sm font-medium text-destructive hover:bg-destructive/10 w-full text-left"
+                    >
+                      <LogOut className="size-4" /> Đăng xuất
+                    </button>
+                  </div>
+                ) : (
                   <div className="flex flex-col gap-2 mt-4 pt-4 border-t border-border">
                     <Button
                       variant="outline"
                       size="sm"
-                      className="w-full border-border bg-background text-foreground hover:bg-muted hover:text-foreground"
+                      className="w-full"
                       asChild
                     >
                       <Link
@@ -225,11 +230,7 @@ export const ClientHeader = () => {
                         Đăng nhập
                       </Link>
                     </Button>
-                    <Button
-                      size="sm"
-                      className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
-                      asChild
-                    >
+                    <Button size="sm" className="w-full" asChild>
                       <Link
                         href="/sign-up"
                         onClick={() => setMobileOpen(false)}

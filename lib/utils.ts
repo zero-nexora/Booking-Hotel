@@ -78,32 +78,13 @@ export const calcTotal = (
   return Number(basePrice) * nights;
 };
 
-export const buildCursorWhere = (cursor?: { id: string; updatedAt: Date }) => {
-  if (!cursor) return undefined;
-  return {
-    OR: [
-      { updatedAt: { lt: cursor.updatedAt } },
-      { updatedAt: cursor.updatedAt, id: { lt: cursor.id } },
-    ],
-  };
-};
-
-export const getNextCursor = <T extends { id: string; updatedAt: Date }>(
-  items: T[],
-  limit: number,
-): { id: string; updatedAt: Date } | null => {
-  if (items.length < limit) return null;
-  const last = items[items.length - 1];
-  return { id: last.id, updatedAt: last.updatedAt };
-};
-
 export const getBookingExpiresAt = (): Date => {
   return new Date(Date.now() + BOOKING_EXPIRY_MINUTES * 60 * 1000);
 };
 
-export const isBookingCancellable = (status: string): boolean => {
-  return ["PENDING", "CONFIRMED"].includes(status);
-};
+// export const isBookingCancellable = (status: string): boolean => {
+//   return ["PENDING", "CONFIRMED"].includes(status);
+// };
 
 export const getDatesInRange = (checkIn: Date, checkOut: Date): Date[] => {
   const dates: Date[] = [];

@@ -39,7 +39,7 @@ export const HeroSearch = () => {
           <div className="flex items-center gap-3 flex-1 px-4 py-3.5 border-b sm:border-b-0 sm:border-r border-border/60">
             <MapPin className="w-4 h-4 text-primary shrink-0" />
             <div className="flex-1 min-w-0">
-              <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide mb-0.5">
+              <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide mb-0.5 text-left">
                 Điểm đến
               </p>
               <Input

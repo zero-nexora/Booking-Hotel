@@ -1,3 +1,4 @@
+import { env } from "@/lib/env";
 import { scheduleCrons } from "@/lib/qstash";
 import { NextResponse } from "next/server";
 
@@ -5,7 +6,7 @@ export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const secret = searchParams.get("secret");
 
-  if (secret !== process.env.CRON_SECRET) {
+  if (secret !== env.CRON_SECRET) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

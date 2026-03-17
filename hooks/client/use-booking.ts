@@ -83,3 +83,10 @@ export function useRecentBookings() {
   const trpc = useTRPC();
   return useQuery(trpc.client.booking.recentBookings.queryOptions());
 }
+
+export function useBookingVerify(bookingRef: string) {
+  const trpc = useTRPC();
+  return useQuery(
+    trpc.client.booking.getVerification.queryOptions({ bookingRef }),
+  );
+}

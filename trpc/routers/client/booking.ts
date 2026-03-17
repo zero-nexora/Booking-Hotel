@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
+import { baseProcedure, createTRPCRouter, protectedProcedure } from "@/trpc/init";
 import { TRPCError } from "@trpc/server";
 import Stripe from "stripe";
 import {
@@ -491,4 +491,46 @@ export const bookingRouter = createTRPCRouter({
       },
     }),
   ),
+
+  getVerification: baseProcedure
+  .input(z.object({ bookingRef: z.string() }))
+  .query(async ({ ctx, input }) => {
+    const booking = await ctx.db.booking.findUnique({
+      where: { bookingRef: input.bookingRef },
+      select: {
+        bookingRef: true,
+        status: true,
+        paymentStatus: true,
+        checkIn: true,
+        checkOut: true,
+        guestName: true,
+        totalAmount: true,
+        currency: true,
+        hotel: {
+          select: {
+            name: true,
+            starRating: true,
+            address: {
+              select: {
+                street: true,
+                city: { select: { name: true } },
+              },
+            },
+          },
+        },
+        items: {
+          select: {
+            nights: true,
+            adults: true,
+            children: true,
+            room: { select: { name: true } },
+          },
+        },
+      },
+    });
+
+    if (!booking) throw new TRPCError({ code: "NOT_FOUND" });
+
+    return booking;
+  }),
 });

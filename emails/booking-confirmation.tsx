@@ -1,6 +1,7 @@
 import {
   Heading,
   Hr,
+  Img,
   Section,
   Text,
   Row,
@@ -28,6 +29,8 @@ interface BookingConfirmationEmailProps {
   totalAmount: string;
   currency: string;
   bookingUrl: string;
+  verifyUrl: string;
+  qrBase64: string;
 }
 
 export function BookingConfirmationEmail({
@@ -44,6 +47,8 @@ export function BookingConfirmationEmail({
   totalAmount,
   currency,
   bookingUrl,
+  verifyUrl,
+  qrBase64,
 }: BookingConfirmationEmailProps) {
   const guests = `${adults} người lớn${children > 0 ? `, ${children} trẻ em` : ""}`;
 
@@ -88,6 +93,28 @@ export function BookingConfirmationEmail({
         </Row>
       </Section>
 
+      <Section style={qrSection}>
+        <Row>
+          <Column style={{ width: "160px", verticalAlign: "middle" }}>
+            <Img
+              src={qrBase64}
+              width={160}
+              height={160}
+              alt={`QR xác minh đặt phòng ${bookingRef}`}
+              style={qrImage}
+            />
+          </Column>
+          <Column style={{ paddingLeft: 20, verticalAlign: "middle" }}>
+            <Text style={qrTitle}>Mã QR xác minh</Text>
+            <Text style={qrDesc}>
+              Nhân viên khách sạn quét mã này để xác minh đặt phòng khi
+              check-in. Không cần in — dùng trực tiếp trên điện thoại.
+            </Text>
+            <Text style={qrLink}>{verifyUrl}</Text>
+          </Column>
+        </Row>
+      </Section>
+
       <EmailButton href={bookingUrl}>Xem chi tiết đặt phòng →</EmailButton>
 
       <Hr style={hr} />
@@ -117,6 +144,8 @@ BookingConfirmationEmail.PreviewProps = {
   totalAmount: "2,400,000",
   currency: "VND",
   bookingUrl: "https://staywise.vn/account/bookings/SW-20241215-ABCD",
+  verifyUrl: "https://staywise.vn/booking/verify/SW-20241215-ABCD",
+  qrBase64: "",
 };
 
 const successBadge: React.CSSProperties = {
@@ -132,7 +161,6 @@ const successText: React.CSSProperties = {
   color: "#3A6B35",
   fontWeight: 600,
   margin: 0,
-  fontFamily: "'Nunito Sans', sans-serif",
   letterSpacing: "0.03em",
 };
 const h1: React.CSSProperties = {
@@ -148,7 +176,6 @@ const body: React.CSSProperties = {
   color: "#4A4035",
   lineHeight: "1.7",
   margin: "0 0 12px",
-  fontFamily: "'Nunito Sans', sans-serif",
 };
 const refBox: React.CSSProperties = {
   backgroundColor: "#EDE8DC",
@@ -166,7 +193,6 @@ const refLabel: React.CSSProperties = {
   letterSpacing: "0.12em",
   margin: "0 0 4px",
   fontWeight: 600,
-  fontFamily: "'Nunito Sans', sans-serif",
 };
 const refValue: React.CSSProperties = {
   fontSize: "20px",
@@ -189,13 +215,11 @@ const sectionTitle: React.CSSProperties = {
   color: DARK,
   margin: "0 0 4px",
   fontFamily: "'Cormorant Garamond', Georgia, serif",
-  letterSpacing: "0.02em",
 };
 const subtext: React.CSSProperties = {
   fontSize: "12px",
   color: "#7A6F5E",
   margin: "0 0 12px",
-  fontFamily: "'Nunito Sans', sans-serif",
 };
 const hrThin: React.CSSProperties = { borderColor: "#E8E0CF", margin: "8px 0" };
 const totalLabel: React.CSSProperties = {
@@ -203,7 +227,6 @@ const totalLabel: React.CSSProperties = {
   color: DARK,
   fontWeight: 700,
   margin: 0,
-  fontFamily: "'Nunito Sans', sans-serif",
 };
 const totalValue: React.CSSProperties = {
   fontSize: "16px",
@@ -211,7 +234,37 @@ const totalValue: React.CSSProperties = {
   fontWeight: 700,
   margin: 0,
   fontFamily: "'Cormorant Garamond', Georgia, serif",
-  letterSpacing: "0.04em",
+};
+const qrSection: React.CSSProperties = {
+  border: "1px solid #DDD6C4",
+  borderRadius: "10px",
+  padding: "20px 24px",
+  marginBottom: "20px",
+  backgroundColor: "#FAF7F2",
+};
+const qrImage: React.CSSProperties = {
+  borderRadius: "8px",
+  border: "1px solid #DDD6C4",
+  display: "block",
+};
+const qrTitle: React.CSSProperties = {
+  fontSize: "13px",
+  fontWeight: 700,
+  color: DARK,
+  margin: "0 0 6px",
+};
+const qrDesc: React.CSSProperties = {
+  fontSize: "12px",
+  color: "#4A4035",
+  lineHeight: "1.6",
+  margin: "0 0 8px",
+};
+const qrLink: React.CSSProperties = {
+  fontSize: "10px",
+  color: "#7A6F5E",
+  margin: 0,
+  wordBreak: "break-all",
+  fontFamily: "monospace",
 };
 const hr: React.CSSProperties = { borderColor: "#DDD6C4", margin: "24px 0" };
 const small: React.CSSProperties = {
@@ -219,9 +272,5 @@ const small: React.CSSProperties = {
   color: "#7A6F5E",
   lineHeight: "1.6",
   margin: 0,
-  fontFamily: "'Nunito Sans', sans-serif",
 };
-const link: React.CSSProperties = {
-  color: DARK,
-  textDecoration: "underline",
-};
+const link: React.CSSProperties = { color: DARK, textDecoration: "underline" };

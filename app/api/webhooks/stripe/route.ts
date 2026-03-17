@@ -9,6 +9,7 @@ import {
 } from "@/lib/email";
 import { format } from "date-fns";
 import Stripe from "stripe";
+import { generateQRBase64 } from "@/lib/qr-code";
 
 export async function POST(req: NextRequest) {
   const body = await req.text();
@@ -55,12 +56,10 @@ async function onPaymentSucceeded(pi: Stripe.PaymentIntent) {
     where: { stripePaymentIntentId: pi.id },
     select: {
       id: true,
-      status: true,
+      bookingId: true,
       booking: {
         select: {
           id: true,
-          status: true,
-          paymentStatus: true,
           bookingRef: true,
           checkIn: true,
           checkOut: true,
@@ -68,6 +67,8 @@ async function onPaymentSucceeded(pi: Stripe.PaymentIntent) {
           currency: true,
           guestName: true,
           guestEmail: true,
+          status: true,
+          paymentStatus: true,
           items: {
             select: {
               id: true,
@@ -93,7 +94,6 @@ async function onPaymentSucceeded(pi: Stripe.PaymentIntent) {
       },
     },
   });
-
   if (!payment) return;
 
   const { booking } = payment;
@@ -102,6 +102,8 @@ async function onPaymentSucceeded(pi: Stripe.PaymentIntent) {
     return;
   if (booking.status === "CANCELLED") return;
 
+  const item = booking.items[0];
+
   await prisma.$transaction([
     prisma.payment.update({
       where: { id: payment.id },
@@ -109,7 +111,7 @@ async function onPaymentSucceeded(pi: Stripe.PaymentIntent) {
     }),
     prisma.booking.update({
       where: { id: booking.id },
-      data: { status: "CONFIRMED", paymentStatus: "PAID", expiresAt: null },
+      data: { status: "CONFIRMED", paymentStatus: "PAID" },
     }),
     prisma.bookingItem.updateMany({
       where: { bookingId: booking.id },
@@ -121,32 +123,38 @@ async function onPaymentSucceeded(pi: Stripe.PaymentIntent) {
     }),
   ]);
 
-  const item = booking.items[0];
-  if (!booking.guestEmail || !item) return;
+  if (booking.guestEmail && item) {
+    const hotelAddress = [
+      booking.hotel.address?.street,
+      booking.hotel.address?.city.name,
+    ]
+      .filter(Boolean)
+      .join(", ");
 
-  const hotelAddress = [
-    booking.hotel.address?.street,
-    booking.hotel.address?.city.name,
-  ]
-    .filter(Boolean)
-    .join(", ");
+    const verifyUrl = `${env.NEXT_PUBLIC_APP_URL}/booking/verify/${booking.bookingRef}`;
+    const qrBase64 = await generateQRBase64(verifyUrl);
 
-  await sendBookingConfirmation({
-    to: booking.guestEmail,
-    name: booking.guestName,
-    bookingRef: booking.bookingRef,
-    hotelName: booking.hotel.name,
-    hotelAddress,
-    roomName: item.room.name,
-    checkIn: format(booking.checkIn, "EEEE, dd/MM/yyyy"),
-    checkOut: format(booking.checkOut, "EEEE, dd/MM/yyyy"),
-    nights: item.nights,
-    adults: item.adults,
-    children: item.children,
-    totalAmount: Number(booking.totalAmount).toLocaleString("vi-VN"),
-    currency: booking.currency,
-    bookingUrl: `${env.NEXT_PUBLIC_APP_URL}/account/bookings/${booking.bookingRef}`,
-  }).catch((err) => console.error("[email] booking-confirmation failed", err));
+    await sendBookingConfirmation({
+      to: booking.guestEmail,
+      name: booking.guestName,
+      bookingRef: booking.bookingRef,
+      hotelName: booking.hotel.name,
+      hotelAddress,
+      roomName: item.room.name,
+      checkIn: format(booking.checkIn, "EEEE, dd/MM/yyyy"),
+      checkOut: format(booking.checkOut, "EEEE, dd/MM/yyyy"),
+      nights: item.nights,
+      adults: item.adults,
+      children: item.children,
+      totalAmount: Number(booking.totalAmount).toLocaleString("vi-VN"),
+      currency: booking.currency,
+      bookingUrl: `${env.NEXT_PUBLIC_APP_URL}/account/bookings/${booking.bookingRef}`,
+      verifyUrl,
+      qrBase64,
+    }).catch((err) =>
+      console.error("[email] booking-confirmation failed", err),
+    );
+  }
 }
 
 async function onPaymentFailed(pi: Stripe.PaymentIntent) {

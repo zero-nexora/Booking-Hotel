@@ -47,6 +47,17 @@ export const HotelDetailClient = ({
     <div className="max-w-6xl mx-auto px-4 py-6 space-y-8">
       <ImageGallery images={hotel.images} hotelName={hotel.name} />
 
+      <div className="md:hidden">
+        <BookingSidebar
+          minPrice={minPrice}
+          hotelSlug={slug}
+          defaultCheckIn={checkIn}
+          defaultCheckOut={checkOut}
+          defaultAdults={adults}
+          defaultChildren={childCount}
+        />
+      </div>
+
       <div className="flex gap-8">
         <div className="flex-1 min-w-0 space-y-8">
           <HotelOverview
@@ -140,7 +151,7 @@ export const HotelDetailClient = ({
           </section>
         </div>
 
-        <aside className="w-full lg:w-80 shrink-0">
+        <aside className="box-block lg:w-80 shrink-0">
           <div className="sticky top-24">
             <BookingSidebar
               minPrice={minPrice}

@@ -24,6 +24,7 @@ import { PaymentHistory } from "./payment-history";
 import { CancelSection } from "./cancel-section";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { formatCurrencyUSD, formatDateShort } from "@/lib/utils";
+import { BookingPrint } from "../booking/booking-print";
 
 interface BookingDetailClientProps {
   bookingRef: string;
@@ -66,7 +67,10 @@ export const BookingDetailClient = ({
             #{booking.bookingRef}
           </p>
         </div>
-        <StatusBadge status={booking.status} type="booking" />
+        <div className="flex items-center gap-4">
+          <StatusBadge status={booking.status} type="booking" />
+          <BookingPrint booking={booking} />
+        </div>
       </div>
 
       <div className="rounded-2xl border border-border bg-card shadow-none p-5">

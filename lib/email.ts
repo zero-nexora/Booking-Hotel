@@ -74,6 +74,8 @@ export const sendBookingConfirmation = async (opts: {
   totalAmount: string;
   currency: string;
   bookingUrl: string;
+  verifyUrl: string;
+  qrBase64: string;
 }) => {
   const { BookingConfirmationEmail } =
     await import("../emails/booking-confirmation");

@@ -25,6 +25,7 @@ export const env = createEnv({
     QSTASH_TOKEN: z.string(),
     QSTASH_CURRENT_SIGNING_KEY: z.string(),
     QSTASH_NEXT_SIGNING_KEY: z.string(),
+    CRON_SECRET: z.string(),
 
     // UploadThing
     // UPLOADTHING_SECRET: z.string(),
@@ -55,6 +56,7 @@ export const env = createEnv({
     QSTASH_TOKEN: process.env.QSTASH_TOKEN,
     QSTASH_CURRENT_SIGNING_KEY: process.env.QSTASH_CURRENT_SIGNING_KEY,
     QSTASH_NEXT_SIGNING_KEY: process.env.QSTASH_NEXT_SIGNING_KEY,
+    CRON_SECRET: process.env.CRON_SECRET,
     // UPLOADTHING_SECRET: process.env.UPLOADTHING_SECRET,
     // UPLOADTHING_APP_ID: process.env.UPLOADTHING_APP_ID,
     UPLOADTHING_TOKEN: process.env.UPLOADTHING_TOKEN,
