@@ -11,6 +11,7 @@ import {
   Wind,
   Coffee,
   Shield,
+  Sparkles,
 } from "lucide-react";
 
 const iconMap: Record<string, React.ElementType> = {
@@ -41,7 +42,7 @@ export const TopAmenities = () => {
     <div className="flex flex-wrap gap-2.5">
       {amenities?.map((amenity) => {
         const iconKey = amenity.icon?.toLowerCase() ?? "";
-        const Icon = iconMap[iconKey] ?? Wifi;
+        const Icon = iconMap[iconKey] ?? Sparkles;
         return (
           <div
             key={amenity.id}

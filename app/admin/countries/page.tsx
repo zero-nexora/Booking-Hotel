@@ -2,6 +2,8 @@ import { CountryListClient } from "@/components/admin/country/country-list-clien
 import { getQueryClient, trpc } from "@/trpc/server";
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 
+export const dynamic = "force-dynamic";
+
 const AdminCountriesPage = async () => {
   const queryClient = getQueryClient();
 

@@ -2,6 +2,8 @@ import { AmenityListClient } from "@/components/admin/amenity/amenity-list-clien
 import { getQueryClient, trpc } from "@/trpc/server";
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 
+export const dynamic = "force-dynamic";
+
 const AdminAmenitiesPage = async () => {
   const queryClient = getQueryClient();
 

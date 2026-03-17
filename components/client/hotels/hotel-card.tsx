@@ -2,7 +2,19 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { Star, MapPin, Wifi } from "lucide-react";
+import {
+  Star,
+  MapPin,
+  Wifi,
+  Sparkles,
+  Car,
+  Dumbbell,
+  UtensilsCrossed,
+  Waves,
+  Wind,
+  Coffee,
+  Shield,
+} from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { formatCurrencyUSD, toDateParam } from "@/lib/utils";
@@ -20,6 +32,17 @@ type Hotel = {
   images: { url: string; alt?: string | null }[];
   address: { city: { name: string; country: { name: string } } };
   amenities: { amenity: { name: string; icon?: string | null } }[];
+};
+
+const iconMap: Record<string, React.ElementType> = {
+  wifi: Wifi,
+  parking: Car,
+  gym: Dumbbell,
+  restaurant: UtensilsCrossed,
+  pool: Waves,
+  ac: Wind,
+  coffee: Coffee,
+  security: Shield,
 };
 
 interface HotelCardProps {
@@ -158,15 +181,19 @@ export const HotelCard = ({ hotel, view, nights = 1 }: HotelCardProps) => {
 
           {hotel.amenities.length > 0 && (
             <div className="flex flex-wrap gap-1.5">
-              {hotel.amenities.slice(0, 4).map((a) => (
-                <span
-                  key={a.amenity.name}
-                  className="flex items-center gap-1 text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full border border-border"
-                >
-                  <Wifi className="w-2.5 h-2.5" />
-                  {a.amenity.name}
-                </span>
-              ))}
+              {hotel.amenities.slice(0, 4).map((a) => {
+                const iconKey = a.amenity.icon?.toLowerCase() ?? "";
+                const Icon = iconMap[iconKey] ?? Sparkles;
+                return (
+                  <span
+                    key={a.amenity.name}
+                    className="flex items-center gap-1 text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full border border-border"
+                  >
+                    <Icon className="w-3.5 h-3.5" />
+                    <span>{a.amenity.name}</span>
+                  </span>
+                );
+              })}
             </div>
           )}
 

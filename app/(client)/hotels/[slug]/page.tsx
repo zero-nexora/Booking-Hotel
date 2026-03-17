@@ -18,7 +18,7 @@ const HotelDetailPage = async ({
   const { checkIn, checkOut, adults, children } =
     await hotelSearchCache.parse(searchParams);
 
-  void Promise.all([
+  await Promise.all([
     queryClient.prefetchQuery(
       trpc.client.hotel.detail.queryOptions({
         slug,

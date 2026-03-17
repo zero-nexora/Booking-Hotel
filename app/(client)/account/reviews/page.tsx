@@ -2,6 +2,8 @@ import { MyReviewsClient } from "@/components/client/account/my-reviews-client";
 import { getQueryClient, trpc } from "@/trpc/server";
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 
+export const dynamic = "force-dynamic";
+
 const MyReviewsPage = async () => {
   const queryClient = getQueryClient();
 

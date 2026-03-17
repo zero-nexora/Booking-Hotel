@@ -2,6 +2,8 @@ import { RoomTypeListClient } from "@/components/admin/room-type/room-type-list-
 import { getQueryClient, trpc } from "@/trpc/server";
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 
+export const dynamic = "force-dynamic";
+
 const AdminRoomTypesPage = async () => {
   const queryClient = getQueryClient();
 

@@ -2,6 +2,8 @@ import { HydrationBoundary, dehydrate } from "@tanstack/react-query";
 import { getQueryClient, trpc } from "@/trpc/server";
 import { DashboardClient } from "@/components/admin/dashboard/dashboard-client";
 
+export const dynamic = "force-dynamic";
+
 const AdminDashboardPage = async () => {
   const queryClient = getQueryClient();
 

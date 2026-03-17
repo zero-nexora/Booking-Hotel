@@ -2,6 +2,8 @@ import { HomeClient } from "@/components/client/home/home-client";
 import { getQueryClient, trpc } from "@/trpc/server";
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 
+export const dynamic = "force-dynamic";
+
 const HomePage = async () => {
   const queryClient = getQueryClient();
 

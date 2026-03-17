@@ -119,9 +119,8 @@ export const BookingClient = ({ hotelSlug, roomSlug }: BookingClientProps) => {
           Phòng không tồn tại hoặc đã được đặt.
         </p>
         <Button
-          variant="outline"
           size="sm"
-          className="mt-4 border-border text-foreground hover:bg-muted"
+          className="mt-4 bg-primary text-primary-foreground hover:bg-primary/90"
           asChild
         >
           <Link href={`/hotels/${hotelSlug}`}>Chọn phòng khác</Link>
@@ -215,8 +214,8 @@ export const BookingClient = ({ hotelSlug, roomSlug }: BookingClientProps) => {
         />
       )}
 
-      <div className="flex gap-6 items-start">
-        <div className="flex-1 min-w-0 space-y-6">
+      <div className="flex wrapper gap-6 items-start">
+        <div className="flex-1 min-w-0 space-y-6 w-full">
           {step === "guest" && (
             <Form {...form}>
               <form
@@ -252,7 +251,25 @@ export const BookingClient = ({ hotelSlug, roomSlug }: BookingClientProps) => {
           )}
         </div>
 
-        <div className="w-full lg:w-80 shrink-0">
+        <div className="md:hidden w-full">
+          <BookingSummary
+            hotelName={hotel.name}
+            hotelImage={hotelImage}
+            roomName={room.name}
+            roomType={room.roomType.name}
+            checkIn={checkIn}
+            checkOut={checkOut}
+            adults={adults}
+            childCount={children}
+            pricePerNight={pricePerNight}
+            currency="USD"
+            checkInTime={hotel.policy?.checkInTime}
+            checkOutTime={hotel.policy?.checkOutTime}
+            expiresAt={intentData?.expiresAt}
+          />
+        </div>
+
+        <div className="box-block md:w-80 shrink-0 w-full">
           <div className="sticky top-24">
             <BookingSummary
               hotelName={hotel.name}

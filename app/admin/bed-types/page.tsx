@@ -2,6 +2,8 @@ import { BedTypeListClient } from "@/components/admin/bed-type/bed-type-list-cli
 import { getQueryClient, trpc } from "@/trpc/server";
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 
+export const dynamic = "force-dynamic";
+
 const AdminBedTypesPage = async () => {
   const queryClient = getQueryClient();
 

@@ -2,6 +2,8 @@ import { AccountOverviewClient } from "@/components/client/account/account-overv
 import { getQueryClient, trpc } from "@/trpc/server";
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 
+export const dynamic = "force-dynamic";
+
 const AccountPage = async () => {
   const queryClient = getQueryClient();
 
