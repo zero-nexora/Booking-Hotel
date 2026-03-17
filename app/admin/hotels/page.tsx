@@ -13,7 +13,7 @@ const AdminHotelsPage = async ({ searchParams }: AdminHotelsPageProps) => {
   const { limit, page, search, status, starRating, cityId, countryId } =
     await adminHotelCache.parse(searchParams);
 
-  await queryClient.prefetchQuery(
+  void queryClient.prefetchQuery(
     trpc.admin.hotel.list.queryOptions({
       limit,
       page,

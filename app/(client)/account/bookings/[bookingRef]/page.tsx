@@ -10,7 +10,7 @@ const BookingDetailPage = async ({ params }: BookingDetailPageProps) => {
   const { bookingRef } = await params;
   const queryClient = getQueryClient();
 
-  await queryClient.prefetchQuery(
+  void queryClient.prefetchQuery(
     trpc.client.booking.bookingDetail.queryOptions({ bookingRef }),
   );
 

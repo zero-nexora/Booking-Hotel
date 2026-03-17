@@ -15,7 +15,7 @@ const AdminBookingsPage = async ({ searchParams }: AdminBookingsPageProps) => {
 
   const queryClient = getQueryClient();
 
-  await Promise.all([
+  void Promise.all([
     queryClient.prefetchQuery(
       trpc.admin.booking.list.queryOptions({
         page: listParams.page,

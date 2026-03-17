@@ -154,9 +154,14 @@ export const hotelRouter = createTRPCRouter({
         sort,
         cursor,
         limit,
+        adults,
+        children,
       } = input;
 
-      const roomWhere: Prisma.RoomWhereInput = { isActive: true };
+      const roomWhere: Prisma.RoomWhereInput = {
+        isActive: true,
+        capacity: { gte: adults + children },
+      };
 
       if (minPrice !== undefined || maxPrice !== undefined) {
         roomWhere.basePrice = {
@@ -274,6 +279,8 @@ export const hotelRouter = createTRPCRouter({
         slug: z.string(),
         checkIn: z.date().optional(),
         checkOut: z.date().optional(),
+        adults: z.number().int().min(1).default(1),
+        children: z.number().int().min(0).default(0),
       }),
     )
     .query(async ({ ctx, input }) => {
@@ -296,6 +303,7 @@ export const hotelRouter = createTRPCRouter({
               rooms: {
                 where: {
                   isActive: true,
+                  capacity: { gte: input.adults + input.children },
                   availability: {
                     every: {
                       date: { gte: input.checkIn, lte: input.checkOut },

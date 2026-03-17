@@ -10,7 +10,7 @@ const ConfirmationPage = async ({ params }: ConfirmationPageProps) => {
   const { bookingRef } = await params;
   const queryClient = getQueryClient();
 
-  await queryClient.prefetchQuery(
+  void queryClient.prefetchQuery(
     trpc.client.booking.getConfirmation.queryOptions({ bookingRef }),
   );
 

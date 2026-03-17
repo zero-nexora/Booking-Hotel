@@ -10,7 +10,7 @@ const BookingVerifyPage = async ({ params }: BookingVerifyPageProps) => {
   const { bookingRef } = await params;
   const queryClient = getQueryClient();
 
-  await queryClient.prefetchQuery(
+  void queryClient.prefetchQuery(
     trpc.client.booking.getVerification.queryOptions({ bookingRef }),
   );
 

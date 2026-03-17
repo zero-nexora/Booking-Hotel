@@ -105,7 +105,7 @@ export const ImageGallery = ({ images, hotelName }: ImageGalleryProps) => {
           className="fixed inset-0 z-50 flex flex-col"
           onClick={closeLightbox}
         >
-          <div className="absolute inset-0 bg-foreground/95 backdrop-blur-sm" />
+          <div className="absolute inset-0 bg-background/95 backdrop-blur-sm" />
 
           <div
             className="relative z-10 flex items-center justify-between px-5 py-4"
@@ -118,12 +118,12 @@ export const ImageGallery = ({ images, hotelName }: ImageGalleryProps) => {
               <span className="text-xs text-background/40 tabular-nums">
                 {lightboxIndex + 1} / {images.length}
               </span>
-              <button
+              <Button
                 onClick={closeLightbox}
-                className="flex items-center justify-center w-8 h-8 rounded-full bg-background/10 hover:bg-background/20 text-background"
+                className="flex items-center justify-center w-8 h-8 rounded-full"
               >
                 <X className="w-4 h-4" />
-              </button>
+              </Button>
             </div>
           </div>
 

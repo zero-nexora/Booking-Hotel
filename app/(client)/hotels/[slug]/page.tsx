@@ -18,12 +18,14 @@ const HotelDetailPage = async ({
   const { checkIn, checkOut, adults, children } =
     await hotelSearchCache.parse(searchParams);
 
-  await Promise.all([
+  void Promise.all([
     queryClient.prefetchQuery(
       trpc.client.hotel.detail.queryOptions({
         slug,
         checkIn: checkIn ?? undefined,
         checkOut: checkOut ?? undefined,
+        adults,
+        children,
       }),
     ),
     queryClient.prefetchInfiniteQuery(
@@ -40,13 +42,7 @@ const HotelDetailPage = async ({
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      <HotelDetailClient
-        slug={slug}
-        checkIn={checkIn ?? undefined}
-        checkOut={checkOut ?? undefined}
-        adults={adults}
-        childCount={children}
-      />
+      <HotelDetailClient slug={slug} />
     </HydrationBoundary>
   );
 };

@@ -5,7 +5,7 @@ import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 const AdminAmenitiesPage = async () => {
   const queryClient = getQueryClient();
 
-  await Promise.all([
+  void Promise.all([
     queryClient.prefetchQuery(trpc.admin.location.listCities.queryOptions({})),
     queryClient.prefetchQuery(trpc.admin.location.listCities.queryFilter()),
   ]);

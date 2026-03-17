@@ -12,7 +12,7 @@ const AdminReviewsPage = async ({ searchParams }: AdminReviewsPageProps) => {
   const params = await adminReviewCache.parse(searchParams);
   const queryClient = getQueryClient();
 
-  await queryClient.prefetchQuery(
+  void queryClient.prefetchQuery(
     trpc.admin.review.list.queryOptions({
       page: params.page,
       limit: params.limit,

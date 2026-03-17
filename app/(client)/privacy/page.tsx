@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   description: "Chính sách bảo mật và quyền riêng tư của Staywise",
 };
 
-const LAST_UPDATED = "01/01/2025";
+const LAST_UPDATED = "01/01/2026";
 
 const sections = [
   {
@@ -133,7 +133,7 @@ Việc tiếp tục sử dụng dịch vụ sau khi chính sách được cập 
 
 Email: privacy@staywise.vn
 Địa chỉ: Tầng 10, Toà nhà Innovation, 123 Nguyễn Huệ, Quận 1, TP. Hồ Chí Minh
-Điện thoại: 1800 1234 (miễn phí, 8:00–22:00 hàng ngày)
+Điện thoại: 1800 1234 (miễn phí, 8:00-22:00 hàng ngày)
 
 Chúng tôi cam kết phản hồi trong vòng 72 giờ làm việc.`,
   },

@@ -35,11 +35,17 @@ export function useHotelSearch(params: HotelSearchParams) {
   );
 }
 
-export function useHotelDetail(slug: string, checkIn?: Date, checkOut?: Date) {
+export function useHotelDetail(
+  slug: string,
+  checkIn?: Date,
+  checkOut?: Date,
+  adults?: number,
+  children?: number,
+) {
   const trpc = useTRPC();
   return useQuery(
     trpc.client.hotel.detail.queryOptions(
-      { slug, checkIn, checkOut },
+      { slug, checkIn, checkOut, adults, children },
       { enabled: !!slug },
     ),
   );

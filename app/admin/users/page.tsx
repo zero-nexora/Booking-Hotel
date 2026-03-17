@@ -13,7 +13,7 @@ const AdminUsersPage = async ({ searchParams }: AdminUsersPageProps) => {
   const { limit, page, search, role } =
     await adminUserCache.parse(searchParams);
 
-  await queryClient.prefetchQuery(
+  void queryClient.prefetchQuery(
     trpc.admin.user.list.queryOptions({
       limit,
       page,

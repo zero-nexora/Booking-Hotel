@@ -1,8 +1,8 @@
 import { getQueryClient, trpc } from "@/trpc/server";
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 import type { SearchParams } from "nuqs/server";
-import { hotelSearchCache } from "@/lib/search-params/hotel-search";
 import { BookingClient } from "@/components/client/booking/booking-client";
+import { bookingCache } from "@/lib/search-params/booking-params";
 
 interface BookingPageProps {
   params: Promise<{ hotelSlug: string; roomSlug: string }>;
@@ -13,26 +13,21 @@ const BookingPage = async ({ params, searchParams }: BookingPageProps) => {
   const { hotelSlug, roomSlug } = await params;
   const queryClient = getQueryClient();
   const { checkIn, checkOut, adults, children } =
-    await hotelSearchCache.parse(searchParams);
+    await bookingCache.parse(searchParams);
 
-  await queryClient.prefetchQuery(
+  void queryClient.prefetchQuery(
     trpc.client.hotel.detail.queryOptions({
       slug: hotelSlug,
       checkIn: checkIn ?? undefined,
       checkOut: checkOut ?? undefined,
+      adults,
+      children,
     }),
   );
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      <BookingClient
-        hotelSlug={hotelSlug}
-        roomSlug={roomSlug}
-        checkIn={checkIn ?? undefined}
-        checkOut={checkOut ?? undefined}
-        adults={adults}
-        childCount={children}
-      />
+      <BookingClient hotelSlug={hotelSlug} roomSlug={roomSlug} />
     </HydrationBoundary>
   );
 };

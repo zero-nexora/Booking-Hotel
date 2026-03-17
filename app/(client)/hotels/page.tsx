@@ -12,7 +12,7 @@ const HotelsPage = async ({ searchParams }: HotelsPageProps) => {
   const queryClient = getQueryClient();
   const params = await hotelSearchCache.parse(searchParams);
 
-  await Promise.all([
+  void Promise.all([
     queryClient.prefetchInfiniteQuery(
       trpc.client.hotel.search.infiniteQueryOptions(
         {

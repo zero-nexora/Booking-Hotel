@@ -5,7 +5,7 @@ import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 const MyReviewsPage = async () => {
   const queryClient = getQueryClient();
 
-  await queryClient.prefetchInfiniteQuery(
+  void queryClient.prefetchInfiniteQuery(
     trpc.client.review.myReviews.infiniteQueryOptions(
       { limit: 10 },
       {

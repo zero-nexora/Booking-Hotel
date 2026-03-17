@@ -11,23 +11,28 @@ import { AvailableRooms } from "./available-rooms";
 import { ReviewsSection } from "./reviews-section";
 import { BookingSidebar } from "./booking-sidebar";
 import { LocationMap } from "./location-map";
+import { useQueryStates } from "nuqs";
+import { hotelSearchParsers } from "@/lib/search-params/hotel-search";
 
 interface HotelDetailClientProps {
   slug: string;
-  checkIn?: Date;
-  checkOut?: Date;
-  adults: number;
-  childCount: number;
 }
 
-export const HotelDetailClient = ({
-  slug,
-  checkIn,
-  checkOut,
-  adults,
-  childCount,
-}: HotelDetailClientProps) => {
-  const { data: hotel, isLoading } = useHotelDetail(slug, checkIn, checkOut);
+export const HotelDetailClient = ({ slug }: HotelDetailClientProps) => {
+  const [params] = useQueryStates(hotelSearchParsers);
+
+  const checkIn = params.checkIn || undefined;
+  const checkOut = params.checkOut || undefined;
+  const adults = params.adults || 1;
+  const childCount = params.children || 0;
+
+  const { data: hotel, isLoading } = useHotelDetail(
+    slug,
+    checkIn,
+    checkOut,
+    adults,
+    childCount,
+  );
 
   if (isLoading) return <HotelDetailSkeleton />;
 
@@ -50,7 +55,6 @@ export const HotelDetailClient = ({
       <div className="md:hidden">
         <BookingSidebar
           minPrice={minPrice}
-          hotelSlug={slug}
           defaultCheckIn={checkIn}
           defaultCheckOut={checkOut}
           defaultAdults={adults}
@@ -155,7 +159,6 @@ export const HotelDetailClient = ({
           <div className="sticky top-24">
             <BookingSidebar
               minPrice={minPrice}
-              hotelSlug={slug}
               defaultCheckIn={checkIn}
               defaultCheckOut={checkOut}
               defaultAdults={adults}

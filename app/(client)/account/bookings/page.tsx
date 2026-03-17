@@ -14,7 +14,7 @@ const AccountBookingsPage = async ({
   const queryClient = getQueryClient();
   const params = await accountBookingCache.parse(searchParams);
 
-  await queryClient.prefetchInfiniteQuery(
+  void queryClient.prefetchInfiniteQuery(
     trpc.client.booking.myBookings.infiniteQueryOptions(
       { status: params.status ?? undefined, limit: 10 },
       {

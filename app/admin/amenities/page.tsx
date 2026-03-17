@@ -5,7 +5,7 @@ import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 const AdminAmenitiesPage = async () => {
   const queryClient = getQueryClient();
 
-  await queryClient.prefetchQuery(trpc.admin.amenity.list.queryOptions());
+  void queryClient.prefetchQuery(trpc.admin.amenity.list.queryOptions());
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>

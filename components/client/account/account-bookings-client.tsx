@@ -7,7 +7,6 @@ import {
   Building2,
   BedDouble,
   ChevronRight,
-  Loader2,
   BookX,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -15,8 +14,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useMyBookings } from "@/hooks/client/use-booking";
 import { cn, formatCurrencyUSD, formatDateShort } from "@/lib/utils";
 import { accountBookingParsers } from "@/lib/search-params/booking-search";
-import { useInfiniteScroll } from "@/hooks/use-infinity-scroll";
 import { StatusBadge } from "@/components/shared/status-badge";
+import { LoadMoreTrigger } from "@/components/shared/load-more-trigger";
 
 type BookingStatus =
   | "PENDING"
@@ -48,11 +47,6 @@ export const AccountBookingsClient = () => {
 
   const { data, isLoading, isFetchingNextPage, hasNextPage, fetchNextPage } =
     useMyBookings(params);
-  const { sentinelRef } = useInfiniteScroll({
-    hasNextPage,
-    isFetchingNextPage,
-    fetchNextPage,
-  });
 
   const bookings = data?.pages.flatMap((p) => p.items) ?? [];
 
@@ -212,12 +206,12 @@ export const AccountBookingsClient = () => {
         </div>
       )}
 
-      <div ref={sentinelRef} className="h-2" />
-      {isFetchingNextPage && (
-        <div className="flex justify-center py-4">
-          <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
-        </div>
-      )}
+      <LoadMoreTrigger
+        fetchNextPage={fetchNextPage}
+        hasNextPage={hasNextPage}
+        isFetchingNextPage={isFetchingNextPage}
+      />
+
       {!hasNextPage && bookings.length > 6 && (
         <p className="text-center text-xs text-muted-foreground py-2">
           Đã hiển thị tất cả {bookings.length} đặt phòng

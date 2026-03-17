@@ -8,10 +8,18 @@ const sendEmail = async ({
   to,
   subject,
   react,
+  attachments,
 }: {
   to: string;
   subject: string;
   react: React.ReactElement;
+  attachments?: {
+    filename: string;
+    content: string;
+    content_type: string;
+    content_id: string;
+    inline: boolean;
+  }[];
 }) => {
   const { data, error } = await resend.emails.send({
     from: FROM,
@@ -19,6 +27,7 @@ const sendEmail = async ({
     to: "hien_dth235651@student.agu.edu.vn",
     subject,
     react,
+    attachments,
   });
 
   if (error) {
@@ -79,10 +88,23 @@ export const sendBookingConfirmation = async (opts: {
 }) => {
   const { BookingConfirmationEmail } =
     await import("../emails/booking-confirmation");
+
+  const qrCid = `qr-${opts.bookingRef}@staywise.vn`;
+  const qrBase64Data = opts.qrBase64.replace(/^data:image\/png;base64,/, "");
+
   return sendEmail({
     to: opts.to,
     subject: `Xác nhận đặt phòng #${opts.bookingRef} — ${opts.hotelName}`,
-    react: BookingConfirmationEmail(opts),
+    react: BookingConfirmationEmail({ ...opts, qrBase64: `cid:${qrCid}` }),
+    attachments: [
+      {
+        filename: `qr-${opts.bookingRef}.png`,
+        content: qrBase64Data,
+        content_type: "image/png",
+        content_id: qrCid,
+        inline: true,
+      },
+    ],
   });
 };
 

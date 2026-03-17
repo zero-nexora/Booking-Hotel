@@ -22,7 +22,6 @@ import { Card } from "@/components/ui/card";
 
 interface BookingSidebarProps {
   minPrice: number | null;
-  hotelSlug: string;
   defaultCheckIn?: Date;
   defaultCheckOut?: Date;
   defaultAdults?: number;
@@ -31,7 +30,6 @@ interface BookingSidebarProps {
 
 export const BookingSidebar = ({
   minPrice,
-  hotelSlug,
   defaultCheckIn,
   defaultCheckOut,
   defaultAdults = 2,
@@ -149,7 +147,7 @@ export const BookingSidebar = ({
                 setCheckOut(d);
                 updateUrlDates(checkIn, d);
               }}
-              disabled={(date) => date < (checkIn ?? new Date())}
+              disabled={(date) => date <= (checkIn ?? new Date())}
               initialFocus
             />
           </PopoverContent>

@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   description: "Điều khoản và điều kiện sử dụng dịch vụ Staywise",
 };
 
-const LAST_UPDATED = "01/01/2025";
+const LAST_UPDATED = "01/01/2026";
 
 const sections = [
   {
@@ -124,7 +124,7 @@ Nếu bất kỳ điều khoản nào bị coi là không hợp lệ hoặc khô
 
 Email: legal@staywise.vn
 Địa chỉ: Tầng 10, Toà nhà Innovation, 123 Nguyễn Huệ, Quận 1, TP. Hồ Chí Minh
-Điện thoại: 1800 1234 (miễn phí, 8:00–22:00 hàng ngày)`,
+Điện thoại: 1800 1234 (miễn phí, 8:00-22:00 hàng ngày)`,
   },
 ];
 

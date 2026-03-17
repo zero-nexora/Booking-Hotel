@@ -22,6 +22,8 @@ import { BookingSummary } from "./booking-summary";
 import { GuestInfoForm } from "./guest-info-form";
 import { PaymentSection } from "./payment-section";
 import { ExpiryTimer } from "./expiry-timer";
+import { useQueryStates } from "nuqs";
+import { bookingParsers } from "@/lib/search-params/booking-params";
 
 const guestSchema = z.object({
   guestName: z.string().min(1, "Vui lòng nhập họ tên"),
@@ -36,26 +38,24 @@ type Step = "guest" | "payment";
 interface BookingClientProps {
   hotelSlug: string;
   roomSlug: string;
-  checkIn?: Date;
-  checkOut?: Date;
-  adults: number;
-  childCount: number;
 }
 
-export const BookingClient = ({
-  hotelSlug,
-  roomSlug,
-  checkIn,
-  checkOut,
-  adults,
-  childCount,
-}: BookingClientProps) => {
+export const BookingClient = ({ hotelSlug, roomSlug }: BookingClientProps) => {
   const router = useRouter();
+  const [params] = useQueryStates(bookingParsers);
+  const checkIn = params.checkIn || undefined;
+  const checkOut = params.checkOut || undefined;
+  const adults = params.adults || 1;
+  const children = params.children || 0;
+
   const { data: hotel, isLoading } = useHotelDetail(
     hotelSlug,
     checkIn,
     checkOut,
+    adults,
+    children,
   );
+
   const { data: me } = useMe();
 
   const [step, setStep] = useState<Step>("guest");
@@ -89,7 +89,7 @@ export const BookingClient = ({
         specialRequests: "",
       });
     }
-  }, [me]);
+  }, [me, form]);
 
   if (isLoading) return <BookingPageSkeleton />;
 
@@ -142,7 +142,7 @@ export const BookingClient = ({
       checkIn,
       checkOut,
       adults,
-      children: childCount,
+      children,
       ...values,
     });
 
@@ -262,7 +262,7 @@ export const BookingClient = ({
               checkIn={checkIn}
               checkOut={checkOut}
               adults={adults}
-              childCount={childCount}
+              childCount={children}
               pricePerNight={pricePerNight}
               currency="USD"
               checkInTime={hotel.policy?.checkInTime}

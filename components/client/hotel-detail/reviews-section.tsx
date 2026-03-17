@@ -1,12 +1,12 @@
 "use client";
 
-import { Star, Loader2, Quote } from "lucide-react";
+import { Star, Quote } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useHotelReviews } from "@/hooks/client/use-hotels";
-import { useInfiniteScroll } from "@/hooks/use-infinity-scroll";
 import { Card } from "@/components/ui/card";
 import { formatDateShort } from "@/lib/utils";
+import { LoadMoreTrigger } from "@/components/shared/load-more-trigger";
 
 interface ReviewsSectionProps {
   hotelId: string;
@@ -21,11 +21,6 @@ export const ReviewsSection = ({
 }: ReviewsSectionProps) => {
   const { data, isLoading, isFetchingNextPage, hasNextPage, fetchNextPage } =
     useHotelReviews(hotelId);
-  const { sentinelRef } = useInfiniteScroll({
-    hasNextPage,
-    isFetchingNextPage,
-    fetchNextPage,
-  });
 
   const reviews = data?.pages.flatMap((p) => p.items) ?? [];
 
@@ -140,12 +135,16 @@ export const ReviewsSection = ({
         </div>
       )}
 
-      <div ref={sentinelRef} className="h-2" />
+      <LoadMoreTrigger
+        fetchNextPage={fetchNextPage}
+        hasNextPage={hasNextPage}
+        isFetchingNextPage={isFetchingNextPage}
+      />
 
-      {isFetchingNextPage && (
-        <div className="flex justify-center py-4">
-          <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
-        </div>
+      {!hasNextPage && reviews.length > 0 && (
+        <p className="text-center text-xs text-muted-foreground py-6">
+          Đã hiển thị tất cả {reviews.length} đánh giá
+        </p>
       )}
     </div>
   );

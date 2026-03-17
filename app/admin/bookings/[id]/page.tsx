@@ -12,7 +12,7 @@ const AdminBookingDetailPage = async ({
   const { id } = await params;
   const queryClient = getQueryClient();
 
-  await queryClient.prefetchQuery(
+  void queryClient.prefetchQuery(
     trpc.admin.booking.detail.queryOptions({ id }),
   );
 

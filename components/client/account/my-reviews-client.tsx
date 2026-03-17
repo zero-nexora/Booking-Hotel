@@ -5,7 +5,6 @@ import {
   Star,
   Building2,
   CalendarDays,
-  Loader2,
   MessageSquarePlus,
   Clock,
 } from "lucide-react";
@@ -13,9 +12,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
-import { useInfiniteScroll } from "@/hooks/use-infinity-scroll";
 import { useMyReviews } from "@/hooks/client/use-reviews";
 import { formatDateShort } from "@/lib/utils";
+import { LoadMoreTrigger } from "@/components/shared/load-more-trigger";
 
 const REVIEW_STATUS_MAP: Record<string, { label: string; className: string }> =
   {
@@ -36,11 +35,6 @@ const REVIEW_STATUS_MAP: Record<string, { label: string; className: string }> =
 export const MyReviewsClient = () => {
   const { data, isLoading, isFetchingNextPage, hasNextPage, fetchNextPage } =
     useMyReviews();
-  const { sentinelRef } = useInfiniteScroll({
-    hasNextPage,
-    isFetchingNextPage,
-    fetchNextPage,
-  });
 
   const reviews = data?.pages.flatMap((p) => p.items) ?? [];
 
@@ -170,13 +164,13 @@ export const MyReviewsClient = () => {
         </div>
       )}
 
-      <div ref={sentinelRef} className="h-2" />
-      {isFetchingNextPage && (
-        <div className="flex justify-center py-4">
-          <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
-        </div>
-      )}
-      {!hasNextPage && reviews.length > 5 && (
+      <LoadMoreTrigger
+        fetchNextPage={fetchNextPage}
+        hasNextPage={hasNextPage}
+        isFetchingNextPage={isFetchingNextPage}
+      />
+
+      {!hasNextPage && reviews.length > 0 && (
         <p className="text-center text-xs text-muted-foreground py-2">
           Đã hiển thị tất cả {reviews.length} đánh giá
         </p>

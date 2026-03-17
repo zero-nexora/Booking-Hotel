@@ -10,7 +10,7 @@ const WriteReviewPage = async ({ params }: WriteReviewPageProps) => {
   const { bookingRef } = await params;
   const queryClient = getQueryClient();
 
-  await queryClient.prefetchQuery(
+  void queryClient.prefetchQuery(
     trpc.client.review.getForBooking.queryOptions({ bookingRef }),
   );
 
