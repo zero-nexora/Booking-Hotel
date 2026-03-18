@@ -13,11 +13,7 @@ async function handler(_req: NextRequest) {
     },
     select: {
       id: true,
-      items: {
-        select: {
-          id: true,
-        },
-      },
+      items: { select: { id: true } },
     },
   });
 
@@ -30,9 +26,7 @@ async function handler(_req: NextRequest) {
 
   await prisma.$transaction([
     prisma.booking.updateMany({
-      where: {
-        id: { in: bookingIds },
-      },
+      where: { id: { in: bookingIds } },
       data: {
         status: "CANCELLED",
         cancelledAt: now,
@@ -40,18 +34,19 @@ async function handler(_req: NextRequest) {
       },
     }),
     prisma.bookingItem.updateMany({
+      where: { id: { in: itemIds } },
+      data: { status: "CANCELLED" },
+    }),
+    prisma.payment.updateMany({
       where: {
-        id: { in: itemIds },
+        bookingId: { in: bookingIds },
+        status: "PENDING",
       },
-      data: {
-        status: "CANCELLED",
-      },
+      data: { status: "CANCELLED" },
     }),
     prisma.roomAvailability.updateMany({
       where: {
-        bookingItem: {
-          id: { in: itemIds },
-        },
+        bookingItemId: { in: itemIds },
       },
       data: {
         status: "AVAILABLE",

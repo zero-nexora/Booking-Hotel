@@ -53,6 +53,7 @@ const PAYMENT_LABEL: Record<string, string> = {
   PAID: "Đã thanh toán",
   REFUNDED: "Đã hoàn tiền",
   FAILED: "Thất bại",
+  CANCELLED: "Đã hủy",
 };
 
 interface BookingPrintProps {

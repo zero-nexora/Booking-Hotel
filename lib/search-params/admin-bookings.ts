@@ -25,6 +25,7 @@ export const adminBookingParsers = {
     "PAID",
     "REFUNDED",
     "FAILED",
+    "CANCELLED"
   ] as const),
   view: parseAsStringEnum(["calendar", "list"]).withDefault("list"),
   hotelId: parseAsString.withDefault(""),

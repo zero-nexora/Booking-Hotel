@@ -9,6 +9,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { formatDatetime, formatCurrencyUSD } from "@/lib/utils";
+import { PAYMENT_STATUS } from "@/components/common/status-badge";
 
 type Payment = {
   id: string;
@@ -20,26 +21,6 @@ type Payment = {
   refundedAt?: Date | null;
   createdAt: Date;
 };
-
-const PAYMENT_STATUS_MAP: Record<string, { label: string; className: string }> =
-  {
-    PENDING: {
-      label: "Đang xử lý",
-      className: "bg-secondary text-secondary-foreground border-border",
-    },
-    PAID: {
-      label: "Thành công",
-      className: "bg-primary/10 text-primary border-primary/20",
-    },
-    REFUNDED: {
-      label: "Đã hoàn",
-      className: "bg-muted text-muted-foreground border-border",
-    },
-    FAILED: {
-      label: "Thất bại",
-      className: "bg-destructive/10 text-destructive border-destructive/20",
-    },
-  };
 
 interface PaymentHistoryProps {
   payments: Payment[];
@@ -70,7 +51,7 @@ export const PaymentHistory = ({ payments }: PaymentHistoryProps) => {
         <TableBody>
           {payments.map((p) => {
             const statusInfo =
-              PAYMENT_STATUS_MAP[p.status] ?? PAYMENT_STATUS_MAP.PENDING;
+              PAYMENT_STATUS[p.status] ?? PAYMENT_STATUS.PENDING;
             const date = p.paidAt ?? p.refundedAt ?? p.createdAt;
             return (
               <TableRow key={p.id} className="border-border hover:bg-muted/40">

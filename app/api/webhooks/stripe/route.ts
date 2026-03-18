@@ -111,7 +111,7 @@ async function onPaymentSucceeded(pi: Stripe.PaymentIntent) {
     }),
     prisma.booking.update({
       where: { id: booking.id },
-      data: { status: "CONFIRMED", paymentStatus: "PAID" },
+      data: { status: "CONFIRMED", paymentStatus: "PAID", expiresAt: null },
     }),
     prisma.bookingItem.updateMany({
       where: { bookingId: booking.id },
@@ -165,6 +165,7 @@ async function onPaymentFailed(pi: Stripe.PaymentIntent) {
       status: true,
       booking: {
         select: {
+          id: true,
           bookingRef: true,
           checkIn: true,
           checkOut: true,
@@ -247,14 +248,10 @@ async function onChargeRefunded(charge: Stripe.Charge) {
       where: { id: { in: pendingRefunds.map((p) => p.id) } },
       data: { status: "REFUNDED", refundedAt: now },
     }),
-    ...(chargePayment.booking.paymentStatus !== "REFUNDED"
-      ? [
-          prisma.booking.update({
-            where: { id: chargePayment.bookingId },
-            data: { paymentStatus: "REFUNDED" },
-          }),
-        ]
-      : []),
+    prisma.booking.update({
+      where: { id: chargePayment.bookingId },
+      data: { paymentStatus: "REFUNDED" },
+    }),
   ]);
 }
 

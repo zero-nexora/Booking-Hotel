@@ -1,5 +1,9 @@
 import { z } from "zod";
-import { baseProcedure, createTRPCRouter, protectedProcedure } from "@/trpc/init";
+import {
+  baseProcedure,
+  createTRPCRouter,
+  protectedProcedure,
+} from "@/trpc/init";
 import { TRPCError } from "@trpc/server";
 import Stripe from "stripe";
 import {
@@ -89,7 +93,11 @@ export const bookingRouter = createTRPCRouter({
       const { hotelSlug, roomSlug, checkIn, checkOut, adults, children } =
         input;
 
-      if (checkIn > checkOut) throw new TRPCError({code: "BAD_REQUEST", message: "Ngày checkout phải sau nagyf checkin"})
+      if (checkIn >= checkOut)
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Ngày checkout phải sau ngày checkin",
+        });
 
       const [hotel, room] = await Promise.all([
         ctx.db.hotel.findUnique({
@@ -101,7 +109,7 @@ export const bookingRouter = createTRPCRouter({
           select: { id: true, basePrice: true },
         }),
       ]);
-      
+
       if (!hotel)
         throw new TRPCError({
           code: "NOT_FOUND",
@@ -196,7 +204,7 @@ export const bookingRouter = createTRPCRouter({
       let paymentIntent: Stripe.PaymentIntent;
       try {
         paymentIntent = await stripe.paymentIntents.create({
-          amount: Math.round(total * 100),
+          amount: Math.round(Number(total) * 100),
           currency: "usd",
           metadata: { bookingId: booking.id, bookingRef: booking.bookingRef },
         });
@@ -204,7 +212,11 @@ export const bookingRouter = createTRPCRouter({
         await ctx.db.$transaction([
           ctx.db.booking.update({
             where: { id: booking.id },
-            data: { status: "CANCELLED", paymentStatus: "UNPAID" },
+            data: { status: "CANCELLED", paymentStatus: "CANCELLED" },
+          }),
+          ctx.db.payment.update({
+            where: { id: paymentId },
+            data: { status: "CANCELLED" },
           }),
           ctx.db.roomAvailability.updateMany({
             where: { lockToken: booking.id },
@@ -395,6 +407,12 @@ export const bookingRouter = createTRPCRouter({
       }
 
       const hasRefund = refunds.length > 0;
+      // Nếu đã thanh toán nhưng refundPercent = 0 → PAID (không hoàn), còn lại → CANCELLED
+      const newPaymentStatus = hasRefund
+        ? "REFUNDED"
+        : booking!.payments.length > 0
+          ? "PAID"
+          : "CANCELLED";
 
       await ctx.db.$transaction([
         ctx.db.booking.update({
@@ -403,7 +421,7 @@ export const bookingRouter = createTRPCRouter({
             status: "CANCELLED",
             cancelledAt: now,
             cancelReason: input.cancelReason ?? null,
-            ...(hasRefund && { paymentStatus: "REFUNDED" }),
+            paymentStatus: newPaymentStatus,
           },
         }),
         ctx.db.bookingItem.updateMany({
@@ -495,44 +513,43 @@ export const bookingRouter = createTRPCRouter({
   ),
 
   getVerification: baseProcedure
-  .input(z.object({ bookingRef: z.string() }))
-  .query(async ({ ctx, input }) => {
-    const booking = await ctx.db.booking.findUnique({
-      where: { bookingRef: input.bookingRef },
-      select: {
-        bookingRef: true,
-        status: true,
-        paymentStatus: true,
-        checkIn: true,
-        checkOut: true,
-        guestName: true,
-        totalAmount: true,
-        currency: true,
-        hotel: {
-          select: {
-            name: true,
-            starRating: true,
-            address: {
-              select: {
-                street: true,
-                city: { select: { name: true } },
+    .input(z.object({ bookingRef: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const booking = await ctx.db.booking.findUnique({
+        where: { bookingRef: input.bookingRef },
+        select: {
+          bookingRef: true,
+          status: true,
+          paymentStatus: true,
+          checkIn: true,
+          checkOut: true,
+          guestName: true,
+          totalAmount: true,
+          currency: true,
+          hotel: {
+            select: {
+              name: true,
+              starRating: true,
+              address: {
+                select: {
+                  street: true,
+                  city: { select: { name: true } },
+                },
               },
             },
           },
-        },
-        items: {
-          select: {
-            nights: true,
-            adults: true,
-            children: true,
-            room: { select: { name: true } },
+          items: {
+            select: {
+              nights: true,
+              adults: true,
+              children: true,
+              room: { select: { name: true } },
+            },
           },
         },
-      },
-    });
+      });
 
-    if (!booking) throw new TRPCError({ code: "NOT_FOUND" });
-
-    return booking;
-  }),
+      if (!booking) throw new TRPCError({ code: "NOT_FOUND" });
+      return booking;
+    }),
 });

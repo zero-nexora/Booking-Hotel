@@ -19,6 +19,7 @@ export const adminBookingCalendarParsers = {
     "PAID",
     "REFUNDED",
     "FAILED",
+    "CANCELLED"
   ] as const),
   from: parseAsIsoDate,
   to: parseAsIsoDate,

@@ -39,6 +39,7 @@ import { BookingStatus, PaymentStatus } from "@/generated/prisma/enums";
 import { ListHeader } from "@/components/common/list-header";
 import { TableSkeleton } from "@/components/common/table-skeleton";
 import { formatDateShort, formatCurrencyUSD } from "@/lib/utils";
+import { DEFAULT_PAGE } from "@/lib/constants";
 
 type Booking = RouterOutput["admin"]["booking"]["list"]["items"][number];
 
@@ -57,6 +58,7 @@ const PAYMENT_STATUS_OPTIONS = [
   { value: "PAID", label: "Đã thanh toán" },
   { value: "REFUNDED", label: "Đã hoàn tiền" },
   { value: "FAILED", label: "Thất bại" },
+  { value: "CANCELLED", label: "Đã hủy" },
 ];
 
 const BOOKING_STATUS_COLOR: Record<string, string> = {
@@ -156,13 +158,13 @@ export const BookingListClient = () => {
   );
 
   const handleSearchChange = useCallback(
-    (v: string) => setParams({ search: v, page: 1 }),
+    (v: string) => setParams({ search: v, page: DEFAULT_PAGE }),
     [setParams],
   );
 
   const handleStatusChange = useCallback(
     (v: string) =>
-      setParams({ status: v === "all" ? null : (v as BookingStatus), page: 1 }),
+      setParams({ status: v === "all" ? null : (v as BookingStatus), page: DEFAULT_PAGE }),
     [setParams],
   );
 
@@ -170,7 +172,7 @@ export const BookingListClient = () => {
     (v: string) =>
       setParams({
         paymentStatus: v === "all" ? null : (v as PaymentStatus),
-        page: 1,
+        page: DEFAULT_PAGE,
       }),
     [setParams],
   );
@@ -181,7 +183,7 @@ export const BookingListClient = () => {
   );
 
   const handleLimitChange = useCallback(
-    (l: number) => setParams({ limit: l, page: 1 }),
+    (l: number) => setParams({ limit: l, page: DEFAULT_PAGE }),
     [setParams],
   );
 

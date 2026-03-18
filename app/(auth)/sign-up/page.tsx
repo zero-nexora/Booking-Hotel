@@ -76,6 +76,7 @@ const SignUpPage = () => {
           name: values.fullName,
           email: values.email,
           password: values.password,
+          phone: values.phone,
           callbackURL: "/verify-email",
         },
         {

@@ -28,7 +28,7 @@ const BOOKING_STATUS: Record<string, { label: string; className: string }> = {
   },
 };
 
-const PAYMENT_STATUS: Record<string, { label: string; className: string }> = {
+export const PAYMENT_STATUS: Record<string, { label: string; className: string }> = {
   UNPAID: {
     label: "Chưa thanh toán",
     className: "bg-muted text-muted-foreground border-border",
@@ -48,6 +48,10 @@ const PAYMENT_STATUS: Record<string, { label: string; className: string }> = {
   FAILED: {
     label: "Thất bại",
     className: "bg-destructive/10 text-destructive border-destructive/20",
+  },
+  CANCELLED: {
+    label: "Đã hủy",
+    className: "bg-muted/50 text-muted-foreground border-border",
   },
 };
 

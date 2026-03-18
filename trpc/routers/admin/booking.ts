@@ -32,6 +32,7 @@ const paymentStatusEnum = z.enum([
   "PAID",
   "REFUNDED",
   "FAILED",
+  "CANCELLED"
 ]);
 
 const BOOKING_ITEM_STATUS_MAP: Record<string, string> = {

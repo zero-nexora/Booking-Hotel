@@ -169,7 +169,7 @@ export const HeroSearch = () => {
   );
 };
 
-function GuestCounter({
+const GuestCounter = ({
   label,
   sublabel,
   value,
@@ -183,7 +183,7 @@ function GuestCounter({
   min: number;
   max: number;
   onChange: (v: number) => void;
-}) {
+}) => {
   return (
     <div className="flex items-center justify-between">
       <div>
@@ -213,4 +213,4 @@ function GuestCounter({
       </div>
     </div>
   );
-}
+};

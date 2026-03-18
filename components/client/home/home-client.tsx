@@ -61,7 +61,7 @@ export const HomeClient = () => {
           quality={90}
         />
 
-        <div className="relative z-10 max-w-6xl mx-auto px-4 py-24 sm:py-36 text-center">
+        <div className="relative z-10 max-w-7xl mx-auto px-4 py-24 sm:py-36 text-center">
           <HeroSearch />
         </div>
       </section>

@@ -107,7 +107,7 @@ export const ProfileClient = () => {
         image: user.image ?? "",
       });
     }
-  }, [user]);
+  }, [user, profileForm]);
 
   const handleProfileSubmit = async (values: ProfileValues) => {
     await updateProfile.mutateAsync(values);

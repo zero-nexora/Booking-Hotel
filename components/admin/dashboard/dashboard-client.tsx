@@ -44,6 +44,7 @@ import {
   DoorOpen,
 } from "lucide-react";
 import { formatDatetime, formatCurrencyUSD, formatDateFull } from "@/lib/utils";
+import CountUp from "@/components/common/count-up";
 
 const PIE_COLORS = [
   "var(--chart-1)",
@@ -88,6 +89,7 @@ const StatCard = ({ title, value, sub, icon: Icon }: StatCardProps) => (
         <div className="space-y-1">
           <p className="text-sm text-muted-foreground">{title}</p>
           <p className="text-2xl font-bold tracking-tight text-foreground">
+            {/* <CountUp to={value} /> */}
             {value}
           </p>
           {sub && <div className="text-xs text-muted-foreground">{sub}</div>}
