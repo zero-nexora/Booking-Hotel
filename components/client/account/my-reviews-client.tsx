@@ -14,7 +14,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { useMyReviews } from "@/hooks/client/use-reviews";
 import { formatDateShort } from "@/lib/utils";
-import { LoadMoreTrigger } from "@/components/shared/load-more-trigger";
+import { LoadMoreTrigger } from "@/components/common/load-more-trigger";
 
 const REVIEW_STATUS_MAP: Record<string, { label: string; className: string }> =
   {

@@ -20,7 +20,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { RouterOutput } from "@/trpc/client";
-import { FormActions } from "@/components/shared/form-actions";
+import { FormActions } from "@/components/common/form-actions";
 
 export const citySchema = z.object({
   name: z.string().min(2, "Tên phải có ít nhất 2 ký tự").max(100),

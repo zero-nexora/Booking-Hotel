@@ -24,9 +24,9 @@ import { useCallback } from "react";
 import { useConfirmDialogStore } from "@/store/confirm-dialog-store";
 import { useSheetDialogStore } from "@/store/sheet-dialog-store";
 import { adminHotelParsers } from "@/lib/search-params/admin-hotels";
-import { SearchInput } from "@/components/shared/search-input";
-import { Pagination } from "@/components/shared/pagination";
-import { StatusBadge } from "@/components/shared/status-badge";
+import { SearchInput } from "@/components/common/search-input";
+import { Pagination } from "@/components/common/pagination";
+import { StatusBadge } from "@/components/common/status-badge";
 import { CreateHotelForm, EditHotelForm } from "./hotel-form-sheet";
 import { RouterOutput } from "@/trpc/client";
 import { HotelStatus } from "@/generated/prisma/enums";
@@ -35,8 +35,8 @@ import {
   useDeleteHotel,
 } from "@/hooks/admin/use-admin-hotels";
 import { useCityList, useCountryList } from "@/hooks/admin/use-admin-locations";
-import { ListHeader } from "@/components/shared/list-header";
-import { TableSkeleton } from "@/components/shared/table-skeleton";
+import { ListHeader } from "@/components/common/list-header";
+import { TableSkeleton } from "@/components/common/table-skeleton";
 import { DEFAULT_PAGE } from "@/lib/constants";
 
 type Hotel = RouterOutput["admin"]["hotel"]["list"]["items"][number];

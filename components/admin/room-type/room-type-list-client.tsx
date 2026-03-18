@@ -13,13 +13,13 @@ import { useConfirmDialogStore } from "@/store/confirm-dialog-store";
 import { useModalDialogStore } from "@/store/modal-dialog-store";
 import { RouterOutput } from "@/trpc/client";
 import { CreateRoomTypeForm, EditRoomTypeForm } from "./room-type-form-modal";
-import { ListHeader } from "@/components/shared/list-header";
-import { TableSkeleton } from "@/components/shared/table-skeleton";
+import { ListHeader } from "@/components/common/list-header";
+import { TableSkeleton } from "@/components/common/table-skeleton";
 import {
   useDeleteRoomType,
   useRoomTypeList,
 } from "@/hooks/admin/use-admin-room-type";
-import { RowActions } from "@/components/shared/row-actions";
+import { RowActions } from "@/components/common/row-actions";
 
 type RoomType = RouterOutput["admin"]["roomType"]["list"][number];
 

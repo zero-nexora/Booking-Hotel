@@ -24,9 +24,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Pagination } from "@/components/shared/pagination";
-import { SearchInput } from "@/components/shared/search-input";
-import { StatusBadge } from "@/components/shared/status-badge";
+import { Pagination } from "@/components/common/pagination";
+import { SearchInput } from "@/components/common/search-input";
+import { StatusBadge } from "@/components/common/status-badge";
 import {
   useAdminBookingList,
   useAdminBookingCalendar,
@@ -36,8 +36,8 @@ import { RouterOutput } from "@/trpc/client";
 import { adminBookingParsers } from "@/lib/search-params/admin-bookings";
 import { useQueryStates } from "nuqs";
 import { BookingStatus, PaymentStatus } from "@/generated/prisma/enums";
-import { ListHeader } from "@/components/shared/list-header";
-import { TableSkeleton } from "@/components/shared/table-skeleton";
+import { ListHeader } from "@/components/common/list-header";
+import { TableSkeleton } from "@/components/common/table-skeleton";
 import { formatDateShort, formatCurrencyUSD } from "@/lib/utils";
 
 type Booking = RouterOutput["admin"]["booking"]["list"]["items"][number];

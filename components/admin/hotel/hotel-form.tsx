@@ -41,7 +41,7 @@ import { cn } from "@/lib/utils";
 import { AmenityMultiSelect } from "./amenity-multi-select";
 import { RouterOutput } from "@/trpc/client";
 import { useCityList, useCountryList } from "@/hooks/admin/use-admin-locations";
-import { FormActions } from "@/components/shared/form-actions";
+import { FormActions } from "@/components/common/form-actions";
 import { MapPicker } from "@/components/common/map-picker";
 
 export const hotelFormSchema = z.object({

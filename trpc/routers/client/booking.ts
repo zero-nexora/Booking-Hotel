@@ -89,6 +89,8 @@ export const bookingRouter = createTRPCRouter({
       const { hotelSlug, roomSlug, checkIn, checkOut, adults, children } =
         input;
 
+      if (checkIn > checkOut) throw new TRPCError({code: "BAD_REQUEST", message: "Ngày checkout phải sau nagyf checkin"})
+
       const [hotel, room] = await Promise.all([
         ctx.db.hotel.findUnique({
           where: { slug: hotelSlug, status: "ACTIVE" },
@@ -99,7 +101,7 @@ export const bookingRouter = createTRPCRouter({
           select: { id: true, basePrice: true },
         }),
       ]);
-
+      
       if (!hotel)
         throw new TRPCError({
           code: "NOT_FOUND",

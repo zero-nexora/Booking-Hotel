@@ -8,7 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { calcNights, cn } from "@/lib/utils";
 import { hotelSearchParsers } from "@/lib/search-params/hotel-search";
 import { HotelsMapView } from "./hotel-map-view";
-import { LoadMoreTrigger } from "@/components/shared/load-more-trigger";
+import { LoadMoreTrigger } from "@/components/common/load-more-trigger";
 
 export const HotelsList = () => {
   const [params] = useQueryStates(hotelSearchParsers);

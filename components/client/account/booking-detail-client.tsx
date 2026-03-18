@@ -22,7 +22,7 @@ import { useBookingDetail } from "@/hooks/client/use-booking";
 import { StatusTimeline } from "./status-timeline";
 import { PaymentHistory } from "./payment-history";
 import { CancelSection } from "./cancel-section";
-import { StatusBadge } from "@/components/shared/status-badge";
+import { StatusBadge } from "@/components/common/status-badge";
 import { formatCurrencyUSD, formatDateShort } from "@/lib/utils";
 import { BookingPrint } from "../booking/booking-print";
 

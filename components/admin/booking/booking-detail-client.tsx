@@ -10,8 +10,8 @@ import {
 } from "@/hooks/admin/use-admin-bookings";
 import { ArrowLeft } from "lucide-react";
 import { RouterOutput } from "@/trpc/client";
-import { StatusBadge } from "@/components/shared/status-badge";
-import { StarRating } from "@/components/shared/star-rating";
+import { StatusBadge } from "@/components/common/status-badge";
+import { StarRating } from "@/components/common/star-rating";
 import {
   formatDateShort,
   formatDatetime,

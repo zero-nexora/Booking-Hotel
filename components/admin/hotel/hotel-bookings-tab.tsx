@@ -16,16 +16,16 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Pagination } from "@/components/shared/pagination";
-import { SearchInput } from "@/components/shared/search-input";
-import { StatusBadge } from "@/components/shared/status-badge";
+import { Pagination } from "@/components/common/pagination";
+import { SearchInput } from "@/components/common/search-input";
+import { StatusBadge } from "@/components/common/status-badge";
 import { useAdminBookingList } from "@/hooks/admin/use-admin-bookings";
 import { adminBookingParsers } from "@/lib/search-params/admin-bookings";
 import { useQueryStates } from "nuqs";
 import { useCallback } from "react";
 import { RouterOutput } from "@/trpc/client";
 import { BookingStatus, PaymentStatus } from "@/generated/prisma/enums";
-import { TableSkeleton } from "@/components/shared/table-skeleton";
+import { TableSkeleton } from "@/components/common/table-skeleton";
 import { DEFAULT_PAGE } from "@/lib/constants";
 import { formatDateShort, formatCurrencyUSD } from "@/lib/utils";
 

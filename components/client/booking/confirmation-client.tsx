@@ -20,7 +20,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useBookingConfirmation } from "@/hooks/client/use-booking";
 import { BookingPrint } from "./booking-print";
-import { StatusBadge } from "@/components/shared/status-badge";
+import { StatusBadge } from "@/components/common/status-badge";
 import { formatDateShort, formatCurrencyUSD } from "@/lib/utils";
 
 const CONFETTI_COLORS = [

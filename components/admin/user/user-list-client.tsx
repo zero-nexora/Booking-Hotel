@@ -22,9 +22,9 @@ import { CheckCircle2, XCircle } from "lucide-react";
 import { useQueryStates } from "nuqs";
 import { useConfirmDialogStore } from "@/store/confirm-dialog-store";
 import { adminUserParsers } from "@/lib/search-params/admin-users";
-import { SearchInput } from "@/components/shared/search-input";
-import { Pagination } from "@/components/shared/pagination";
-import { StatusBadge } from "@/components/shared/status-badge";
+import { SearchInput } from "@/components/common/search-input";
+import { Pagination } from "@/components/common/pagination";
+import { StatusBadge } from "@/components/common/status-badge";
 import { RouterOutput } from "@/trpc/client";
 import { UserRole } from "@/generated/prisma/enums";
 import { useUser } from "@/lib/auth-client";
@@ -32,8 +32,8 @@ import {
   useAdminUserList,
   useSetUserRole,
 } from "@/hooks/admin/use-admin-users";
-import { ListHeader } from "@/components/shared/list-header";
-import { TableSkeleton } from "@/components/shared/table-skeleton";
+import { ListHeader } from "@/components/common/list-header";
+import { TableSkeleton } from "@/components/common/table-skeleton";
 import { DEFAULT_PAGE } from "@/lib/constants";
 import { formatDateShort } from "@/lib/utils";
 

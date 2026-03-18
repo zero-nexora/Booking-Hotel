@@ -12,7 +12,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { FormActions } from "@/components/shared/form-actions";
+import { FormActions } from "@/components/common/form-actions";
 
 export const countrySchema = z.object({
   name: z.string().min(2, "Tên phải có ít nhất 2 ký tự").max(100),

@@ -14,8 +14,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useMyBookings } from "@/hooks/client/use-booking";
 import { cn, formatCurrencyUSD, formatDateShort } from "@/lib/utils";
 import { accountBookingParsers } from "@/lib/search-params/booking-search";
-import { StatusBadge } from "@/components/shared/status-badge";
-import { LoadMoreTrigger } from "@/components/shared/load-more-trigger";
+import { StatusBadge } from "@/components/common/status-badge";
+import { LoadMoreTrigger } from "@/components/common/load-more-trigger";
 
 type BookingStatus =
   | "PENDING"

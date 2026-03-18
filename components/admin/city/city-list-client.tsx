@@ -27,9 +27,9 @@ import {
   useCountryList,
   useDeleteCity,
 } from "@/hooks/admin/use-admin-locations";
-import { ListHeader } from "@/components/shared/list-header";
-import { TableSkeleton } from "@/components/shared/table-skeleton";
-import { RowActions } from "@/components/shared/row-actions";
+import { ListHeader } from "@/components/common/list-header";
+import { TableSkeleton } from "@/components/common/table-skeleton";
+import { RowActions } from "@/components/common/row-actions";
 
 type City = RouterOutput["admin"]["location"]["listCities"][number];
 

@@ -18,10 +18,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Pagination } from "@/components/shared/pagination";
-import { SearchInput } from "@/components/shared/search-input";
-import { StatusBadge } from "@/components/shared/status-badge";
-import { StarRating } from "@/components/shared/star-rating";
+import { Pagination } from "@/components/common/pagination";
+import { SearchInput } from "@/components/common/search-input";
+import { StatusBadge } from "@/components/common/status-badge";
+import { StarRating } from "@/components/common/star-rating";
 import { Check, X, Eye } from "lucide-react";
 import {
   useAdminReviewList,
@@ -31,8 +31,8 @@ import { useQueryStates } from "nuqs";
 import { adminReviewParsers } from "@/lib/search-params/admin-reviews";
 import { RouterOutput } from "@/trpc/client";
 import { ReviewStatus } from "@/generated/prisma/enums";
-import { ListHeader } from "@/components/shared/list-header";
-import { TableSkeleton } from "@/components/shared/table-skeleton";
+import { ListHeader } from "@/components/common/list-header";
+import { TableSkeleton } from "@/components/common/table-skeleton";
 import { formatDateShort } from "@/lib/utils";
 
 type Review = RouterOutput["admin"]["review"]["list"]["items"][number];

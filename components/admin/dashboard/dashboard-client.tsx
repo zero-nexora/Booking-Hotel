@@ -31,7 +31,7 @@ import {
   useDashboardTopHotels,
   useDashboardRecentBookings,
 } from "@/hooks/admin/use-admin-dashboard";
-import { StatusBadge } from "@/components/shared/status-badge";
+import { StatusBadge } from "@/components/common/status-badge";
 import {
   Hotel,
   Users,

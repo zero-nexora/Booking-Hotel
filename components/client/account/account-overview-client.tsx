@@ -16,7 +16,7 @@ import { useMe } from "@/hooks/client/use-user";
 import { useQuickStats, useRecentBookings } from "@/hooks/client/use-booking";
 import { formatDateShort, formatCurrencyUSD } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
-import { StatusBadge } from "@/components/shared/status-badge";
+import { StatusBadge } from "@/components/common/status-badge";
 
 export const AccountOverviewClient = () => {
   const { data: user, isLoading: userLoading } = useMe();

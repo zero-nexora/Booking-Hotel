@@ -6,7 +6,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useHotelReviews } from "@/hooks/client/use-hotels";
 import { Card } from "@/components/ui/card";
 import { formatDateShort } from "@/lib/utils";
-import { LoadMoreTrigger } from "@/components/shared/load-more-trigger";
+import { LoadMoreTrigger } from "@/components/common/load-more-trigger";
 
 interface ReviewsSectionProps {
   hotelId: string;

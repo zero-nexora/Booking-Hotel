@@ -25,14 +25,14 @@ import { useCallback } from "react";
 import { useConfirmDialogStore } from "@/store/confirm-dialog-store";
 import { useSheetDialogStore } from "@/store/sheet-dialog-store";
 import { adminRoomParsers } from "@/lib/search-params/admin-rooms";
-import { SearchInput } from "@/components/shared/search-input";
-import { Pagination } from "@/components/shared/pagination";
+import { SearchInput } from "@/components/common/search-input";
+import { Pagination } from "@/components/common/pagination";
 import { RouterOutput } from "@/trpc/client";
 import { CreateRoomForm, EditRoomForm } from "./room-form-sheet";
 import { useAdminRoomList, useDeleteRoom } from "@/hooks/admin/use-admin-rooms";
 import { useRoomTypeList } from "@/hooks/admin/use-admin-room-type";
-import { ListHeader } from "@/components/shared/list-header";
-import { TableSkeleton } from "@/components/shared/table-skeleton";
+import { ListHeader } from "@/components/common/list-header";
+import { TableSkeleton } from "@/components/common/table-skeleton";
 import { DEFAULT_PAGE } from "@/lib/constants";
 import { formatCurrencyUSD } from "@/lib/utils";
 

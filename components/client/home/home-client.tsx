@@ -53,7 +53,7 @@ export const HomeClient = () => {
     <div className="min-h-screen">
       <section className="relative overflow-hidden">
         <Image
-          src={resolvedTheme === "dark" ? HeroBannerDark : HeroBannerLight}
+          src={resolvedTheme === "light" ? HeroBannerLight : HeroBannerDark}
           alt="Luxury hotel at night"
           fill
           priority
