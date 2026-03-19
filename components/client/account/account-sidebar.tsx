@@ -9,6 +9,8 @@ import { cn } from "@/lib/utils";
 import { useMe } from "@/hooks/client/use-user";
 import { authClient } from "@/lib/auth-client";
 import { useConfirmDialogStore } from "@/store/confirm-dialog-store";
+import { useTRPC } from "@/trpc/client";
+import { useQueryClient } from "@tanstack/react-query";
 
 const navLinks = [
   { href: "/account", label: "Tổng quan", icon: LayoutDashboard },
@@ -18,6 +20,8 @@ const navLinks = [
 ];
 
 export const AccountSidebar = () => {
+  const trpc = useTRPC();
+  const queryClient = useQueryClient();
   const { openConfirm } = useConfirmDialogStore();
 
   const pathname = usePathname();
@@ -26,8 +30,8 @@ export const AccountSidebar = () => {
 
   const handleSignOut = async () => {
     await authClient.signOut();
-    router.push("/sign-in");
-    router.refresh();
+    queryClient.removeQueries({ queryKey: trpc.client.user.me.queryKey() });
+    router.push("/");
   };
 
   const handleOpenConfirmLogout = async () => {

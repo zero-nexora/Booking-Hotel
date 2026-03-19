@@ -1,129 +1,142 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 
-type EasingFn = (t: number) => number;
+type EasingName = "linear" | "easeOut" | "easeInOut" | "bounce";
 
-const easings: Record<string, EasingFn> = {
-  linear:    (t) => t,
-  easeOut:   (t) => 1 - Math.pow(1 - t, 3),
-  easeInOut: (t) => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2,
-  bounce:    (t) => {
-    const n1 = 7.5625, d1 = 2.75;
-    if (t < 1 / d1)        return n1 * t * t;
-    else if (t < 2 / d1)   return n1 * (t -= 1.5 / d1) * t + 0.75;
-    else if (t < 2.5 / d1) return n1 * (t -= 2.25 / d1) * t + 0.9375;
-    else                   return n1 * (t -= 2.625 / d1) * t + 0.984375;
+const EASINGS: Record<EasingName, (t: number) => number> = {
+  linear: (t) => t,
+  easeOut: (t) => 1 - Math.pow(1 - t, 3),
+  easeInOut: (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2),
+  bounce: (t) => {
+    const n = 7.5625,
+      d = 2.75;
+    if (t < 1 / d) return n * t * t;
+    if (t < 2 / d) return n * (t -= 1.5 / d) * t + 0.75;
+    if (t < 2.5 / d) return n * (t -= 2.25 / d) * t + 0.9375;
+    return n * (t -= 2.625 / d) * t + 0.984375;
   },
 };
 
 export interface UseCountUpOptions {
-  from?:       number;
-  to:          number;
-  duration?:   number;
-  easing?:     keyof typeof easings;
-  prefix?:     string;
-  suffix?:     string;
-  decimals?:   number;
-  separator?:  string;
-  autoStart?:  boolean;
+  from?: number;
+  to: number;
+  duration?: number;
+  easing?: EasingName;
+  decimals?: number;
+  separator?: string;
+  prefix?: string;
+  suffix?: string;
+  autoStart?: boolean;
   onComplete?: () => void;
 }
 
 export interface UseCountUpReturn {
-  value:   number;
+  value: number;
   display: string;
-  start:   () => void;
-  reset:   () => void;
-  isDone:  boolean;
+  isDone: boolean;
+  start: () => void;
+  reset: () => void;
 }
 
-export function useCountUp(opts: UseCountUpOptions): UseCountUpReturn {
-  const {
-    from = 0, to, duration = 2000,
-    easing = "easeOut", prefix = "", suffix = "",
-    decimals = 0, separator = "",
-    autoStart = true, onComplete,
-  } = opts;
+function formatNumber(
+  n: number,
+  decimals: number,
+  separator: string,
+  prefix: string,
+  suffix: string,
+): string {
+  let s = n.toFixed(decimals);
+  if (separator) {
+    const [int, dec] = s.split(".");
+    s =
+      int.replace(/\B(?=(\d{3})+(?!\d))/g, separator) + (dec ? "." + dec : "");
+  }
+  return prefix + s + suffix;
+}
 
-  const [value, setVal]   = useState(from);
-  const [isDone, setDone] = useState(false);
+export function useCountUp({
+  from = 0,
+  to,
+  duration = 2000,
+  easing = "easeOut",
+  decimals = 0,
+  separator = "",
+  prefix = "",
+  suffix = "",
+  autoStart = true,
+  onComplete,
+}: UseCountUpOptions): UseCountUpReturn {
+  const [value, setValue] = useState(from);
+  const [isDone, setIsDone] = useState(false);
 
-  const rafRef      = useRef<number>(0);
-  const startTs     = useRef<number | undefined>(undefined);
-  const runningRef  = useRef(false);
+  const rafRef = useRef<number>(0);
+  const startTsRef = useRef<number | undefined>(undefined);
+  const runningRef = useRef(false);
 
-  const optsRef = useRef({ from, to, duration, easing, onComplete });
+  const latestRef = useRef({ from, to, duration, easing, onComplete });
   useEffect(() => {
-    optsRef.current = { from, to, duration, easing, onComplete };
-  }, [from, to, duration, easing, onComplete]);
+    latestRef.current = { from, to, duration, easing, onComplete };
+  });
 
-  const format = useCallback((n: number) => {
-    let s = n.toFixed(decimals);
-    if (separator) {
-      const [int, dec] = s.split(".");
-      s = int.replace(/\B(?=(\d{3})+(?!\d))/g, separator) + (dec ? "." + dec : "");
-    }
-    return prefix + s + suffix;
-  }, [decimals, separator, prefix, suffix]);
-
-  const runRAF = useCallback(() => {
-    const easeFn = easings[optsRef.current.easing] ?? easings.easeOut;
+  const runAnimation = useCallback(() => {
+    if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    startTsRef.current = undefined;
+    runningRef.current = true;
 
     const tick = (ts: number) => {
       if (!runningRef.current) return;
-      if (!startTs.current) startTs.current = ts;
+      startTsRef.current ??= ts;
 
-      const { from: f, to: t, duration: d, onComplete: cb } = optsRef.current;
-      const elapsed  = ts - startTs.current;
-      const progress = Math.min(elapsed / d, 1);
-      const current  = f + (t - f) * easeFn(progress);
+      const {
+        from: f,
+        to: t,
+        duration: d,
+        easing: e,
+        onComplete: cb,
+      } = latestRef.current;
+      const progress = Math.min((ts - startTsRef.current) / d, 1);
+      const easeFn = EASINGS[e] ?? EASINGS.easeOut;
+      const current = f + (t - f) * easeFn(progress);
 
-      setVal(current);
+      setValue(current);
 
       if (progress < 1) {
         rafRef.current = requestAnimationFrame(tick);
       } else {
-        setVal(t);
-        setDone(true);
+        setValue(t);
+        setIsDone(true);
         runningRef.current = false;
         cb?.();
       }
     };
 
-    if (rafRef.current) cancelAnimationFrame(rafRef.current);
-    startTs.current    = undefined;
-    runningRef.current = true;
-    rafRef.current     = requestAnimationFrame(tick);
+    rafRef.current = requestAnimationFrame(tick);
   }, []);
 
   const start = useCallback(() => {
-    setDone(false);
-    setVal(optsRef.current.from ?? 0);
-    runRAF();
-  }, [runRAF]);
+    setIsDone(false);
+    setValue(latestRef.current.from ?? 0);
+    runAnimation();
+  }, [runAnimation]);
 
   const reset = useCallback(() => {
     runningRef.current = false;
-    if (rafRef.current) cancelAnimationFrame(rafRef.current);
-    setVal(optsRef.current.from ?? 0);
-    setDone(false);
+    cancelAnimationFrame(rafRef.current);
+    setValue(latestRef.current.from ?? 0);
+    setIsDone(false);
   }, []);
 
-  const autoStartRef = useRef(autoStart);
   useEffect(() => {
-    autoStartRef.current = autoStart;
-  }, [autoStart]);
-
-  useEffect(() => {
-    if (!autoStartRef.current) return;
-    setDone(false);
-    setVal(optsRef.current.from ?? 0);
-    runRAF();
+    if (!autoStart) return;
+    setIsDone(false);
+    setValue(from);
+    runAnimation();
     return () => {
       runningRef.current = false;
-      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      cancelAnimationFrame(rafRef.current);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [runRAF]);
+  }, [autoStart, from, runAnimation]);
 
-  return { value, display: format(value), start, reset, isDone };
+  const display = formatNumber(value, decimals, separator, prefix, suffix);
+
+  return { value, display, isDone, start, reset };
 }

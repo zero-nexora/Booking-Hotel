@@ -20,16 +20,16 @@ import {
   useRoomAvailability,
   useSetRoomAvailability,
 } from "@/hooks/admin/use-admin-rooms";
-import { cn, formatDateShort, formatDateCompact } from "@/lib/utils";
+import { cn, formatDateCompact } from "@/lib/utils";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 type AvailabilityStatus = "AVAILABLE" | "LOCKED" | "BOOKED" | "MAINTENANCE";
 
 const STATUS_COLOR: Record<AvailabilityStatus, string> = {
-  AVAILABLE: "#b89a6f",
-  LOCKED: "#c9a87c",
-  BOOKED: "#6b5040",
-  MAINTENANCE: "#8c3a3a",
+  AVAILABLE: "oklch(0.55 0.15 160)",
+  LOCKED: "oklch(0.58 0.14 250)",
+  BOOKED: "oklch(0.52 0.18 300)",
+  MAINTENANCE: "oklch(0.58 0.19 28)",
 };
 
 const STATUS_LABEL: Record<AvailabilityStatus, string> = {
@@ -40,11 +40,22 @@ const STATUS_LABEL: Record<AvailabilityStatus, string> = {
 };
 
 const STATUS_BADGE_CLASS: Record<AvailabilityStatus, string> = {
-  AVAILABLE: "bg-primary/10 text-primary border-primary/20",
-  LOCKED: "bg-secondary text-secondary-foreground border-border",
-  BOOKED: "bg-accent text-accent-foreground border-border",
-  MAINTENANCE: "bg-destructive/10 text-destructive border-destructive/20",
+  AVAILABLE:
+    "bg-[oklch(0.55_0.15_160/0.1)] text-[oklch(0.38_0.15_160)] border-[oklch(0.55_0.15_160/0.3)]",
+  LOCKED:
+    "bg-[oklch(0.58_0.14_250/0.1)] text-[oklch(0.40_0.14_250)] border-[oklch(0.58_0.14_250/0.3)]",
+  BOOKED:
+    "bg-[oklch(0.52_0.18_300/0.1)] text-[oklch(0.38_0.18_300)] border-[oklch(0.52_0.18_300/0.3)]",
+  MAINTENANCE:
+    "bg-[oklch(0.58_0.19_28/0.1)]  text-[oklch(0.42_0.19_28)]  border-[oklch(0.58_0.19_28/0.3)]",
 };
+
+const ALL_STATUSES = [
+  "AVAILABLE",
+  "LOCKED",
+  "BOOKED",
+  "MAINTENANCE",
+] as AvailabilityStatus[];
 
 interface RoomAvailabilityTabProps {
   roomId: string;
@@ -53,7 +64,9 @@ interface RoomAvailabilityTabProps {
 export const RoomAvailabilityTab = ({ roomId }: RoomAvailabilityTabProps) => {
   const calendarRef = useRef<FullCalendar>(null);
   const [currentMonth, setCurrentMonth] = useState(new Date());
-  const [selected, setSelected] = useState<{ start: Date; end: Date } | null>(null);
+  const [selected, setSelected] = useState<{ start: Date; end: Date } | null>(
+    null,
+  );
 
   const from = startOfMonth(currentMonth);
   const to = endOfMonth(currentMonth);
@@ -61,14 +74,18 @@ export const RoomAvailabilityTab = ({ roomId }: RoomAvailabilityTabProps) => {
   const { data: availability = [] } = useRoomAvailability(roomId, from, to);
   const setAvailability = useSetRoomAvailability(roomId);
 
-  const events = availability.map((a) => ({
-    id: a.id,
-    title: STATUS_LABEL[a.status as AvailabilityStatus],
-    start: formatDateShort(a.date),
-    allDay: true,
-    backgroundColor: STATUS_COLOR[a.status as AvailabilityStatus],
-    borderColor: STATUS_COLOR[a.status as AvailabilityStatus],
-  }));
+  const events = availability.map((a) => {
+    const status = a.status as AvailabilityStatus;
+    return {
+      id: a.id,
+      title: STATUS_LABEL[status],
+      start: format(new Date(a.date), "yyyy-MM-dd"),
+      allDay: true,
+      backgroundColor: STATUS_COLOR[status],
+      borderColor: STATUS_COLOR[status],
+      textColor: "#ffffff",
+    };
+  });
 
   const handlePrev = () => {
     calendarRef.current?.getApi().prev();
@@ -94,12 +111,16 @@ export const RoomAvailabilityTab = ({ roomId }: RoomAvailabilityTabProps) => {
 
     while (cursor < selected.end) {
       const dateStr = format(cursor, "yyyy-MM-dd");
-      const existing = availability.find((a) => format(new Date(a.date), "yyyy-MM-dd") === dateStr);
-
-      if (!existing || existing.status === "AVAILABLE" || existing.status === "MAINTENANCE") {
+      const existing = availability.find(
+        (a) => format(new Date(a.date), "yyyy-MM-dd") === dateStr,
+      );
+      if (
+        !existing ||
+        existing.status === "AVAILABLE" ||
+        existing.status === "MAINTENANCE"
+      ) {
         dateStrings.push(dateStr);
       }
-
       cursor.setDate(cursor.getDate() + 1);
     }
 
@@ -118,25 +139,37 @@ export const RoomAvailabilityTab = ({ roomId }: RoomAvailabilityTabProps) => {
     calendarRef.current?.getApi().unselect();
   };
 
-  const displayEnd = selected ? new Date(selected.end.getTime() - 86_400_000) : null;
-
+  const displayEnd = selected
+    ? new Date(selected.end.getTime() - 86_400_000)
+    : null;
   const isSingleDay =
     selected && displayEnd
-      ? format(selected.start, "yyyy-MM-dd") === format(displayEnd, "yyyy-MM-dd")
+      ? format(selected.start, "yyyy-MM-dd") ===
+        format(displayEnd, "yyyy-MM-dd")
       : false;
+
+  const selectedLabel =
+    selected && displayEnd
+      ? isSingleDay
+        ? format(selected.start, "dd/MM/yyyy")
+        : `${format(selected.start, "dd/MM")} – ${format(displayEnd, "dd/MM/yyyy")}`
+      : null;
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div className="flex items-center gap-1.5 flex-wrap">
-          {(["AVAILABLE", "LOCKED", "BOOKED", "MAINTENANCE"] as AvailabilityStatus[]).map((s) => (
+          {ALL_STATUSES.map((s) => (
             <Badge
               key={s}
               variant="outline"
-              className={cn("text-xs font-medium px-2 py-0.5", STATUS_BADGE_CLASS[s])}
+              className={cn(
+                "text-xs font-medium px-2 py-0.5 gap-1.5",
+                STATUS_BADGE_CLASS[s],
+              )}
             >
               <span
-                className="inline-block w-1.5 h-1.5 rounded-full mr-1.5 shrink-0"
+                className="inline-block w-1.5 h-1.5 rounded-full shrink-0"
                 style={{ backgroundColor: STATUS_COLOR[s] }}
               />
               {STATUS_LABEL[s]}
@@ -147,15 +180,13 @@ export const RoomAvailabilityTab = ({ roomId }: RoomAvailabilityTabProps) => {
         {selected && displayEnd && (
           <div className="flex items-center gap-2 border border-border rounded-lg px-3 py-1.5 bg-muted/40">
             <span className="text-xs font-medium tabular-nums text-muted-foreground">
-              {isSingleDay
-                ? formatDateShort(selected.start)
-                : `${formatDateShort(selected.start)} – ${formatDateShort(displayEnd)}`}
+              {selectedLabel}
             </span>
             <div className="w-px h-4 bg-border" />
             <Button
               size="sm"
               variant="ghost"
-              className="h-6 px-2 text-xs text-primary hover:text-primary hover:bg-primary/10"
+              className="h-6 px-2 text-xs text-[oklch(0.38_0.15_160)] hover:text-[oklch(0.38_0.15_160)] hover:bg-[oklch(0.55_0.15_160/0.08)]"
               disabled={setAvailability.isPending}
               onClick={() => void handleSetStatus("AVAILABLE")}
             >
@@ -164,7 +195,7 @@ export const RoomAvailabilityTab = ({ roomId }: RoomAvailabilityTabProps) => {
             <Button
               size="sm"
               variant="ghost"
-              className="h-6 px-2 text-xs text-destructive hover:text-destructive hover:bg-destructive/10"
+              className="h-6 px-2 text-xs text-[oklch(0.42_0.19_28)] hover:text-[oklch(0.42_0.19_28)] hover:bg-[oklch(0.58_0.19_28/0.08)]"
               disabled={setAvailability.isPending}
               onClick={() => void handleSetStatus("MAINTENANCE")}
             >
@@ -225,7 +256,7 @@ export const RoomAvailabilityTab = ({ roomId }: RoomAvailabilityTabProps) => {
             height="auto"
             dayMaxEvents={1}
             headerToolbar={false}
-            timeZone="local"
+            timeZone="UTC"
           />
         </div>
       </Card>

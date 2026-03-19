@@ -182,13 +182,7 @@ const SignUpPage = () => {
               <FormItem>
                 <FormLabel className={labelCls}>Mật khẩu</FormLabel>
                 <FormControl>
-                  <PasswordInput
-                    placeholder="••••••••"
-                    autoComplete="new-password"
-                    disabled={isLoading}
-                    className={inputCls}
-                    {...field}
-                  />
+                  <PasswordInput placeholder="••••••••" {...field} />
                 </FormControl>
                 <PasswordStrengthBar password={watchedPassword} />
                 <FormDescription className="text-xs text-muted-foreground">

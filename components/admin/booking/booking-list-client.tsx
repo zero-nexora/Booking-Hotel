@@ -62,12 +62,12 @@ const PAYMENT_STATUS_OPTIONS = [
 ];
 
 const BOOKING_STATUS_COLOR: Record<string, string> = {
-  PENDING: "#d97706",
-  CONFIRMED: "#059669",
-  CHECKED_IN: "#2563eb",
-  CHECKED_OUT: "#6b7280",
-  CANCELLED: "#dc2626",
-  NO_SHOW: "#dc2626",
+  PENDING: "oklch(0.75 0.12 75)",
+  CONFIRMED: "oklch(0.62 0.15 160)",
+  CHECKED_IN: "oklch(0.58 0.18 250)",
+  CHECKED_OUT: "oklch(0.52 0.02 70)",
+  CANCELLED: "oklch(0.64 0.17 28)",
+  NO_SHOW: "oklch(0.58 0.14 28)",
 };
 
 const BookingRow = ({
@@ -164,7 +164,10 @@ export const BookingListClient = () => {
 
   const handleStatusChange = useCallback(
     (v: string) =>
-      setParams({ status: v === "all" ? null : (v as BookingStatus), page: DEFAULT_PAGE }),
+      setParams({
+        status: v === "all" ? null : (v as BookingStatus),
+        page: DEFAULT_PAGE,
+      }),
     [setParams],
   );
 

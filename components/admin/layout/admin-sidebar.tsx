@@ -31,6 +31,8 @@ import { Logo } from "@/components/common/logo";
 import Image from "next/image";
 import LogoIcon from "../../../public/images/logo-icon.svg";
 import { useConfirmDialogStore } from "@/store/confirm-dialog-store";
+import { useQueryClient } from "@tanstack/react-query";
+import { useTRPC } from "@/trpc/client";
 
 const navItems = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
@@ -65,6 +67,8 @@ export const AdminSidebar = ({
   onMobileClose,
   user,
 }: AdminSidebarProps) => {
+  const trpc = useTRPC();
+  const queryClient = useQueryClient();
   const { openConfirm } = useConfirmDialogStore();
   const pathname = usePathname();
   const router = useRouter();
@@ -74,7 +78,8 @@ export const AdminSidebar = ({
 
   const handleSignOut = async () => {
     await authClient.signOut();
-    router.push("/sign-in");
+    queryClient.removeQueries({ queryKey: trpc.client.user.me.queryKey() });
+    router.push("/");
   };
 
   const handleOpenConfirmLogout = async () => {

@@ -31,11 +31,10 @@ const RoomImageCard = ({ image, onDelete }: RoomImageCardProps) => (
       alt={image.alt ?? ""}
       fill
       className="object-cover"
-      sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 25vw"
     />
     {image.isPrimary && (
-      <div className="absolute top-2 left-2 z-10 bg-amber-400 text-white rounded px-1.5 py-0.5 flex items-center gap-1 text-xs font-medium">
-        <Star className="w-3 h-3 fill-white" />
+      <div className="absolute top-2 left-2 z-10 bg-primary text-primary-foreground rounded px-1.5 py-0.5 flex items-center gap-1 text-xs font-medium">
+        <Star className="w-3 h-3 fill-primary-foreground" />
         Chính
       </div>
     )}

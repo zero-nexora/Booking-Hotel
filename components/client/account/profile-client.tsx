@@ -10,8 +10,6 @@ import {
   Link2,
   Link2Off,
   Trash2,
-  Eye,
-  EyeOff,
   Github,
   Chrome,
   Pencil,
@@ -43,6 +41,8 @@ import { useRouter } from "next/navigation";
 import { UploadButton } from "@/utils/uploadthing";
 import { Card } from "@/components/ui/card";
 import { useConfirmDialogStore } from "@/store/confirm-dialog-store";
+import { PasswordInput } from "@/components/common/password-input";
+import { PasswordStrengthBar } from "@/components/common/password-strength-bar";
 
 const profileSchema = z.object({
   name: z.string().min(1, "Vui lòng nhập tên"),
@@ -186,6 +186,8 @@ export const ProfileClient = () => {
   if (!user) return null;
 
   const avatarSrc = user.image ?? undefined;
+  const hasCredentialAccount =
+    accounts?.some((acc) => acc.providerId === "credentials") ?? false;
 
   return (
     <div className="space-y-6">
@@ -334,125 +336,120 @@ export const ProfileClient = () => {
         </form>
       </Form>
 
-      <Form {...passwordForm}>
-        <form onSubmit={passwordForm.handleSubmit(handlePasswordSubmit)}>
-          <Card className="rounded-2xl border border-border bg-card shadow-none p-5 space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Shield className="w-4 h-4 text-muted-foreground" />
-                <p className="text-sm font-medium text-foreground">
-                  Đổi mật khẩu
-                </p>
+      {!hasCredentialAccount && (
+        <Form {...passwordForm}>
+          <form onSubmit={passwordForm.handleSubmit(handlePasswordSubmit)}>
+            <Card className="rounded-2xl border border-border bg-card shadow-none p-5 space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Shield className="w-4 h-4 text-muted-foreground" />
+                  <p className="text-sm font-medium text-foreground">
+                    Đổi mật khẩu
+                  </p>
+                </div>
+                {!isEditingPassword ? (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 gap-1 text-xs text-muted-foreground hover:text-foreground hover:bg-muted"
+                    onClick={() => setIsEditingPassword(true)}
+                  >
+                    <Pencil className="w-3 h-3" />
+                    Chỉnh sửa
+                  </Button>
+                ) : (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 gap-1 text-xs text-muted-foreground hover:text-foreground hover:bg-muted"
+                    onClick={handleCancelPassword}
+                  >
+                    <X className="w-3 h-3" />
+                    Huỷ
+                  </Button>
+                )}
               </div>
-              {!isEditingPassword ? (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="h-7 gap-1 text-xs text-muted-foreground hover:text-foreground hover:bg-muted"
-                  onClick={() => setIsEditingPassword(true)}
-                >
-                  <Pencil className="w-3 h-3" />
-                  Chỉnh sửa
-                </Button>
-              ) : (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="h-7 gap-1 text-xs text-muted-foreground hover:text-foreground hover:bg-muted"
-                  onClick={handleCancelPassword}
-                >
-                  <X className="w-3 h-3" />
-                  Huỷ
-                </Button>
-              )}
-            </div>
-            <Separator className="bg-border" />
+              <Separator className="bg-border" />
 
-            {isEditingPassword && (
-              <>
-                <FormField
-                  control={passwordForm.control}
-                  name="currentPassword"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-xs font-medium text-foreground">
-                        Mật khẩu hiện tại
-                      </FormLabel>
-                      <FormControl>
-                        <PasswordInput
-                          show={showCurrent}
-                          onToggle={() => setShowCurrent((v) => !v)}
-                          placeholder="••••••••"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage className="text-destructive" />
-                    </FormItem>
-                  )}
-                />
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {isEditingPassword && (
+                <>
                   <FormField
                     control={passwordForm.control}
-                    name="newPassword"
+                    name="currentPassword"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel className="text-xs font-medium text-foreground">
-                          Mật khẩu mới
+                          Mật khẩu hiện tại
                         </FormLabel>
-                        <FormControl>
-                          <PasswordInput
-                            show={showNew}
-                            onToggle={() => setShowNew((v) => !v)}
-                            placeholder="Tối thiểu 8 ký tự"
-                            {...field}
-                          />
-                        </FormControl>
+                        <PasswordInput
+                          show={showCurrent}
+                          onToggle={() => setShowCurrent((v) => !v)}
+                          {...field}
+                        />
                         <FormMessage className="text-destructive" />
                       </FormItem>
                     )}
                   />
-                  <FormField
-                    control={passwordForm.control}
-                    name="confirmPassword"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-xs font-medium text-foreground">
-                          Xác nhận mật khẩu
-                        </FormLabel>
-                        <FormControl>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <FormField
+                      control={passwordForm.control}
+                      name="newPassword"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-xs font-medium text-foreground">
+                            Mật khẩu mới
+                          </FormLabel>
+                          <PasswordInput
+                            show={showNew}
+                            onToggle={() => setShowNew((v) => !v)}
+                            {...field}
+                          />
+                          <PasswordStrengthBar password={field.value} />
+                          <FormMessage className="text-destructive" />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={passwordForm.control}
+                      name="confirmPassword"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-xs font-medium text-foreground">
+                            Xác nhận mật khẩu
+                          </FormLabel>
                           <PasswordInput
                             show={showConfirm}
                             onToggle={() => setShowConfirm((v) => !v)}
                             placeholder="Nhập lại mật khẩu mới"
                             {...field}
                           />
-                        </FormControl>
-                        <FormMessage className="text-destructive" />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                <Button
-                  type="submit"
-                  size="sm"
-                  className="rounded-xl bg-primary text-primary-foreground hover:bg-primary/90"
-                  disabled={changingPassword}
-                >
-                  {changingPassword ? "Đang đổi..." : "Đổi mật khẩu"}
-                </Button>
-              </>
-            )}
+                          <FormMessage className="text-destructive" />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  <Button
+                    type="submit"
+                    size="sm"
+                    className="rounded-xl bg-primary text-primary-foreground hover:bg-primary/90"
+                    disabled={changingPassword}
+                  >
+                    {changingPassword ? "Đang đổi..." : "Đổi mật khẩu"}
+                  </Button>
+                </>
+              )}
 
-            {!isEditingPassword && (
-              <p className="text-xs text-muted-foreground">
-                Nhấn chỉnh sửa để thay đổi mật khẩu của bạn.
-              </p>
-            )}
-          </Card>
-        </form>
-      </Form>
+              {!isEditingPassword && (
+                <p className="text-xs text-muted-foreground">
+                  Nhấn chỉnh sửa để thay đổi mật khẩu của bạn.
+                </p>
+              )}
+            </Card>
+          </form>
+        </Form>
+      )}
 
       {accounts && accounts.length > 0 && (
         <Card className="rounded-2xl border border-border bg-card shadow-none p-5 space-y-4">
@@ -526,35 +523,6 @@ export const ProfileClient = () => {
     </div>
   );
 };
-
-const PasswordInput = ({
-  show,
-  onToggle,
-  ...props
-}: React.InputHTMLAttributes<HTMLInputElement> & {
-  show: boolean;
-  onToggle: () => void;
-}) => (
-  <div className="relative">
-    <Input
-      type={show ? "text" : "password"}
-      className="pr-9 bg-background border-border text-foreground placeholder:text-muted-foreground focus-visible:ring-primary"
-      {...props}
-    />
-    <button
-      type="button"
-      tabIndex={-1}
-      onClick={onToggle}
-      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-    >
-      {show ? (
-        <EyeOff className="w-3.5 h-3.5" />
-      ) : (
-        <Eye className="w-3.5 h-3.5" />
-      )}
-    </button>
-  </div>
-);
 
 const ProfileSkeleton = () => (
   <div className="space-y-5">

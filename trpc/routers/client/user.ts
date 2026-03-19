@@ -47,6 +47,7 @@ export const userRouter = createTRPCRouter({
         providerId: true,
         accountId: true,
         createdAt: true,
+        userId: true,
       },
     }),
   ),

@@ -34,13 +34,13 @@ import {
 } from "@/hooks/admin/use-admin-users";
 import { ListHeader } from "@/components/common/list-header";
 import { TableSkeleton } from "@/components/common/table-skeleton";
-import { DEFAULT_PAGE } from "@/lib/constants";
+import { DEFAULT_PAGE, DEFAULT_PAGE_SIZE } from "@/lib/constants";
 import { formatDateShort } from "@/lib/utils";
 
 type User = RouterOutput["admin"]["user"]["list"]["items"][number];
 
 export const UserListClient = () => {
-  const { user } = useUser();
+  const { user, isPending } = useUser();
   const { openConfirm } = useConfirmDialogStore();
   const setRole = useSetUserRole();
   const [params, setParams] = useQueryStates(adminUserParsers);
@@ -76,8 +76,6 @@ export const UserListClient = () => {
       setParams((prev) => ({ ...prev, limit: l, page: DEFAULT_PAGE })),
     [setParams],
   );
-
-  if (!user) return null;
 
   return (
     <div className="space-y-4">
@@ -149,18 +147,19 @@ export const UserListClient = () => {
               <TableHead />
             </TableRow>
           </TableHeader>
-          {isLoading ? (
-            <TableSkeleton cols={8} />
+          {isLoading || isPending ? (
+            <TableSkeleton cols={DEFAULT_PAGE_SIZE} />
           ) : (
             <TableBody>
-              {data?.items.map((u) => (
-                <UserRow
-                  key={u.id}
-                  user={u}
-                  currentUserId={user.id}
-                  onChangeRole={handleChangeRole}
-                />
-              ))}
+              {user &&
+                data?.items.map((u) => (
+                  <UserRow
+                    key={u.id}
+                    user={u}
+                    currentUserId={user.id}
+                    onChangeRole={handleChangeRole}
+                  />
+                ))}
             </TableBody>
           )}
         </Table>

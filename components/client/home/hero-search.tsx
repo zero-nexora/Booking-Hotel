@@ -35,7 +35,7 @@ export const HeroSearch = () => {
   return (
     <div className="w-full max-w-3xl mx-auto">
       <div className="bg-background/95 backdrop-blur-sm rounded-2xl shadow-2xl border border-white/10 overflow-hidden">
-        <div className="flex flex-col sm:flex-row">
+        <div className="wrapper">
           <div className="flex items-center gap-3 flex-1 px-4 py-3.5 border-b sm:border-b-0 sm:border-r border-border/60">
             <MapPin className="w-4 h-4 text-primary shrink-0" />
             <div className="flex-1 min-w-0">

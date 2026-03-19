@@ -8,11 +8,18 @@ import { cn } from "@/lib/utils";
 type PasswordInputProps = Omit<
   React.InputHTMLAttributes<HTMLInputElement>,
   "type"
->;
+> & {
+  show?: boolean;
+  onToggle?: () => void;
+};
 
 export const PasswordInput = forwardRef<HTMLInputElement, PasswordInputProps>(
-  ({ className, disabled, ...props }, ref) => {
-    const [show, setShow] = useState(false);
+  ({ className, disabled, show: controlledShow, onToggle, ...props }, ref) => {
+    const [internalShow, setInternalShow] = useState(false);
+
+    const isControlled = controlledShow !== undefined;
+    const show = isControlled ? controlledShow : internalShow;
+    const toggle = isControlled ? onToggle! : () => setInternalShow((v) => !v);
 
     return (
       <div className="relative flex items-center">
@@ -30,7 +37,7 @@ export const PasswordInput = forwardRef<HTMLInputElement, PasswordInputProps>(
           type="button"
           tabIndex={-1}
           className="absolute right-3 flex items-center justify-center text-muted-foreground hover:text-foreground disabled:opacity-40"
-          onClick={() => setShow((v) => !v)}
+          onClick={toggle}
           disabled={disabled}
           aria-label={show ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
         >

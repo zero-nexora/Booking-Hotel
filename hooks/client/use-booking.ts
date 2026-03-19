@@ -24,7 +24,15 @@ export function useBookingConfirmation(bookingRef: string) {
   return useQuery(
     trpc.client.booking.getConfirmation.queryOptions(
       { bookingRef },
-      { enabled: !!bookingRef },
+      {
+        enabled: !!bookingRef,
+        refetchInterval: (query) => {
+          const status = query.state.data?.paymentStatus;
+          if (!status || status === "PENDING") return 3000;
+          return false;
+        },
+        refetchIntervalInBackground: false,
+      },
     ),
   );
 }

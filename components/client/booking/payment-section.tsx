@@ -242,14 +242,14 @@ const STRIPE_APPEARANCE_DARK = {
 
 export const PaymentSection = (props: PaymentSectionProps) => {
   const { resolvedTheme } = useTheme();
-  const isDark = resolvedTheme === "dark";
+  const isLight = resolvedTheme === "light";
 
   return (
     <Elements
       stripe={stripePromise}
       options={{
         clientSecret: props.clientSecret,
-        appearance: !isDark ? STRIPE_APPEARANCE_DARK : STRIPE_APPEARANCE_LIGHT,
+        appearance: isLight ? STRIPE_APPEARANCE_LIGHT : STRIPE_APPEARANCE_DARK,
       }}
     >
       <PaymentForm {...props} />

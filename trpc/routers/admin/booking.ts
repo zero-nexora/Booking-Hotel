@@ -32,7 +32,7 @@ const paymentStatusEnum = z.enum([
   "PAID",
   "REFUNDED",
   "FAILED",
-  "CANCELLED"
+  "CANCELLED",
 ]);
 
 const BOOKING_ITEM_STATUS_MAP: Record<string, string> = {
@@ -308,7 +308,7 @@ export const adminBookingRouter = createTRPCRouter({
           ctx.db.payment.create({
             data: {
               bookingId: booking!.id,
-              userId: booking!.id,
+              userId: ctx.user.id,
               type: "REFUND",
               status: "PENDING",
               amount: r.amount,

@@ -28,6 +28,8 @@ import { authClient } from "@/lib/auth-client";
 import { ThemeToggle } from "@/components/common/theme-toggle";
 import { Logo } from "@/components/common/logo";
 import { useConfirmDialogStore } from "@/store/confirm-dialog-store";
+import { useQueryClient } from "@tanstack/react-query";
+import { useTRPC } from "@/trpc/client";
 
 const navLinks = [
   { label: "Khách sạn", href: "/hotels" },
@@ -35,6 +37,8 @@ const navLinks = [
 ];
 
 export const ClientHeader = () => {
+  const trpc = useTRPC();
+  const queryClient = useQueryClient();
   const { openConfirm } = useConfirmDialogStore();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -47,7 +51,8 @@ export const ClientHeader = () => {
 
   const handleSignOut = async () => {
     await authClient.signOut();
-    router.push("/sign-in");
+    queryClient.removeQueries({ queryKey: trpc.client.user.me.queryKey() });
+    router.push("/");
   };
 
   const handleOpenConfirmLogout = () => {
@@ -152,8 +157,13 @@ export const ClientHeader = () => {
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
-            <div className="hidden md:flex items-center gap-2">
-              <Button variant="ghost" size="sm" asChild>
+            <div className=" items-center gap-2 box-hidden">
+              <Button
+                variant="outline"
+                size="sm"
+                asChild
+                className="border-border text-foreground hover:bg-muted hover:text-foreground"
+              >
                 <Link href="/sign-in">Đăng nhập</Link>
               </Button>
               <Button size="sm" asChild>
@@ -220,7 +230,7 @@ export const ClientHeader = () => {
                     <Button
                       variant="outline"
                       size="sm"
-                      className="w-full"
+                      className="border-border text-foreground hover:bg-muted hover:text-foreground w-full"
                       asChild
                     >
                       <Link

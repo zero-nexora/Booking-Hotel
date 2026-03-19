@@ -38,7 +38,7 @@ const ImageCard = ({ image, onDelete }: ImageCardProps) => (
         Chính
       </div>
     )}
-    <div className="absolute inset-0 bg-foreground/50 opacity-0 group-hover:opacity-100 flex items-center justify-center z-10">
+    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center z-10">
       <Button
         variant="destructive"
         size="icon"

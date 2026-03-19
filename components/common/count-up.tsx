@@ -1,23 +1,13 @@
-import { useCountUp } from "@/hooks/use-count-up";
-import { useState, useEffect, useRef } from "react";
+import { useCountUp, type UseCountUpOptions } from "@/hooks/use-count-up";
+import { useIntersectionObserver } from "@/hooks/use-intersection-observer";
 
-export interface CountUpProps {
-  to: number;
-  from?: number;
-  duration?: number;
-  easing?: "linear" | "easeOut" | "easeInOut" | "bounce";
-  prefix?: string;
-  suffix?: string;
-  decimals?: number;
-  separator?: string;
-  autoStart?: boolean;
+export interface CountUpProps extends UseCountUpOptions {
   triggerOnView?: boolean;
   viewThreshold?: number;
   triggerOnce?: boolean;
   className?: string;
   style?: React.CSSProperties;
-  onComplete?: () => void;
-  render?: (opts: {
+  render?: (state: {
     value: number;
     display: string;
     isDone: boolean;
@@ -25,69 +15,31 @@ export interface CountUpProps {
 }
 
 export function CountUp({
-  to,
-  from = 0,
-  duration = 2000,
-  easing = "easeOut",
-  prefix = "",
-  suffix = "",
-  decimals = 0,
-  separator = "",
-  autoStart = true,
   triggerOnView = false,
   viewThreshold = 0.3,
   triggerOnce = true,
+  autoStart = true,
   className,
   style,
-  onComplete,
   render,
+  ...countUpOptions
 }: CountUpProps) {
-  const wrapperRef = useRef<HTMLSpanElement>(null);
-  const hasTriggered = useRef(false);
-  const [shouldStart, setShouldStart] = useState(!triggerOnView && autoStart);
+  const { ref, isIntersecting } = useIntersectionObserver<HTMLSpanElement>({
+    threshold: viewThreshold,
+    triggerOnce,
+    enabled: triggerOnView,
+  });
 
-  useEffect(() => {
-    if (!triggerOnView) return;
-    const el = wrapperRef.current;
-    if (!el) return;
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          if (triggerOnce && hasTriggered.current) return;
-          hasTriggered.current = true;
-          setShouldStart(true);
-          if (triggerOnce) observer.disconnect();
-        } else if (!triggerOnce) {
-          setShouldStart(false);
-          hasTriggered.current = false;
-        }
-      },
-      { threshold: viewThreshold },
-    );
-
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, [triggerOnView, viewThreshold, triggerOnce]);
+  const resolvedAutoStart = triggerOnView ? isIntersecting : autoStart;
 
   const { value, display, isDone } = useCountUp({
-    from,
-    to,
-    duration,
-    easing,
-    prefix,
-    suffix,
-    decimals,
-    separator,
-    autoStart: shouldStart,
-    onComplete,
+    ...countUpOptions,
+    autoStart: resolvedAutoStart,
   });
 
   return (
-    <span ref={wrapperRef} className={className} style={style}>
+    <span ref={ref} className={className} style={style}>
       {render ? render({ value, display, isDone }) : display}
     </span>
   );
 }
-
-export default CountUp;

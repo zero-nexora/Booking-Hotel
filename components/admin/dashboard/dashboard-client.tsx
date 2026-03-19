@@ -44,7 +44,7 @@ import {
   DoorOpen,
 } from "lucide-react";
 import { formatDatetime, formatCurrencyUSD, formatDateFull } from "@/lib/utils";
-import CountUp from "@/components/common/count-up";
+import { CountUp } from "@/components/common/count-up";
 
 const PIE_COLORS = [
   "var(--chart-1)",
@@ -55,18 +55,22 @@ const PIE_COLORS = [
   "var(--destructive)",
 ];
 
-interface GrowthBadgeProps {
-  value: number | null;
-}
+const CHART_TOOLTIP_STYLE: React.CSSProperties = {
+  fontSize: 12,
+  borderRadius: 8,
+  backgroundColor: "var(--card)",
+  border: "1px solid var(--border)",
+  color: "var(--foreground)",
+};
 
-const GrowthBadge = ({ value }: GrowthBadgeProps) => {
+const GrowthBadge = ({ value }: { value: number | null }) => {
   if (value === null) return null;
-  const positive = value >= 0;
-  const Icon = value === 0 ? Minus : positive ? TrendingUp : TrendingDown;
+  const isPositive = value >= 0;
+  const Icon = value === 0 ? Minus : isPositive ? TrendingUp : TrendingDown;
   return (
     <span
       className={`inline-flex items-center gap-1 text-xs font-medium ${
-        positive ? "text-primary" : "text-destructive"
+        isPositive ? "text-primary" : "text-destructive"
       }`}
     >
       <Icon className="w-3 h-3" />
@@ -89,7 +93,6 @@ const StatCard = ({ title, value, sub, icon: Icon }: StatCardProps) => (
         <div className="space-y-1">
           <p className="text-sm text-muted-foreground">{title}</p>
           <p className="text-2xl font-bold tracking-tight text-foreground">
-            {/* <CountUp to={value} /> */}
             {value}
           </p>
           {sub && <div className="text-xs text-muted-foreground">{sub}</div>}
@@ -131,62 +134,64 @@ const StatsSection = () => {
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
       <StatCard
         title="Doanh thu tháng này"
-        value={formatCurrencyUSD(data.revenueMonth)}
+        value={
+          <CountUp
+            to={data.revenueMonth}
+            prefix="$"
+            decimals={2}
+            separator=","
+            triggerOnView
+          />
+        }
         sub={<GrowthBadge value={data.revenueGrowth} />}
         icon={TrendingUp}
       />
       <StatCard
         title="Booking tháng này"
-        value={data.totalBookingsMonth.toLocaleString()}
+        value={
+          <CountUp to={data.totalBookingsMonth} separator="," triggerOnView />
+        }
         sub={<GrowthBadge value={data.bookingGrowth} />}
         icon={CalendarCheck}
       />
       <StatCard
         title="Booking hôm nay"
-        value={data.bookingsToday}
+        value={<CountUp to={data.bookingsToday} triggerOnView />}
         sub={`${data.pendingBookings} đang chờ xác nhận`}
         icon={Clock}
       />
       <StatCard
         title="Đang check-in"
-        value={data.checkedInToday}
+        value={<CountUp to={data.checkedInToday} triggerOnView />}
         sub="phòng đang có khách"
         icon={DoorOpen}
       />
       <StatCard
         title="Khách sạn"
-        value={data.totalHotels}
+        value={<CountUp to={data.totalHotels} triggerOnView />}
         sub={`${data.activeHotels} đang hoạt động`}
         icon={Hotel}
       />
       <StatCard
         title="Người dùng"
-        value={data.totalUsers.toLocaleString()}
+        value={<CountUp to={data.totalUsers} separator="," triggerOnView />}
         sub={`+${data.newUsersThisMonth} tháng này`}
         icon={Users}
       />
       <StatCard
         title="Đánh giá chờ duyệt"
-        value={data.pendingReviews}
+        value={<CountUp to={data.pendingReviews} triggerOnView />}
         sub={data.pendingReviews > 0 ? "cần xem xét" : "Đã xử lý hết"}
         icon={Star}
       />
       <StatCard
         title="Booking chờ xác nhận"
-        value={data.pendingBookings}
+        value={<CountUp to={data.pendingBookings} triggerOnView />}
         sub={data.pendingBookings > 0 ? "cần xử lý" : "Đã xử lý hết"}
         icon={CalendarCheck}
       />
     </div>
   );
-};
-
-const CHART_TOOLTIP_STYLE: React.CSSProperties = {
-  fontSize: 12,
-  borderRadius: 8,
-  backgroundColor: "var(--card)",
-  border: "1px solid var(--border)",
-  color: "var(--foreground)",
 };
 
 const RevenueChartSection = () => {
@@ -516,14 +521,15 @@ const RecentBookingsSection = () => {
 };
 
 export const DashboardClient = () => {
-  const now = new Date();
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold tracking-tight text-foreground">
           Dashboard
         </h1>
-        <p className="text-sm text-muted-foreground">{formatDateFull(now)}</p>
+        <p className="text-sm text-muted-foreground">
+          {formatDateFull(new Date())}
+        </p>
       </div>
 
       <StatsSection />
