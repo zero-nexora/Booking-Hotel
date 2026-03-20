@@ -22,16 +22,36 @@ import { BookingPrint } from "./booking-print";
 import { StatusBadge } from "@/components/common/status-badge";
 import { formatDateShort, formatCurrencyUSD } from "@/lib/utils";
 import { useConfetti } from "@/hooks/use-confetti";
+import { motion, Variants } from "framer-motion";
 
 interface ConfirmationClientProps {
   bookingRef: string;
 }
 
+const containerVariants: Variants = {
+  hidden: {},
+  visible: {
+    transition: {
+      staggerChildren: 0.1,
+      delayChildren: 0.3,
+    },
+  },
+};
+
+const sectionVariants: Variants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.45, ease: "easeOut" },
+  },
+};
+
 export const ConfirmationClient = ({ bookingRef }: ConfirmationClientProps) => {
-  const { data: booking, isLoading } = useBookingConfirmation(bookingRef);
+  const { data: booking, isFetching } = useBookingConfirmation(bookingRef);
   const canvasRef = useConfetti();
 
-  if (isLoading) return <ConfirmationSkeleton />;
+  if (isFetching) return <ConfirmationSkeleton />;
   if (!booking) return null;
 
   const item = booking.items[0];
@@ -46,13 +66,29 @@ export const ConfirmationClient = ({ bookingRef }: ConfirmationClientProps) => {
       />
 
       <div className="max-w-2xl mx-auto px-4 py-10 space-y-6">
-        <div className="text-center space-y-3 py-4">
-          <div className="flex justify-center">
+        <motion.div
+          className="text-center space-y-3 py-4"
+          initial="hidden"
+          animate="visible"
+          variants={containerVariants}
+        >
+          <motion.div
+            className="flex justify-center"
+            initial={{ scale: 0, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{
+              type: "spring",
+              stiffness: 260,
+              damping: 18,
+              delay: 0.05,
+            }}
+          >
             <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
               <CheckCircle2 className="w-9 h-9 text-primary" />
             </div>
-          </div>
-          <div>
+          </motion.div>
+
+          <motion.div variants={sectionVariants}>
             <h1 className="text-2xl font-bold tracking-tight text-foreground">
               Đặt phòng thành công!
             </h1>
@@ -62,21 +98,35 @@ export const ConfirmationClient = ({ bookingRef }: ConfirmationClientProps) => {
                 {booking.guestEmail}
               </span>
             </p>
-          </div>
-          <div className="inline-flex items-center gap-2 bg-muted rounded-xl px-4 py-2">
+          </motion.div>
+
+          <motion.div
+            variants={sectionVariants}
+            className="inline-flex items-center gap-2 bg-muted rounded-xl px-4 py-2"
+          >
             <span className="text-xs text-muted-foreground">Mã đặt phòng</span>
             <span className="font-mono font-bold tracking-wider text-sm text-foreground">
               {booking.bookingRef}
             </span>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
 
-        <div className="flex items-center justify-center gap-2 flex-wrap">
+        <motion.div
+          className="flex items-center justify-center gap-2 flex-wrap"
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, ease: "easeOut", delay: 0.45 }}
+        >
           <StatusBadge status={booking.status} type="booking" />
           <StatusBadge status={booking.payments[0].status} type="payment" />
-        </div>
+        </motion.div>
 
-        <div className="rounded-2xl border border-border bg-card divide-y divide-border">
+        <motion.div
+          className="rounded-2xl border border-border bg-card divide-y divide-border"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.45, ease: "easeOut", delay: 0.55 }}
+        >
           <div className="p-4 space-y-1">
             <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">
               Khách sạn
@@ -189,9 +239,14 @@ export const ConfirmationClient = ({ bookingRef }: ConfirmationClientProps) => {
               {formatCurrencyUSD(Number(booking.totalAmount))}
             </p>
           </div>
-        </div>
+        </motion.div>
 
-        <div className="rounded-2xl bg-muted/40 border border-border p-4 space-y-3">
+        <motion.div
+          className="rounded-2xl bg-muted/40 border border-border p-4 space-y-3"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, ease: "easeOut", delay: 0.7 }}
+        >
           <p className="text-sm font-semibold text-foreground">
             Bước tiếp theo
           </p>
@@ -227,9 +282,14 @@ export const ConfirmationClient = ({ bookingRef }: ConfirmationClientProps) => {
               </p>
             </div>
           </div>
-        </div>
+        </motion.div>
 
-        <div className="flex flex-col sm:flex-row gap-3">
+        <motion.div
+          className="flex flex-col sm:flex-row gap-3"
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, ease: "easeOut", delay: 0.85 }}
+        >
           <Button
             className="flex-1 rounded-xl gap-2 bg-primary text-primary-foreground hover:bg-primary/90"
             asChild
@@ -250,7 +310,7 @@ export const ConfirmationClient = ({ bookingRef }: ConfirmationClientProps) => {
               Về trang chủ
             </Link>
           </Button>
-        </div>
+        </motion.div>
       </div>
     </>
   );

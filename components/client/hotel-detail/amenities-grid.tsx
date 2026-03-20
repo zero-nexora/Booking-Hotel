@@ -1,36 +1,4 @@
-import {
-  Wifi,
-  Car,
-  Dumbbell,
-  UtensilsCrossed,
-  Waves,
-  Wind,
-  Coffee,
-  Shield,
-  Tv,
-  Bath,
-  PawPrint,
-  Baby,
-  Accessibility,
-  Bike,
-} from "lucide-react";
-
-const iconMap: Record<string, React.ElementType> = {
-  wifi: Wifi,
-  parking: Car,
-  gym: Dumbbell,
-  restaurant: UtensilsCrossed,
-  pool: Waves,
-  ac: Wind,
-  coffee: Coffee,
-  security: Shield,
-  tv: Tv,
-  bath: Bath,
-  pet: PawPrint,
-  baby: Baby,
-  accessible: Accessibility,
-  bike: Bike,
-};
+import { getAmenityIcon } from "@/lib/utils";
 
 interface AmenitiesGridProps {
   amenities: { amenity: { name: string; icon?: string | null } }[];
@@ -42,8 +10,7 @@ export const AmenitiesGrid = ({ amenities }: AmenitiesGridProps) => {
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
       {amenities.map(({ amenity }) => {
-        const iconKey = amenity.icon?.toLowerCase() ?? "";
-        const Icon = iconMap[iconKey] ?? Wifi;
+        const Icon = getAmenityIcon(amenity.icon);
         return (
           <div
             key={amenity.name}

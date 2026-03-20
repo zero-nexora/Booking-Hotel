@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Clock, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface ExpiryTimerProps {
   expiresAt: Date;
@@ -40,17 +41,24 @@ export const ExpiryTimer = ({ expiresAt, onExpire }: ExpiryTimerProps) => {
 
   if (expired) {
     return (
-      <div className="flex items-center gap-2 rounded-xl bg-destructive/10 text-destructive border border-destructive/20 px-4 py-3 text-sm">
+      <motion.div
+        initial={{ opacity: 0, y: -8 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="flex items-center gap-2 rounded-xl bg-destructive/10 text-destructive border border-destructive/20 px-4 py-3 text-sm"
+      >
         <AlertCircle className="w-4 h-4 shrink-0" />
         <p className="font-medium">
           Phiên đặt phòng đã hết hạn. Vui lòng thử lại.
         </p>
-      </div>
+      </motion.div>
     );
   }
 
   return (
-    <div
+    <motion.div
+      initial={{ opacity: 0, y: -8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3, ease: "easeOut" }}
       className={cn(
         "flex items-center gap-2 rounded-xl px-4 py-3 text-sm border",
         urgent
@@ -61,16 +69,33 @@ export const ExpiryTimer = ({ expiresAt, onExpire }: ExpiryTimerProps) => {
       <Clock className={cn("w-4 h-4 shrink-0", urgent && "text-primary")} />
       <p>
         Phòng được giữ trong{" "}
-        <span
-          className={cn(
-            "font-bold tabular-nums",
-            urgent ? "text-primary" : "text-foreground",
-          )}
-        >
-          {mins}:{String(secs).padStart(2, "0")}
-        </span>
+        <AnimatePresence mode="wait">
+          <motion.span
+            key={`${mins}-${secs}`}
+            initial={urgent ? { opacity: 0.4, scale: 0.95 } : { opacity: 1 }}
+            animate={
+              urgent
+                ? {
+                    opacity: [0.4, 1, 0.4],
+                    scale: [0.95, 1.05, 0.95],
+                  }
+                : { opacity: 1, scale: 1 }
+            }
+            transition={
+              urgent
+                ? { duration: 1, repeat: Infinity, ease: "easeInOut" }
+                : { duration: 0 }
+            }
+            className={cn(
+              "font-bold tabular-nums inline-block",
+              urgent ? "text-primary" : "text-foreground",
+            )}
+          >
+            {mins}:{String(secs).padStart(2, "0")}
+          </motion.span>
+        </AnimatePresence>
         . Hoàn tất thanh toán trước khi hết giờ.
       </p>
-    </div>
+    </motion.div>
   );
 };

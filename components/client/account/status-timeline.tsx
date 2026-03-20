@@ -2,6 +2,7 @@
 
 import { CheckCircle2, Circle, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { motion, Variants } from "framer-motion";
 
 type BookingStatus =
   | "PENDING"
@@ -35,6 +36,24 @@ const STATUS_ORDER: Record<BookingStatus, number> = {
   NO_SHOW: -1,
 };
 
+const nodeVariants: Variants = {
+  hidden: { opacity: 0, scale: 0.5 },
+  visible: {
+    opacity: 1,
+    scale: 1,
+    transition: { duration: 0.35, ease: "easeOut" },
+  },
+};
+
+const labelVariants: Variants = {
+  hidden: { opacity: 0, y: 6 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.3, ease: "easeOut" },
+  },
+};
+
 interface StatusTimelineProps {
   status: BookingStatus;
 }
@@ -45,10 +64,15 @@ export const StatusTimeline = ({ status }: StatusTimelineProps) => {
 
   if (isCancelled) {
     return (
-      <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-sm font-medium">
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, ease: "easeOut" }}
+        className="flex items-center gap-2 px-4 py-3 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-sm font-medium"
+      >
         <Circle className="w-4 h-4" />
         {status === "CANCELLED" ? "Đặt phòng đã bị huỷ" : "Không đến (No-show)"}
-      </div>
+      </motion.div>
     );
   }
 
@@ -59,22 +83,35 @@ export const StatusTimeline = ({ status }: StatusTimelineProps) => {
         const done = currentOrder > stepOrder;
         const active = currentOrder === stepOrder;
         const isLast = i === STEPS.length - 1;
+        const delay = i * 0.12;
 
         return (
           <div key={step.status} className="flex-1 flex flex-col items-center">
             <div className="flex items-center w-full">
-              <div
-                className={cn(
-                  "flex-1 h-0.5",
-                  i === 0
-                    ? "invisible"
-                    : done || active
-                      ? "bg-primary"
-                      : "bg-border",
-                )}
-              />
+              {i !== 0 && (
+                <div className="flex-1 h-0.5 bg-border overflow-hidden">
+                  <motion.div
+                    className={cn(
+                      "h-full",
+                      done || active ? "bg-primary" : "bg-transparent",
+                    )}
+                    initial={{ width: 0 }}
+                    animate={{ width: done || active ? "100%" : "0%" }}
+                    transition={{
+                      duration: 0.4,
+                      ease: "easeOut",
+                      delay: delay - 0.06,
+                    }}
+                  />
+                </div>
+              )}
+              {i === 0 && <div className="flex-1 invisible h-0.5" />}
 
-              <div
+              <motion.div
+                variants={nodeVariants}
+                initial="hidden"
+                animate="visible"
+                transition={{ delay }}
                 className={cn(
                   "w-7 h-7 rounded-full flex items-center justify-center shrink-0 border-2",
                   done
@@ -91,17 +128,36 @@ export const StatusTimeline = ({ status }: StatusTimelineProps) => {
                 ) : (
                   <span className="text-[10px] font-bold">{i + 1}</span>
                 )}
-              </div>
+              </motion.div>
 
-              <div
-                className={cn(
-                  "flex-1 h-0.5",
-                  isLast ? "invisible" : done ? "bg-primary" : "bg-border",
-                )}
-              />
+              {!isLast ? (
+                <div className="flex-1 h-0.5 bg-border overflow-hidden">
+                  <motion.div
+                    className={cn(
+                      "h-full",
+                      done ? "bg-primary" : "bg-transparent",
+                    )}
+                    initial={{ width: 0 }}
+                    animate={{ width: done ? "100%" : "0%" }}
+                    transition={{
+                      duration: 0.4,
+                      ease: "easeOut",
+                      delay: delay + 0.06,
+                    }}
+                  />
+                </div>
+              ) : (
+                <div className="flex-1 invisible h-0.5" />
+              )}
             </div>
 
-            <div className="mt-2 text-center px-1">
+            <motion.div
+              variants={labelVariants}
+              initial="hidden"
+              animate="visible"
+              transition={{ delay: delay + 0.1 }}
+              className="mt-2 text-center px-1"
+            >
               <p
                 className={cn(
                   "text-xs font-medium",
@@ -119,7 +175,7 @@ export const StatusTimeline = ({ status }: StatusTimelineProps) => {
                   {step.sublabel}
                 </p>
               )}
-            </div>
+            </motion.div>
           </div>
         );
       })}

@@ -26,7 +26,7 @@ import { SearchInput } from "@/components/common/search-input";
 import { Pagination } from "@/components/common/pagination";
 import { StatusBadge } from "@/components/common/status-badge";
 import { RouterOutput } from "@/trpc/client";
-import { UserRole } from "@/generated/prisma/enums";
+import { UserRole } from "@/prisma/generated/prisma/enums";
 import { useUser } from "@/lib/auth-client";
 import {
   useAdminUserList,

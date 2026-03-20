@@ -16,6 +16,7 @@ import { cn, formatCurrencyUSD, formatDateShort } from "@/lib/utils";
 import { accountBookingParsers } from "@/lib/search-params/booking-search";
 import { StatusBadge } from "@/components/common/status-badge";
 import { LoadMoreTrigger } from "@/components/common/load-more-trigger";
+import { motion, AnimatePresence, Variants } from "framer-motion";
 
 type BookingStatus =
   | "PENDING"
@@ -40,6 +41,22 @@ const PAYMENT_MAP: Record<string, string> = {
   PAID: "Đã thanh toán",
   REFUNDED: "Đã hoàn tiền",
   FAILED: "Thanh toán lỗi",
+};
+
+const listContainerVariants: Variants = {
+  hidden: {},
+  visible: {
+    transition: { staggerChildren: 0.07 },
+  },
+};
+
+const bookingItemVariants: Variants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.4, ease: "easeOut" },
+  },
 };
 
 export const AccountBookingsClient = () => {
@@ -105,105 +122,117 @@ export const AccountBookingsClient = () => {
           )}
         </div>
       ) : (
-        <div className="space-y-3">
-          {bookings.map((booking) => {
-            const item = booking.items[0];
-            const canCancel = ["PENDING", "CONFIRMED"].includes(booking.status);
-            const canReview =
-              booking.status === "CHECKED_OUT" && booking._count.payments > 0;
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={params.status ?? "all"}
+            className="space-y-3"
+            variants={listContainerVariants}
+            initial="hidden"
+            animate="visible"
+            exit={{ opacity: 0, transition: { duration: 0.15 } }}
+          >
+            {bookings.map((booking) => {
+              const item = booking.items[0];
+              const canCancel = ["PENDING", "CONFIRMED"].includes(
+                booking.status,
+              );
+              const canReview =
+                booking.status === "CHECKED_OUT" && booking._count.payments > 0;
 
-            return (
-              <div
-                key={booking.id}
-                className="rounded-2xl border border-border bg-card shadow-none hover:shadow-sm"
-              >
-                <Link
-                  href={`/account/bookings/${booking.bookingRef}`}
-                  className="flex items-start gap-4 p-4"
+              return (
+                <motion.div
+                  key={booking.id}
+                  variants={bookingItemVariants}
+                  className="rounded-2xl border border-border bg-card shadow-none hover:shadow-sm"
                 >
-                  <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center shrink-0 mt-0.5">
-                    <Building2 className="w-4 h-4 text-muted-foreground" />
-                  </div>
-
-                  <div className="flex-1 min-w-0 space-y-1">
-                    <div className="flex items-start justify-between gap-2">
-                      <p className="font-semibold text-sm leading-tight truncate text-foreground">
-                        {booking.hotel.name}
-                      </p>
-                      <StatusBadge status={booking.status} type="booking" />
+                  <Link
+                    href={`/account/bookings/${booking.bookingRef}`}
+                    className="flex items-start gap-4 p-4"
+                  >
+                    <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center shrink-0 mt-0.5">
+                      <Building2 className="w-4 h-4 text-muted-foreground" />
                     </div>
 
-                    {item && (
+                    <div className="flex-1 min-w-0 space-y-1">
+                      <div className="flex items-start justify-between gap-2">
+                        <p className="font-semibold text-sm leading-tight truncate text-foreground">
+                          {booking.hotel.name}
+                        </p>
+                        <StatusBadge status={booking.status} type="booking" />
+                      </div>
+
+                      {item && (
+                        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                          <BedDouble className="w-3 h-3" />
+                          <span className="truncate">{item.room.name}</span>
+                        </div>
+                      )}
+
                       <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                        <BedDouble className="w-3 h-3" />
-                        <span className="truncate">{item.room.name}</span>
-                      </div>
-                    )}
-
-                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                      <CalendarDays className="w-3 h-3" />
-                      <span>
-                        {formatDateShort(booking.checkIn)}
-                        {" → "}
-                        {formatDateShort(booking.checkOut)}
-                        {item && ` · ${item.nights} đêm`}
-                      </span>
-                    </div>
-
-                    <div className="flex items-center justify-between pt-1">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-semibold text-foreground">
-                          {formatCurrencyUSD(Number(booking.totalAmount))}
-                        </span>
-                        <span className="text-xs text-muted-foreground">
-                          {PAYMENT_MAP[booking.paymentStatus]}
+                        <CalendarDays className="w-3 h-3" />
+                        <span>
+                          {formatDateShort(booking.checkIn)}
+                          {" → "}
+                          {formatDateShort(booking.checkOut)}
+                          {item && ` · ${item.nights} đêm`}
                         </span>
                       </div>
-                      <span className="text-xs text-muted-foreground font-mono">
-                        #{booking.bookingRef.slice(-8)}
-                      </span>
+
+                      <div className="flex items-center justify-between pt-1">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-semibold text-foreground">
+                            {formatCurrencyUSD(Number(booking.totalAmount))}
+                          </span>
+                          <span className="text-xs text-muted-foreground">
+                            {PAYMENT_MAP[booking.paymentStatus]}
+                          </span>
+                        </div>
+                        <span className="text-xs text-muted-foreground font-mono">
+                          #{booking.bookingRef.slice(-8)}
+                        </span>
+                      </div>
                     </div>
-                  </div>
 
-                  <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0 mt-1" />
-                </Link>
+                    <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0 mt-1" />
+                  </Link>
 
-                {(canCancel || canReview) && (
-                  <div className="flex gap-2 px-4 pb-3 pt-0">
-                    {canReview && (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="rounded-lg text-xs h-7 gap-1 border-border text-foreground hover:bg-muted hover:text-primary"
-                        asChild
-                      >
-                        <Link
-                          href={`/account/bookings/${booking.bookingRef}/review`}
+                  {(canCancel || canReview) && (
+                    <div className="flex gap-2 px-4 pb-3 pt-0">
+                      {canReview && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="rounded-lg text-xs h-7 gap-1 border-border text-foreground hover:bg-muted hover:text-primary"
+                          asChild
                         >
-                          Viết đánh giá
-                        </Link>
-                      </Button>
-                    )}
-                    {canCancel && (
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="rounded-lg text-xs h-7 text-destructive hover:text-destructive hover:bg-destructive/10"
-                        asChild
-                      >
-                        <Link
-                          href={`/account/bookings/${booking.bookingRef}#cancel`}
+                          <Link
+                            href={`/account/bookings/${booking.bookingRef}/review`}
+                          >
+                            Viết đánh giá
+                          </Link>
+                        </Button>
+                      )}
+                      {canCancel && (
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="rounded-lg text-xs h-7 text-destructive hover:text-destructive hover:bg-destructive/10"
+                          asChild
                         >
-                          Huỷ đặt phòng
-                        </Link>
-                      </Button>
-                    )}
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
+                          <Link
+                            href={`/account/bookings/${booking.bookingRef}#cancel`}
+                          >
+                            Huỷ đặt phòng
+                          </Link>
+                        </Button>
+                      )}
+                    </div>
+                  )}
+                </motion.div>
+              );
+            })}
+          </motion.div>
+        </AnimatePresence>
       )}
 
       <LoadMoreTrigger

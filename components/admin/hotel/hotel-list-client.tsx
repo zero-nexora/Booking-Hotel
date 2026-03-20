@@ -29,7 +29,7 @@ import { Pagination } from "@/components/common/pagination";
 import { StatusBadge } from "@/components/common/status-badge";
 import { CreateHotelForm, EditHotelForm } from "./hotel-form-sheet";
 import { RouterOutput } from "@/trpc/client";
-import { HotelStatus } from "@/generated/prisma/enums";
+import { HotelStatus } from "@/prisma/generated/prisma/enums";
 import {
   useAdminHotelList,
   useDeleteHotel,

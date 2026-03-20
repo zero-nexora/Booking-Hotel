@@ -14,7 +14,7 @@ export interface CountUpProps extends UseCountUpOptions {
   }) => React.ReactNode;
 }
 
-export function CountUp({
+export const CountUp = ({
   triggerOnView = false,
   viewThreshold = 0.3,
   triggerOnce = true,
@@ -23,7 +23,7 @@ export function CountUp({
   style,
   render,
   ...countUpOptions
-}: CountUpProps) {
+}: CountUpProps) => {
   const { ref, isIntersecting } = useIntersectionObserver<HTMLSpanElement>({
     threshold: viewThreshold,
     triggerOnce,

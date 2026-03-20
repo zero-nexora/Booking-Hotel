@@ -3,7 +3,6 @@ import { TRPCError } from "@trpc/server";
 import { adminProcedure, createTRPCRouter } from "@/trpc/init";
 import { invalidateCache, CACHE_KEYS } from "@/lib/redis";
 import { generateUniqueSlug } from "@/lib/slugify";
-import { PrismaClient } from "@/generated/prisma/client";
 import { checkRateLimit, rateLimiters } from "@/lib/rate-limit";
 import {
   assertFound,
@@ -11,6 +10,7 @@ import {
   getSkip,
   paginationInput,
 } from "@/trpc/helpers";
+import { PrismaClient } from "@/prisma/generated/prisma/client";
 
 const bedInput = z.object({
   bedTypeId: z.string(),

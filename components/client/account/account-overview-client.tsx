@@ -17,6 +17,39 @@ import { useQuickStats, useRecentBookings } from "@/hooks/client/use-booking";
 import { formatDateShort, formatCurrencyUSD } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
 import { StatusBadge } from "@/components/common/status-badge";
+import { motion, Variants } from "framer-motion";
+
+const statsContainerVariants: Variants = {
+  hidden: {},
+  visible: {
+    transition: { staggerChildren: 0.1 },
+  },
+};
+
+const statCardVariants: Variants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.4, ease: "easeOut" },
+  },
+};
+
+const recentContainerVariants: Variants = {
+  hidden: {},
+  visible: {
+    transition: { staggerChildren: 0.07, delayChildren: 0.1 },
+  },
+};
+
+const recentItemVariants: Variants = {
+  hidden: { opacity: 0, y: 16 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.35, ease: "easeOut" },
+  },
+};
 
 export const AccountOverviewClient = () => {
   const { data: user, isLoading: userLoading } = useMe();
@@ -73,7 +106,12 @@ export const AccountOverviewClient = () => {
             <Skeleton key={i} className="h-20 rounded-2xl bg-muted" />
           ))
         ) : (
-          <>
+          <motion.div
+            className="contents"
+            variants={statsContainerVariants}
+            initial="hidden"
+            animate="visible"
+          >
             <StatCard
               icon={<BookOpen className="w-4 h-4 text-primary" />}
               label="Đặt phòng"
@@ -89,7 +127,7 @@ export const AccountOverviewClient = () => {
               label="Đã chi"
               value={formatCurrencyUSD(Number(stats?.totalSpent ?? 0))}
             />
-          </>
+          </motion.div>
         )}
       </div>
 
@@ -137,37 +175,43 @@ export const AccountOverviewClient = () => {
             </Button>
           </div>
         ) : (
-          <div className="divide-y divide-border">
+          <motion.div
+            className="divide-y divide-border"
+            variants={recentContainerVariants}
+            initial="hidden"
+            animate="visible"
+          >
             {recent.map((booking) => {
               const item = booking.items[0];
               return (
-                <Link
-                  key={booking.id}
-                  href={`/account/bookings/${booking.bookingRef}`}
-                  className="flex items-center gap-3 px-5 py-3.5 hover:bg-muted/40"
-                >
-                  <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center shrink-0">
-                    <Building2 className="w-4 h-4 text-muted-foreground" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate text-foreground">
-                      {booking.hotel.name}
-                    </p>
-                    {item && (
-                      <div className="flex items-center gap-1 mt-0.5">
-                        <CalendarDays className="w-3 h-3 text-muted-foreground" />
-                        <span className="text-xs text-muted-foreground">
-                          {formatDateShort(booking.checkIn)} →{" "}
-                          {formatDateShort(booking.checkOut)}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                  <StatusBadge status={booking.status} type="booking" />
-                </Link>
+                <motion.div key={booking.id} variants={recentItemVariants}>
+                  <Link
+                    href={`/account/bookings/${booking.bookingRef}`}
+                    className="flex items-center gap-3 px-5 py-3.5 hover:bg-muted/40"
+                  >
+                    <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center shrink-0">
+                      <Building2 className="w-4 h-4 text-muted-foreground" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium truncate text-foreground">
+                        {booking.hotel.name}
+                      </p>
+                      {item && (
+                        <div className="flex items-center gap-1 mt-0.5">
+                          <CalendarDays className="w-3 h-3 text-muted-foreground" />
+                          <span className="text-xs text-muted-foreground">
+                            {formatDateShort(booking.checkIn)} →{" "}
+                            {formatDateShort(booking.checkOut)}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                    <StatusBadge status={booking.status} type="booking" />
+                  </Link>
+                </motion.div>
               );
             })}
-          </div>
+          </motion.div>
         )}
       </Card>
     </div>
@@ -183,13 +227,17 @@ const StatCard = ({
   label: string;
   value: string | number;
 }) => (
-  <Card className="rounded-2xl border border-border bg-card shadow-none p-4 flex flex-col gap-3">
-    <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
-      {icon}
-    </div>
-    <div>
-      <p className="text-lg font-bold leading-none text-foreground">{value}</p>
-      <p className="text-xs text-muted-foreground mt-0.5">{label}</p>
-    </div>
-  </Card>
+  <motion.div variants={statCardVariants}>
+    <Card className="rounded-2xl border border-border bg-card shadow-none p-4 flex flex-col gap-3">
+      <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+        {icon}
+      </div>
+      <div>
+        <p className="text-lg font-bold leading-none text-foreground">
+          {value}
+        </p>
+        <p className="text-xs text-muted-foreground mt-0.5">{label}</p>
+      </div>
+    </Card>
+  </motion.div>
 );

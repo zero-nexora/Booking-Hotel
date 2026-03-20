@@ -22,6 +22,7 @@ import { AuthDivider } from "@/components/common/auth-divider";
 import { PasswordInput } from "@/components/common/password-input";
 import { authClient } from "@/lib/auth-client";
 import { toast } from "sonner";
+import { motion } from "framer-motion";
 
 const schema = z.object({
   email: z.string().email("Email không hợp lệ"),
@@ -59,7 +60,12 @@ const SignInPage = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <motion.div
+      className="space-y-6"
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: "easeOut" }}
+    >
       <div className="space-y-1.5">
         <h1 className="text-2xl font-semibold tracking-tight text-foreground">
           Chào mừng trở lại
@@ -70,7 +76,6 @@ const SignInPage = () => {
       </div>
 
       <GoogleButton label="Đăng nhập với Google" disabled={isLoading} />
-
       <AuthDivider />
 
       <Form {...form}>
@@ -164,7 +169,7 @@ const SignInPage = () => {
           Đăng ký ngay
         </Link>
       </p>
-    </div>
+    </motion.div>
   );
 };
 

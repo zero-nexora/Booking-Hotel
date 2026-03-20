@@ -2,28 +2,7 @@
 
 import { Skeleton } from "@/components/ui/skeleton";
 import { useTopAmenities } from "@/hooks/client/use-home";
-import {
-  Wifi,
-  Car,
-  Dumbbell,
-  UtensilsCrossed,
-  Waves,
-  Wind,
-  Coffee,
-  Shield,
-  Sparkles,
-} from "lucide-react";
-
-const iconMap: Record<string, React.ElementType> = {
-  wifi: Wifi,
-  parking: Car,
-  gym: Dumbbell,
-  restaurant: UtensilsCrossed,
-  pool: Waves,
-  ac: Wind,
-  coffee: Coffee,
-  security: Shield,
-};
+import { getAmenityIcon } from "@/lib/utils";
 
 export const TopAmenities = () => {
   const { data: amenities, isLoading } = useTopAmenities();
@@ -41,8 +20,7 @@ export const TopAmenities = () => {
   return (
     <div className="flex flex-wrap gap-2.5">
       {amenities?.map((amenity) => {
-        const iconKey = amenity.icon?.toLowerCase() ?? "";
-        const Icon = iconMap[iconKey] ?? Sparkles;
+        const Icon = getAmenityIcon(amenity.icon);
         return (
           <div
             key={amenity.id}

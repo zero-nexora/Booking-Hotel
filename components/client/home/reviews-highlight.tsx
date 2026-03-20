@@ -5,6 +5,28 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useHighlightedReviews } from "@/hooks/client/use-home";
 import { formatDateFull } from "@/lib/utils";
+import { motion, Variants } from "framer-motion";
+
+const containerVariants: Variants = {
+  hidden: {},
+  visible: {
+    transition: {
+      staggerChildren: 0.12,
+    },
+  },
+};
+
+const cardVariants: Variants = {
+  hidden: { opacity: 0, y: 28 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.5,
+      ease: "easeOut",
+    },
+  },
+};
 
 export const ReviewsHighlight = () => {
   const { data: reviews, isLoading } = useHighlightedReviews();
@@ -20,10 +42,17 @@ export const ReviewsHighlight = () => {
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <motion.div
+      className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+      variants={containerVariants}
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true, margin: "-60px" }}
+    >
       {reviews?.map((review) => (
-        <div
+        <motion.div
           key={review.id}
+          variants={cardVariants}
           className="rounded-2xl border border-border bg-card p-5 flex flex-col gap-4 relative"
         >
           <Quote className="w-6 h-6 text-primary/20 absolute top-4 right-4" />
@@ -66,8 +95,8 @@ export const ReviewsHighlight = () => {
               {formatDateFull(review.createdAt)}
             </p>
           </div>
-        </div>
+        </motion.div>
       ))}
-    </div>
+    </motion.div>
   );
 };

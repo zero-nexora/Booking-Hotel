@@ -9,6 +9,16 @@ import { calcNights, cn } from "@/lib/utils";
 import { hotelSearchParsers } from "@/lib/search-params/hotel-search";
 import { HotelsMapView } from "./hotel-map-view";
 import { LoadMoreTrigger } from "@/components/common/load-more-trigger";
+import { motion, AnimatePresence, Variants } from "framer-motion";
+
+const listContainerVariants: Variants = {
+  hidden: {},
+  visible: {
+    transition: {
+      staggerChildren: 0.07,
+    },
+  },
+};
 
 export const HotelsList = () => {
   const [params] = useQueryStates(hotelSearchParsers);
@@ -74,22 +84,35 @@ export const HotelsList = () => {
 
   return (
     <div>
-      <div
-        className={
-          view === "grid"
-            ? "grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4"
-            : "space-y-3"
-        }
-      >
-        {hotels.map((hotel) => (
-          <HotelCard
-            key={hotel.id}
-            hotel={hotel as never}
-            view={view}
-            nights={nights}
-          />
-        ))}
-      </div>
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={view}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2, ease: "easeOut" }}
+        >
+          <motion.div
+            className={
+              view === "grid"
+                ? "grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4"
+                : "space-y-3"
+            }
+            variants={listContainerVariants}
+            initial="hidden"
+            animate="visible"
+          >
+            {hotels.map((hotel) => (
+              <HotelCard
+                key={hotel.id}
+                hotel={hotel as never}
+                view={view}
+                nights={nights}
+              />
+            ))}
+          </motion.div>
+        </motion.div>
+      </AnimatePresence>
 
       <LoadMoreTrigger
         fetchNextPage={fetchNextPage}

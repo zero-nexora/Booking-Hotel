@@ -4,6 +4,28 @@ import { useRouter } from "next/navigation";
 import { MapPin, Building2 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { usePopularDestinations } from "@/hooks/client/use-home";
+import { motion, Variants } from "framer-motion";
+
+const containerVariants: Variants = {
+  hidden: {},
+  visible: {
+    transition: {
+      staggerChildren: 0.07,
+    },
+  },
+};
+
+const itemVariants: Variants = {
+  hidden: { opacity: 0, x: -20 },
+  visible: {
+    opacity: 1,
+    x: 0,
+    transition: {
+      duration: 0.4,
+      ease: "easeOut",
+    },
+  },
+};
 
 export const PopularDestinations = () => {
   const router = useRouter();
@@ -20,10 +42,17 @@ export const PopularDestinations = () => {
   }
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+    <motion.div
+      className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4"
+      variants={containerVariants}
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true, margin: "-60px" }}
+    >
       {destinations?.map((dest) => (
-        <button
+        <motion.button
           key={dest.id}
+          variants={itemVariants}
           onClick={() =>
             router.push(`/hotels?city=${encodeURIComponent(dest.name)}`)
           }
@@ -41,8 +70,8 @@ export const PopularDestinations = () => {
               {dest.hotelCount} khách sạn
             </p>
           </div>
-        </button>
+        </motion.button>
       ))}
-    </div>
+    </motion.div>
   );
 };

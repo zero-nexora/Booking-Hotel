@@ -13,6 +13,7 @@ import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ArrowLeft, ChevronRight, User, CreditCard } from "lucide-react";
 import Link from "next/link";
+import { motion, AnimatePresence } from "framer-motion";
 
 import { useHotelDetail } from "@/hooks/client/use-hotels";
 import { useCreateBookingIntent } from "@/hooks/client/use-booking";
@@ -40,6 +41,8 @@ interface BookingClientProps {
   roomSlug: string;
 }
 
+const STEP_ORDER: Step[] = ["guest", "payment"];
+
 export const BookingClient = ({ hotelSlug, roomSlug }: BookingClientProps) => {
   const router = useRouter();
   const [params] = useQueryStates(bookingParsers);
@@ -59,6 +62,7 @@ export const BookingClient = ({ hotelSlug, roomSlug }: BookingClientProps) => {
   const { data: me } = useMe();
 
   const [step, setStep] = useState<Step>("guest");
+  const [prevStep, setPrevStep] = useState<Step>("guest");
   const [intentData, setIntentData] = useState<{
     clientSecret: string;
     bookingId: string;
@@ -134,6 +138,13 @@ export const BookingClient = ({ hotelSlug, roomSlug }: BookingClientProps) => {
   const total = pricePerNight * nights;
   const hotelImage = hotel.images[0]?.url;
 
+  const goToStep = (next: Step) => {
+    setPrevStep(step);
+    setStep(next);
+  };
+
+  const isForward = STEP_ORDER.indexOf(step) >= STEP_ORDER.indexOf(prevStep);
+
   const handleGuestSubmit = async (values: GuestValues) => {
     const result = await createIntent.mutateAsync({
       hotelSlug,
@@ -153,7 +164,7 @@ export const BookingClient = ({ hotelSlug, roomSlug }: BookingClientProps) => {
       currency: result.currency,
       bookingRef: result.bookingRef,
     });
-    setStep("payment");
+    goToStep("payment");
   };
 
   const handlePaymentSuccess = async () => {
@@ -165,7 +176,7 @@ export const BookingClient = ({ hotelSlug, roomSlug }: BookingClientProps) => {
 
   const handleExpired = () => {
     toast.error("Phiên đặt phòng đã hết hạn. Vui lòng thử lại.");
-    setStep("guest");
+    goToStep("guest");
     setIntentData(null);
   };
 
@@ -215,40 +226,51 @@ export const BookingClient = ({ hotelSlug, roomSlug }: BookingClientProps) => {
       )}
 
       <div className="flex wrapper gap-6 items-start">
-        <div className="flex-1 min-w-0 space-y-6 w-full">
-          {step === "guest" && (
-            <Form {...form}>
-              <form
-                onSubmit={form.handleSubmit(handleGuestSubmit)}
-                className="space-y-6"
-              >
-                <Section title="Thông tin khách lưu trú">
-                  <GuestInfoForm />
-                </Section>
-                <Button
-                  type="submit"
-                  className="w-full rounded-xl h-11 gap-2 text-base bg-primary text-primary-foreground hover:bg-primary/90"
-                  disabled={createIntent.isPending}
-                >
-                  {createIntent.isPending
-                    ? "Đang xử lý..."
-                    : "Tiếp tục thanh toán"}
-                  <ChevronRight className="w-4 h-4" />
-                </Button>
-              </form>
-            </Form>
-          )}
+        <div className="flex-1 min-w-0 space-y-6 w-full overflow-hidden">
+          <AnimatePresence mode="wait" custom={isForward}>
+            <motion.div
+              key={step}
+              custom={isForward}
+              initial={{ opacity: 0, x: isForward ? 40 : -40 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: isForward ? -40 : 40 }}
+              transition={{ duration: 0.3, ease: "easeOut" }}
+            >
+              {step === "guest" && (
+                <Form {...form}>
+                  <form
+                    onSubmit={form.handleSubmit(handleGuestSubmit)}
+                    className="space-y-6"
+                  >
+                    <Section title="Thông tin khách lưu trú">
+                      <GuestInfoForm />
+                    </Section>
+                    <Button
+                      type="submit"
+                      className="w-full rounded-xl h-11 gap-2 text-base bg-primary text-primary-foreground hover:bg-primary/90"
+                      disabled={createIntent.isPending}
+                    >
+                      {createIntent.isPending
+                        ? "Đang xử lý..."
+                        : "Tiếp tục thanh toán"}
+                      <ChevronRight className="w-4 h-4" />
+                    </Button>
+                  </form>
+                </Form>
+              )}
 
-          {step === "payment" && intentData && (
-            <Section title="Thanh toán">
-              <PaymentSection
-                clientSecret={intentData.clientSecret}
-                total={total}
-                onPaymentSuccess={handlePaymentSuccess}
-                onPaymentError={handlePaymentError}
-              />
-            </Section>
-          )}
+              {step === "payment" && intentData && (
+                <Section title="Thanh toán">
+                  <PaymentSection
+                    clientSecret={intentData.clientSecret}
+                    total={total}
+                    onPaymentSuccess={handlePaymentSuccess}
+                    onPaymentError={handlePaymentError}
+                  />
+                </Section>
+              )}
+            </motion.div>
+          </AnimatePresence>
         </div>
 
         <div className="md:hidden w-full">
@@ -321,24 +343,44 @@ const StepBadge = ({
   number: number;
 }) => (
   <div className="flex items-center gap-2 shrink-0">
-    <div
-      className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${
-        active
-          ? "bg-primary text-primary-foreground"
+    <motion.div
+      animate={{
+        scale: active ? 1.1 : 1,
+        backgroundColor: active
+          ? "var(--color-primary, hsl(var(--primary)))"
           : done
-            ? "bg-primary/20 text-primary"
-            : "bg-muted text-muted-foreground"
-      }`}
+            ? "hsl(var(--primary) / 0.2)"
+            : "hsl(var(--muted))",
+      }}
+      transition={{ duration: 0.25, ease: "easeOut" }}
+      className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold"
+      style={{
+        color: active
+          ? "hsl(var(--primary-foreground))"
+          : done
+            ? "hsl(var(--primary))"
+            : "hsl(var(--muted-foreground))",
+      }}
     >
-      {done ? "✓" : number}
-    </div>
-    <span
-      className={`text-sm font-medium box-hidden ${
-        active ? "text-foreground" : "text-muted-foreground"
-      }`}
+      <AnimatePresence mode="wait">
+        <motion.span
+          key={done ? "done" : number}
+          initial={{ opacity: 0, scale: 0.6 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.6 }}
+          transition={{ duration: 0.18, ease: "easeOut" }}
+        >
+          {done ? "✓" : number}
+        </motion.span>
+      </AnimatePresence>
+    </motion.div>
+    <motion.span
+      animate={{ opacity: active ? 1 : 0.5 }}
+      transition={{ duration: 0.25 }}
+      className="text-sm font-medium box-hidden text-foreground"
     >
       {label}
-    </span>
+    </motion.span>
   </div>
 );
 

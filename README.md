@@ -19,6 +19,7 @@ Full-stack hotel booking platform built with Next.js 15 App Router, tRPC, Prisma
 | Maps | react-leaflet + OpenStreetMap (Carto Voyager tiles) |
 | URL State | nuqs |
 | UI | shadcn/ui + Tailwind CSS |
+| Animation | Framer motion |
 | Forms | react-hook-form + zod |
 | Date utils | date-fns |
 

@@ -20,6 +20,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { calcNights, formatDateShort, formatCurrencyUSD } from "@/lib/utils";
+import { motion, Variants } from "framer-motion";
 
 type Room = {
   id: string;
@@ -44,6 +45,27 @@ interface AvailableRoomsProps {
   adults: number;
   childCount: number;
 }
+
+const containerVariants: Variants = {
+  hidden: {},
+  visible: {
+    transition: {
+      staggerChildren: 0.1,
+    },
+  },
+};
+
+const roomCardVariants: Variants = {
+  hidden: { opacity: 0, y: 24 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.45,
+      ease: "easeOut",
+    },
+  },
+};
 
 export const AvailableRooms = ({
   rooms,
@@ -83,14 +105,20 @@ export const AvailableRooms = ({
 
   return (
     <TooltipProvider>
-      <div className="space-y-4">
+      <motion.div
+        className="space-y-4"
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+      >
         {rooms.map((room, index) => {
           const price = Number(room.basePrice.toString());
           const image = room.images[0];
 
           return (
-            <div
+            <motion.div
               key={room.id}
+              variants={roomCardVariants}
               className="rounded-2xl border border-border bg-card overflow-hidden"
             >
               <div className="flex">
@@ -219,10 +247,10 @@ export const AvailableRooms = ({
                   </div>
                 </div>
               </div>
-            </div>
+            </motion.div>
           );
         })}
-      </div>
+      </motion.div>
     </TooltipProvider>
   );
 };

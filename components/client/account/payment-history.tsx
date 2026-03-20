@@ -33,7 +33,7 @@ export const PaymentHistory = ({ payments }: PaymentHistoryProps) => {
     <div className="rounded-2xl border border-border overflow-hidden">
       <Table>
         <TableHeader>
-          <TableRow className="bg-muted/40 border-border hover:bg-transparent">
+          <TableRow className="bg-muted/40 border-border">
             <TableHead className="text-xs text-muted-foreground font-medium">
               Loại
             </TableHead>

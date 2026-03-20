@@ -24,7 +24,7 @@ import { adminBookingParsers } from "@/lib/search-params/admin-bookings";
 import { useQueryStates } from "nuqs";
 import { useCallback } from "react";
 import { RouterOutput } from "@/trpc/client";
-import { BookingStatus, PaymentStatus } from "@/generated/prisma/enums";
+import { BookingStatus, PaymentStatus } from "@/prisma/generated/prisma/enums";
 import { TableSkeleton } from "@/components/common/table-skeleton";
 import { DEFAULT_PAGE } from "@/lib/constants";
 import { formatDateShort, formatCurrencyUSD } from "@/lib/utils";

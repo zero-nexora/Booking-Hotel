@@ -43,6 +43,7 @@ import { Card } from "@/components/ui/card";
 import { useConfirmDialogStore } from "@/store/confirm-dialog-store";
 import { PasswordInput } from "@/components/common/password-input";
 import { PasswordStrengthBar } from "@/components/common/password-strength-bar";
+import { motion, AnimatePresence, Variants } from "framer-motion";
 
 const profileSchema = z.object({
   name: z.string().min(1, "Vui lòng nhập tên"),
@@ -67,6 +68,26 @@ type PasswordValues = z.infer<typeof passwordSchema>;
 const PROVIDER_ICONS: Record<string, React.ElementType> = {
   github: Github,
   google: Chrome,
+};
+
+const expandVariants: Variants = {
+  hidden: {
+    opacity: 0,
+    height: 0,
+    overflow: "hidden" as const,
+  },
+  visible: {
+    opacity: 1,
+    height: "auto",
+    overflow: "hidden" as const,
+    transition: { duration: 0.3, ease: "easeOut" },
+  },
+  exit: {
+    opacity: 0,
+    height: 0,
+    overflow: "hidden" as const,
+    transition: { duration: 0.2, ease: "easeIn" },
+  },
 };
 
 export const ProfileClient = () => {
@@ -172,13 +193,15 @@ export const ProfileClient = () => {
       title: "Bạn chắc chắn muốn xoá?",
       description:
         "Hành động này không thể hoàn tác. Tài khoản, đặt phòng và đánh giá của bạn sẽ bị xoá vĩnh viễn",
+      variant: "destructive",
       onConfirm: handleDeleteAccount,
     });
 
   const handleOpenUnLinkDialog = (providerId: string, accountId: string) =>
     openConfirm({
       title: `Ngắt kết nối ${providerId}?`,
-      description: `Bạn có chắc chắn muốn ngắt kết nối tài khoản ${providerId}? Sau khi ngắt, bạn sẽ không thể đăng nhập bằng ${providerId} nữa.`,
+      description: `Bạn có chắc chắn muốn ngắt kết nối tài khoản ${providerId}?`,
+      variant: "destructive",
       onConfirm: () => handleUnLinkAccount(providerId, accountId),
     });
 
@@ -235,15 +258,26 @@ export const ProfileClient = () => {
                     {user.name?.charAt(0).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
-                {isEditingProfile && (
-                  <UploadButton
-                    endpoint="roomImages"
-                    onClientUploadComplete={(res) => {
-                      profileForm.setValue("image", res[0].ufsUrl);
-                    }}
-                    onUploadError={(err) => console.error("Upload error:", err)}
-                  />
-                )}
+                <AnimatePresence>
+                  {isEditingProfile && (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.9 }}
+                      transition={{ duration: 0.2, ease: "easeOut" }}
+                    >
+                      <UploadButton
+                        endpoint="roomImages"
+                        onClientUploadComplete={(res) => {
+                          profileForm.setValue("image", res[0].ufsUrl);
+                        }}
+                        onUploadError={(err) =>
+                          console.error("Upload error:", err)
+                        }
+                      />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
               <div>
                 <p className="text-sm font-medium text-foreground">
@@ -253,47 +287,107 @@ export const ProfileClient = () => {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <FormField
-                control={profileForm.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-xs font-medium text-foreground">
-                      Họ và tên
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        {...field}
-                        disabled={!isEditingProfile}
-                        className="bg-background border-border text-foreground placeholder:text-muted-foreground focus-visible:ring-primary disabled:bg-muted/40 disabled:text-muted-foreground"
-                      />
-                    </FormControl>
-                    <FormMessage className="text-destructive" />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={profileForm.control}
-                name="phone"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-xs font-medium text-foreground">
-                      Số điện thoại
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="+84 901 234 567"
-                        {...field}
-                        disabled={!isEditingProfile}
-                        className="bg-background border-border text-foreground placeholder:text-muted-foreground focus-visible:ring-primary disabled:bg-muted/40 disabled:text-muted-foreground"
-                      />
-                    </FormControl>
-                    <FormMessage className="text-destructive" />
-                  </FormItem>
-                )}
-              />
-            </div>
+            <AnimatePresence>
+              {isEditingProfile && (
+                <motion.div
+                  variants={expandVariants}
+                  initial="hidden"
+                  animate="visible"
+                  exit="exit"
+                  className="space-y-4"
+                >
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <FormField
+                      control={profileForm.control}
+                      name="name"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-xs font-medium text-foreground">
+                            Họ và tên
+                          </FormLabel>
+                          <FormControl>
+                            <Input
+                              {...field}
+                              className="bg-background border-border text-foreground placeholder:text-muted-foreground focus-visible:ring-primary"
+                            />
+                          </FormControl>
+                          <FormMessage className="text-destructive" />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={profileForm.control}
+                      name="phone"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-xs font-medium text-foreground">
+                            Số điện thoại
+                          </FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder="+84 901 234 567"
+                              {...field}
+                              className="bg-background border-border text-foreground placeholder:text-muted-foreground focus-visible:ring-primary"
+                            />
+                          </FormControl>
+                          <FormMessage className="text-destructive" />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  <Button
+                    type="submit"
+                    size="sm"
+                    className="rounded-xl w-fit bg-primary text-primary-foreground hover:bg-primary/90"
+                    disabled={updateProfile.isPending}
+                  >
+                    {updateProfile.isPending ? "Đang lưu..." : "Lưu thay đổi"}
+                  </Button>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {!isEditingProfile && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <FormField
+                  control={profileForm.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-xs font-medium text-foreground">
+                        Họ và tên
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          {...field}
+                          disabled
+                          className="bg-background border-border text-foreground disabled:bg-muted/40 disabled:text-muted-foreground"
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={profileForm.control}
+                  name="phone"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-xs font-medium text-foreground">
+                        Số điện thoại
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="+84 901 234 567"
+                          {...field}
+                          disabled
+                          className="bg-background border-border text-foreground disabled:bg-muted/40 disabled:text-muted-foreground"
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+              </div>
+            )}
 
             <div className="space-y-1.5">
               <p className="text-xs font-medium text-foreground">Email</p>
@@ -321,22 +415,11 @@ export const ProfileClient = () => {
                 )}
               </div>
             </div>
-
-            {isEditingProfile && (
-              <Button
-                type="submit"
-                size="sm"
-                className="rounded-xl w-fit bg-primary text-primary-foreground hover:bg-primary/90"
-                disabled={updateProfile.isPending}
-              >
-                {updateProfile.isPending ? "Đang lưu..." : "Lưu thay đổi"}
-              </Button>
-            )}
           </Card>
         </form>
       </Form>
 
-      {!hasCredentialAccount && (
+      {hasCredentialAccount && (
         <Form {...passwordForm}>
           <form onSubmit={passwordForm.handleSubmit(handlePasswordSubmit)}>
             <Card className="rounded-2xl border border-border bg-card shadow-none p-5 space-y-4">
@@ -373,79 +456,93 @@ export const ProfileClient = () => {
               </div>
               <Separator className="bg-border" />
 
-              {isEditingPassword && (
-                <>
-                  <FormField
-                    control={passwordForm.control}
-                    name="currentPassword"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-xs font-medium text-foreground">
-                          Mật khẩu hiện tại
-                        </FormLabel>
-                        <PasswordInput
-                          show={showCurrent}
-                          onToggle={() => setShowCurrent((v) => !v)}
-                          {...field}
-                        />
-                        <FormMessage className="text-destructive" />
-                      </FormItem>
-                    )}
-                  />
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <FormField
-                      control={passwordForm.control}
-                      name="newPassword"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-xs font-medium text-foreground">
-                            Mật khẩu mới
-                          </FormLabel>
-                          <PasswordInput
-                            show={showNew}
-                            onToggle={() => setShowNew((v) => !v)}
-                            {...field}
-                          />
-                          <PasswordStrengthBar password={field.value} />
-                          <FormMessage className="text-destructive" />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={passwordForm.control}
-                      name="confirmPassword"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-xs font-medium text-foreground">
-                            Xác nhận mật khẩu
-                          </FormLabel>
-                          <PasswordInput
-                            show={showConfirm}
-                            onToggle={() => setShowConfirm((v) => !v)}
-                            placeholder="Nhập lại mật khẩu mới"
-                            {...field}
-                          />
-                          <FormMessage className="text-destructive" />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                  <Button
-                    type="submit"
-                    size="sm"
-                    className="rounded-xl bg-primary text-primary-foreground hover:bg-primary/90"
-                    disabled={changingPassword}
+              <AnimatePresence mode="wait">
+                {isEditingPassword ? (
+                  <motion.div
+                    key="editing"
+                    variants={expandVariants}
+                    initial="hidden"
+                    animate="visible"
+                    exit="exit"
+                    className="space-y-4"
                   >
-                    {changingPassword ? "Đang đổi..." : "Đổi mật khẩu"}
-                  </Button>
-                </>
-              )}
-
-              {!isEditingPassword && (
-                <p className="text-xs text-muted-foreground">
-                  Nhấn chỉnh sửa để thay đổi mật khẩu của bạn.
-                </p>
-              )}
+                    <FormField
+                      control={passwordForm.control}
+                      name="currentPassword"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-xs font-medium text-foreground">
+                            Mật khẩu hiện tại
+                          </FormLabel>
+                          <PasswordInput
+                            show={showCurrent}
+                            onToggle={() => setShowCurrent((v) => !v)}
+                            {...field}
+                          />
+                          <FormMessage className="text-destructive" />
+                        </FormItem>
+                      )}
+                    />
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <FormField
+                        control={passwordForm.control}
+                        name="newPassword"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-xs font-medium text-foreground">
+                              Mật khẩu mới
+                            </FormLabel>
+                            <PasswordInput
+                              show={showNew}
+                              onToggle={() => setShowNew((v) => !v)}
+                              {...field}
+                            />
+                            <PasswordStrengthBar password={field.value} />
+                            <FormMessage className="text-destructive" />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={passwordForm.control}
+                        name="confirmPassword"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-xs font-medium text-foreground">
+                              Xác nhận mật khẩu
+                            </FormLabel>
+                            <PasswordInput
+                              show={showConfirm}
+                              onToggle={() => setShowConfirm((v) => !v)}
+                              placeholder="Nhập lại mật khẩu mới"
+                              {...field}
+                            />
+                            <FormMessage className="text-destructive" />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                    <Button
+                      type="submit"
+                      size="sm"
+                      className="rounded-xl bg-primary text-primary-foreground hover:bg-primary/90"
+                      disabled={changingPassword}
+                    >
+                      {changingPassword ? "Đang đổi..." : "Đổi mật khẩu"}
+                    </Button>
+                  </motion.div>
+                ) : (
+                  <motion.p
+                    key="static"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className="text-xs text-muted-foreground"
+                  >
+                    Nhấn chỉnh sửa để thay đổi mật khẩu của bạn.
+                  </motion.p>
+                )}
+              </AnimatePresence>
             </Card>
           </form>
         </Form>

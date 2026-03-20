@@ -20,6 +20,8 @@ import {
 import { ListHeader } from "@/components/common/list-header";
 import { TableSkeleton } from "@/components/common/table-skeleton";
 import { RowActions } from "@/components/common/row-actions";
+import { getAmenityIcon } from "@/lib/utils";
+import { LucideIcon } from "lucide-react";
 
 type Amenity = RouterOutput["admin"]["amenity"]["list"][number];
 
@@ -79,18 +81,23 @@ export const AmenityListClient = () => {
               <TableHead />
             </TableRow>
           </TableHeader>
+
           {isLoading ? (
             <TableSkeleton cols={5} />
           ) : (
             <TableBody>
-              {data?.map((amenity) => (
-                <AmenityRow
-                  key={amenity.id}
-                  amenity={amenity}
-                  onEdit={openEdit}
-                  onDelete={handleDelete}
-                />
-              ))}
+              {data?.map((amenity) => {
+                const Icon = getAmenityIcon(amenity.icon);
+                return (
+                  <AmenityRow
+                    key={amenity.id}
+                    amenity={amenity}
+                    Icon={Icon}
+                    onEdit={openEdit}
+                    onDelete={handleDelete}
+                  />
+                );
+              })}
             </TableBody>
           )}
         </Table>
@@ -101,29 +108,32 @@ export const AmenityListClient = () => {
 
 interface AmenityRowProps {
   amenity: Amenity;
+  Icon: LucideIcon;
   onEdit: (amenity: Amenity) => void;
   onDelete: (amenity: Amenity) => void;
 }
 
-const AmenityRow = ({ amenity, onEdit, onDelete }: AmenityRowProps) => (
-  <TableRow className="border-border hover:bg-muted/40">
-    <TableCell>
-      <span className="text-xl">{amenity.icon ?? "—"}</span>
-    </TableCell>
-    <TableCell className="font-medium text-foreground">
-      {amenity.name}
-    </TableCell>
-    <TableCell className="text-center text-sm text-muted-foreground">
-      {amenity._count.hotels}
-    </TableCell>
-    <TableCell className="text-center text-sm text-muted-foreground">
-      {amenity._count.rooms}
-    </TableCell>
-    <TableCell>
-      <RowActions
-        onEdit={() => onEdit(amenity)}
-        onDelete={() => onDelete(amenity)}
-      />
-    </TableCell>
-  </TableRow>
-);
+const AmenityRow = ({ amenity, Icon, onEdit, onDelete }: AmenityRowProps) => {
+  return (
+    <TableRow className="border-border hover:bg-muted/40">
+      <TableCell>
+        <Icon />
+      </TableCell>
+      <TableCell className="font-medium text-foreground">
+        {amenity.name}
+      </TableCell>
+      <TableCell className="text-center text-sm text-muted-foreground">
+        {amenity._count.hotels}
+      </TableCell>
+      <TableCell className="text-center text-sm text-muted-foreground">
+        {amenity._count.rooms}
+      </TableCell>
+      <TableCell>
+        <RowActions
+          onEdit={() => onEdit(amenity)}
+          onDelete={() => onDelete(amenity)}
+        />
+      </TableCell>
+    </TableRow>
+  );
+};

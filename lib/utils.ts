@@ -10,6 +10,48 @@ import {
 } from "date-fns";
 import { vi } from "date-fns/locale";
 import { BOOKING_EXPIRY_MINUTES } from "./constants";
+import {
+  Bath,
+  Bell,
+  Briefcase,
+  Bus,
+  Car,
+  DoorOpen,
+  Dumbbell,
+  GlassWater,
+  Lock as LockIcon,
+  LucideIcon,
+  MapPin,
+  PawPrint,
+  Sparkles,
+  Tv,
+  Utensils,
+  Waves,
+  Wifi,
+  Wind,
+  Wine,
+} from "lucide-react";
+
+const AMENITY_ICON_MAP: Record<string, LucideIcon> = {
+  wifi: Wifi,
+  waves: Waves,
+  dumbbell: Dumbbell,
+  sparkles: Sparkles,
+  utensils: Utensils,
+  wine: Wine,
+  car: Car,
+  bus: Bus,
+  bell: Bell,
+  "user-tie": Briefcase,
+  briefcase: Briefcase,
+  "paw-print": PawPrint,
+  wind: Wind,
+  "glass-water": GlassWater,
+  lock: LockIcon,
+  tv: Tv,
+  bath: Bath,
+  "door-open": DoorOpen,
+};
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -82,10 +124,6 @@ export const getBookingExpiresAt = (): Date => {
   return new Date(Date.now() + BOOKING_EXPIRY_MINUTES * 60 * 1000);
 };
 
-// export const isBookingCancellable = (status: string): boolean => {
-//   return ["PENDING", "CONFIRMED"].includes(status);
-// };
-
 export const getDatesInRange = (checkIn: Date, checkOut: Date): Date[] => {
   const dates: Date[] = [];
   const cur = new Date(checkIn);
@@ -94,4 +132,9 @@ export const getDatesInRange = (checkIn: Date, checkOut: Date): Date[] => {
     cur.setDate(cur.getDate() + 1);
   }
   return dates;
+};
+
+export const getAmenityIcon = (icon?: string | null): LucideIcon => {
+  if (!icon) return MapPin;
+  return AMENITY_ICON_MAP[icon.toLowerCase()] ?? MapPin;
 };

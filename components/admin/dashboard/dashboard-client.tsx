@@ -45,6 +45,7 @@ import {
 } from "lucide-react";
 import { formatDatetime, formatCurrencyUSD, formatDateFull } from "@/lib/utils";
 import { CountUp } from "@/components/common/count-up";
+import { motion, Variants } from "framer-motion";
 
 const PIE_COLORS = [
   "var(--chart-1)",
@@ -63,15 +64,23 @@ const CHART_TOOLTIP_STYLE: React.CSSProperties = {
   color: "var(--foreground)",
 };
 
+const statsContainerVariants: Variants = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.07 } },
+};
+
+const statCardVariants: Variants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" } },
+};
+
 const GrowthBadge = ({ value }: { value: number | null }) => {
   if (value === null) return null;
   const isPositive = value >= 0;
   const Icon = value === 0 ? Minus : isPositive ? TrendingUp : TrendingDown;
   return (
     <span
-      className={`inline-flex items-center gap-1 text-xs font-medium ${
-        isPositive ? "text-primary" : "text-destructive"
-      }`}
+      className={`inline-flex items-center gap-1 text-xs font-medium ${isPositive ? "text-primary" : "text-destructive"}`}
     >
       <Icon className="w-3 h-3" />
       {Math.abs(value).toFixed(1)}% so với tháng trước
@@ -87,22 +96,24 @@ interface StatCardProps {
 }
 
 const StatCard = ({ title, value, sub, icon: Icon }: StatCardProps) => (
-  <Card className="bg-card border-border shadow-none">
-    <CardContent className="pt-6">
-      <div className="flex items-start justify-between">
-        <div className="space-y-1">
-          <p className="text-sm text-muted-foreground">{title}</p>
-          <p className="text-2xl font-bold tracking-tight text-foreground">
-            {value}
-          </p>
-          {sub && <div className="text-xs text-muted-foreground">{sub}</div>}
+  <motion.div variants={statCardVariants}>
+    <Card className="bg-card border-border shadow-none">
+      <CardContent className="pt-6">
+        <div className="flex items-start justify-between">
+          <div className="space-y-1">
+            <p className="text-sm text-muted-foreground">{title}</p>
+            <p className="text-2xl font-bold tracking-tight text-foreground">
+              {value}
+            </p>
+            {sub && <div className="text-xs text-muted-foreground">{sub}</div>}
+          </div>
+          <div className="p-2 rounded-lg bg-primary/10 text-primary">
+            <Icon className="w-5 h-5" />
+          </div>
         </div>
-        <div className="p-2 rounded-lg bg-primary/10 text-primary">
-          <Icon className="w-5 h-5" />
-        </div>
-      </div>
-    </CardContent>
-  </Card>
+      </CardContent>
+    </Card>
+  </motion.div>
 );
 
 const StatCardSkeleton = () => (
@@ -131,7 +142,12 @@ const StatsSection = () => {
   if (!data) return null;
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+    <motion.div
+      className="grid grid-cols-2 lg:grid-cols-4 gap-4"
+      variants={statsContainerVariants}
+      initial="hidden"
+      animate="visible"
+    >
       <StatCard
         title="Doanh thu tháng này"
         value={
@@ -190,7 +206,7 @@ const StatsSection = () => {
         sub={data.pendingBookings > 0 ? "cần xử lý" : "Đã xử lý hết"}
         icon={CalendarCheck}
       />
-    </div>
+    </motion.div>
   );
 };
 
@@ -208,72 +224,78 @@ const RevenueChartSection = () => {
         {isLoading ? (
           <Skeleton className="h-64 w-full bg-muted" />
         ) : (
-          <ResponsiveContainer width="100%" height={256}>
-            <AreaChart
-              data={data}
-              margin={{ top: 4, right: 4, bottom: 0, left: 0 }}
-            >
-              <defs>
-                <linearGradient
-                  id="revenueGradient"
-                  x1="0"
-                  y1="0"
-                  x2="0"
-                  y2="1"
-                >
-                  <stop
-                    offset="5%"
-                    stopColor="var(--chart-1)"
-                    stopOpacity={0.25}
-                  />
-                  <stop
-                    offset="95%"
-                    stopColor="var(--chart-1)"
-                    stopOpacity={0}
-                  />
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-              <XAxis
-                dataKey="date"
-                tickFormatter={(v) => {
-                  const d = new Date(v);
-                  return `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}`;
-                }}
-                tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
-                tickLine={false}
-                axisLine={false}
-                interval={4}
-              />
-              <YAxis
-                tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`}
-                tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
-                tickLine={false}
-                axisLine={false}
-                width={48}
-              />
-              <Tooltip
-                formatter={(v?: number) => [
-                  formatCurrencyUSD(v ?? 0),
-                  "Doanh thu",
-                ]}
-                labelFormatter={(l) => {
-                  const d = new Date(l);
-                  return `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}/${d.getFullYear()}`;
-                }}
-                contentStyle={CHART_TOOLTIP_STYLE}
-              />
-              <Area
-                type="monotone"
-                dataKey="revenue"
-                stroke="var(--chart-1)"
-                strokeWidth={2}
-                fill="url(#revenueGradient)"
-                dot={false}
-                activeDot={{ r: 4, fill: "var(--chart-1)", strokeWidth: 0 }}
-              />
-            </AreaChart>
-          </ResponsiveContainer>
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.45, ease: "easeOut" }}
+          >
+            <ResponsiveContainer width="100%" height={256}>
+              <AreaChart
+                data={data}
+                margin={{ top: 4, right: 4, bottom: 0, left: 0 }}
+              >
+                <defs>
+                  <linearGradient
+                    id="revenueGradient"
+                    x1="0"
+                    y1="0"
+                    x2="0"
+                    y2="1"
+                  >
+                    <stop
+                      offset="5%"
+                      stopColor="var(--chart-1)"
+                      stopOpacity={0.25}
+                    />
+                    <stop
+                      offset="95%"
+                      stopColor="var(--chart-1)"
+                      stopOpacity={0}
+                    />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+                <XAxis
+                  dataKey="date"
+                  tickFormatter={(v) => {
+                    const d = new Date(v);
+                    return `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}`;
+                  }}
+                  tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
+                  tickLine={false}
+                  axisLine={false}
+                  interval={4}
+                />
+                <YAxis
+                  tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`}
+                  tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
+                  tickLine={false}
+                  axisLine={false}
+                  width={48}
+                />
+                <Tooltip
+                  formatter={(v?: number) => [
+                    formatCurrencyUSD(v ?? 0),
+                    "Doanh thu",
+                  ]}
+                  labelFormatter={(l) => {
+                    const d = new Date(l);
+                    return `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}/${d.getFullYear()}`;
+                  }}
+                  contentStyle={CHART_TOOLTIP_STYLE}
+                />
+                <Area
+                  type="monotone"
+                  dataKey="revenue"
+                  stroke="var(--chart-1)"
+                  strokeWidth={2}
+                  fill="url(#revenueGradient)"
+                  dot={false}
+                  activeDot={{ r: 4, fill: "var(--chart-1)", strokeWidth: 0 }}
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          </motion.div>
         )}
       </CardContent>
     </Card>
@@ -298,40 +320,46 @@ const BookingStatusChartSection = () => {
             Chưa có dữ liệu
           </div>
         ) : (
-          <ResponsiveContainer width="100%" height={256}>
-            <PieChart>
-              <Pie
-                data={data}
-                dataKey="count"
-                nameKey="label"
-                cx="50%"
-                cy="50%"
-                innerRadius={60}
-                outerRadius={90}
-                paddingAngle={3}
-                strokeWidth={0}
-              >
-                {data.map((_, i) => (
-                  <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
-                ))}
-              </Pie>
-              <Legend
-                formatter={(v) => (
-                  <span
-                    style={{ fontSize: 11, color: "var(--muted-foreground)" }}
-                  >
-                    {v}
-                  </span>
-                )}
-                iconSize={8}
-                iconType="circle"
-              />
-              <Tooltip
-                formatter={(v, name) => [v, name]}
-                contentStyle={CHART_TOOLTIP_STYLE}
-              />
-            </PieChart>
-          </ResponsiveContainer>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.4, ease: "easeOut", delay: 0.1 }}
+          >
+            <ResponsiveContainer width="100%" height={256}>
+              <PieChart>
+                <Pie
+                  data={data}
+                  dataKey="count"
+                  nameKey="label"
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={60}
+                  outerRadius={90}
+                  paddingAngle={3}
+                  strokeWidth={0}
+                >
+                  {data.map((_, i) => (
+                    <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
+                  ))}
+                </Pie>
+                <Legend
+                  formatter={(v) => (
+                    <span
+                      style={{ fontSize: 11, color: "var(--muted-foreground)" }}
+                    >
+                      {v}
+                    </span>
+                  )}
+                  iconSize={8}
+                  iconType="circle"
+                />
+                <Tooltip
+                  formatter={(v, name) => [v, name]}
+                  contentStyle={CHART_TOOLTIP_STYLE}
+                />
+              </PieChart>
+            </ResponsiveContainer>
+          </motion.div>
         )}
       </CardContent>
     </Card>
@@ -520,33 +548,28 @@ const RecentBookingsSection = () => {
   );
 };
 
-export const DashboardClient = () => {
-  return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight text-foreground">
-          Dashboard
-        </h1>
-        <p className="text-sm text-muted-foreground">
-          {formatDateFull(new Date())}
-        </p>
+export const DashboardClient = () => (
+  <div className="space-y-6">
+    <div>
+      <h1 className="text-2xl font-bold tracking-tight text-foreground">
+        Dashboard
+      </h1>
+      <p className="text-sm text-muted-foreground">
+        {formatDateFull(new Date())}
+      </p>
+    </div>
+    <StatsSection />
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <div className="lg:col-span-2">
+        <RevenueChartSection />
       </div>
-
-      <StatsSection />
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <div className="lg:col-span-2">
-          <RevenueChartSection />
-        </div>
-        <BookingStatusChartSection />
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <TopHotelsSection />
-        <div className="lg:col-span-2">
-          <RecentBookingsSection />
-        </div>
+      <BookingStatusChartSection />
+    </div>
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <TopHotelsSection />
+      <div className="lg:col-span-2">
+        <RecentBookingsSection />
       </div>
     </div>
-  );
-};
+  </div>
+);

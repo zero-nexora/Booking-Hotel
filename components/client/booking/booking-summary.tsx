@@ -6,6 +6,7 @@ import { Building2, Users, CalendarDays, Clock } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { formatCurrencyUSD, formatDateShort, formatTime } from "@/lib/utils";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface BookingSummaryProps {
   hotelName: string;
@@ -131,9 +132,18 @@ export const BookingSummary = ({
           </div>
           <div className="flex justify-between font-semibold text-base">
             <span className="text-foreground">Tổng cộng</span>
-            <span className="text-primary">
-              {formatCurrencyUSD(total)} {currency}
-            </span>
+            <AnimatePresence mode="wait">
+              <motion.span
+                key={total}
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 10 }}
+                transition={{ duration: 0.25, ease: "easeOut" }}
+                className="text-primary"
+              >
+                {formatCurrencyUSD(total)} {currency}
+              </motion.span>
+            </AnimatePresence>
           </div>
         </div>
 

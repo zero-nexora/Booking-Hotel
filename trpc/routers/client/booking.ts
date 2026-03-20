@@ -12,7 +12,6 @@ import {
   getBookingExpiresAt,
   getDatesInRange,
 } from "@/lib/utils";
-import { Prisma } from "@/generated/prisma/client";
 import { calcRefundAmount, calcRefundPolicy } from "@/lib/refund-policy";
 import { stripe } from "@/lib/stripe";
 import { checkRateLimit, rateLimiters } from "@/lib/rate-limit";
@@ -25,6 +24,7 @@ import {
 import { sendBookingCancellation } from "@/lib/email";
 import { format } from "date-fns";
 import { env } from "@/lib/env";
+import { Prisma } from "@/prisma/generated/prisma/client";
 
 const isPrismaUniqueError = (e: unknown): boolean =>
   e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002";

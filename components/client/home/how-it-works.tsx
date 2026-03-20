@@ -1,4 +1,5 @@
 import { Search, BedDouble, CreditCard, KeyRound } from "lucide-react";
+import { motion, Variants } from "framer-motion";
 
 const steps = [
   {
@@ -23,20 +24,66 @@ const steps = [
   },
 ];
 
+const containerVariants: Variants = {
+  hidden: {},
+  visible: {
+    transition: {
+      staggerChildren: 0.15,
+    },
+  },
+};
+
+const stepVariants: Variants = {
+  hidden: { opacity: 0, x: -24 },
+  visible: {
+    opacity: 1,
+    x: 0,
+    transition: {
+      duration: 0.5,
+      ease: "easeOut",
+    },
+  },
+};
+
+const numberVariants: Variants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      duration: 0.4,
+      delay: 0.2,
+      ease: "easeOut",
+    },
+  },
+};
+
 export const HowItWorks = () => (
-  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+  <motion.div
+    className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
+    variants={containerVariants}
+    initial="hidden"
+    whileInView="visible"
+    viewport={{ once: true, margin: "-60px" }}
+  >
     {steps.map((step, i) => {
       const Icon = step.icon;
       return (
-        <div key={i} className="relative flex flex-col gap-3">
+        <motion.div
+          key={i}
+          variants={stepVariants}
+          className="relative flex flex-col gap-3"
+        >
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
               <Icon className="w-5 h-5 text-primary" />
             </div>
             <div className="flex items-center gap-2 flex-1">
-              <span className="text-xs font-bold text-muted-foreground/50 tabular-nums">
+              <motion.span
+                variants={numberVariants}
+                className="text-xs font-bold text-muted-foreground/50 tabular-nums"
+              >
                 0{i + 1}
-              </span>
+              </motion.span>
               {i < steps.length - 1 && (
                 <div className="box-hidden flex-1 h-px border-t border-dashed border-border" />
               )}
@@ -50,8 +97,8 @@ export const HowItWorks = () => (
               {step.desc}
             </p>
           </div>
-        </div>
+        </motion.div>
       );
     })}
-  </div>
+  </motion.div>
 );

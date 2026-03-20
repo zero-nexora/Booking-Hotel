@@ -33,6 +33,7 @@ import LogoIcon from "../../../public/images/logo-icon.svg";
 import { useConfirmDialogStore } from "@/store/confirm-dialog-store";
 import { useQueryClient } from "@tanstack/react-query";
 import { useTRPC } from "@/trpc/client";
+import { motion, Variants } from "framer-motion";
 
 const navItems = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
@@ -46,6 +47,16 @@ const navItems = [
   { href: "/admin/cities", label: "Thành phố", icon: MapPin },
   { href: "/admin/users", label: "Người dùng", icon: Users },
 ];
+
+const navContainerVariants: Variants = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.05, delayChildren: 0.1 } },
+};
+
+const navItemVariants: Variants = {
+  hidden: { opacity: 0, x: -12 },
+  visible: { opacity: 1, x: 0, transition: { duration: 0.3, ease: "easeOut" } },
+};
 
 interface User {
   id: string;
@@ -124,29 +135,36 @@ export const AdminSidebar = ({
           )}
         </div>
 
-        <nav className="flex-1 px-2 py-4 space-y-1">
+        <motion.nav
+          className="flex-1 px-2 py-4 space-y-1"
+          variants={navContainerVariants}
+          initial="hidden"
+          animate="visible"
+        >
           {navItems.map((item) => {
             const active = isActive(item.href, item.exact);
             const Icon = item.icon;
 
             const linkContent = (
-              <Link
-                href={item.href}
-                onClick={onMobileClose}
-                className={cn(
-                  "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium",
-                  collapsed && "justify-center px-0 w-10 h-10 mx-auto",
-                  active
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground",
-                )}
-              >
-                <Icon className="w-4 h-4 shrink-0" />
-                {!collapsed && <span>{item.label}</span>}
-                {!collapsed && active && (
-                  <ChevronRight className="w-3 h-3 ml-auto" />
-                )}
-              </Link>
+              <motion.div variants={navItemVariants}>
+                <Link
+                  href={item.href}
+                  onClick={onMobileClose}
+                  className={cn(
+                    "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium",
+                    collapsed && "justify-center px-0 w-10 h-10 mx-auto",
+                    active
+                      ? "bg-primary text-primary-foreground"
+                      : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                  )}
+                >
+                  <Icon className="w-4 h-4 shrink-0" />
+                  {!collapsed && <span>{item.label}</span>}
+                  {!collapsed && active && (
+                    <ChevronRight className="w-3 h-3 ml-auto" />
+                  )}
+                </Link>
+              </motion.div>
             );
 
             if (collapsed) {
@@ -160,7 +178,7 @@ export const AdminSidebar = ({
 
             return <div key={item.href}>{linkContent}</div>;
           })}
-        </nav>
+        </motion.nav>
 
         <div className={cn("p-4 border-t border-border", collapsed && "px-2")}>
           {collapsed ? (
@@ -170,7 +188,7 @@ export const AdminSidebar = ({
                   variant="ghost"
                   size="icon"
                   className="w-10 h-10 mx-auto flex text-muted-foreground hover:text-foreground hover:bg-muted"
-                  onClick={handleSignOut}
+                  onClick={handleOpenConfirmLogout}
                 >
                   <LogOut className="w-4 h-4" />
                 </Button>

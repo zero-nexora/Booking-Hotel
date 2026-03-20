@@ -12,7 +12,7 @@ import { CheckCircle2, XCircle } from "lucide-react";
 import { useQueryStates } from "nuqs";
 import { useCallback } from "react";
 import { RouterOutput } from "@/trpc/client";
-import { ReviewStatus } from "@/generated/prisma/enums";
+import { ReviewStatus } from "@/prisma/generated/prisma/enums";
 import {
   useAdminReviewList,
   useUpdateReviewStatus,

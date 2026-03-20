@@ -35,7 +35,7 @@ import { Calendar, List } from "lucide-react";
 import { RouterOutput } from "@/trpc/client";
 import { adminBookingParsers } from "@/lib/search-params/admin-bookings";
 import { useQueryStates } from "nuqs";
-import { BookingStatus, PaymentStatus } from "@/generated/prisma/enums";
+import { BookingStatus, PaymentStatus } from "@/prisma/generated/prisma/enums";
 import { ListHeader } from "@/components/common/list-header";
 import { TableSkeleton } from "@/components/common/table-skeleton";
 import { formatDateShort, formatCurrencyUSD } from "@/lib/utils";

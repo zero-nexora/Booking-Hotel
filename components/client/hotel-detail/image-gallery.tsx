@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import { X, ChevronLeft, ChevronRight, Grid2x2, Images } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface ImageGalleryProps {
   images: { url: string; alt?: string | null }[];
@@ -46,9 +47,11 @@ export const ImageGallery = ({ images, hotelName }: ImageGalleryProps) => {
     <>
       <div className="relative rounded-2xl overflow-hidden bg-muted">
         <div className="grid grid-cols-4 grid-rows-2 gap-1.5 h-72 sm:h-96">
-          <div
+          <motion.div
             className="col-span-2 row-span-2 relative cursor-pointer"
             onClick={() => openLightbox(0)}
+            whileHover={{ scale: 1.02 }}
+            transition={{ duration: 0.2 }}
           >
             <Image
               src={primary.url}
@@ -57,13 +60,15 @@ export const ImageGallery = ({ images, hotelName }: ImageGalleryProps) => {
               className="object-cover"
               priority
             />
-          </div>
+          </motion.div>
 
           {thumbs.map((img, i) => (
-            <div
+            <motion.div
               key={i}
               className="relative cursor-pointer"
               onClick={() => openLightbox(i + 1)}
+              whileHover={{ scale: 1.04 }}
+              transition={{ duration: 0.2 }}
             >
               <Image
                 src={img.url}
@@ -79,7 +84,7 @@ export const ImageGallery = ({ images, hotelName }: ImageGalleryProps) => {
                   </span>
                 </div>
               )}
-            </div>
+            </motion.div>
           ))}
 
           {Array.from({ length: Math.max(0, 4 - thumbs.length) }).map(
@@ -100,90 +105,112 @@ export const ImageGallery = ({ images, hotelName }: ImageGalleryProps) => {
         </Button>
       </div>
 
-      {lightboxIndex !== null && (
-        <div
-          className="fixed inset-0 z-50 flex flex-col"
-          onClick={closeLightbox}
-        >
-          <div className="absolute inset-0 bg-background/95 backdrop-blur-sm" />
-
-          <div
-            className="relative z-10 flex items-center justify-between px-5 py-4"
-            onClick={(e) => e.stopPropagation()}
+      <AnimatePresence>
+        {lightboxIndex !== null && (
+          <motion.div
+            className="fixed inset-0 z-50 flex flex-col"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
+            onClick={closeLightbox}
           >
-            <p className="text-sm font-medium text-background/80">
-              {hotelName}
-            </p>
-            <div className="flex items-center gap-3">
-              <span className="text-xs text-background/40 tabular-nums">
-                {lightboxIndex + 1} / {images.length}
-              </span>
-              <Button
-                onClick={closeLightbox}
-                className="flex items-center justify-center w-8 h-8 rounded-full"
-              >
-                <X className="w-4 h-4" />
-              </Button>
-            </div>
-          </div>
+            <motion.div
+              className="absolute inset-0 bg-background/95 backdrop-blur-sm"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+            />
 
-          <div
-            className="relative z-10 flex-1 flex items-center justify-center px-14 pb-6"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button
-              onClick={prev}
-              disabled={lightboxIndex === 0}
-              className="absolute left-4 flex items-center justify-center w-10 h-10 rounded-full bg-background/10 hover:bg-background/20 disabled:opacity-20 disabled:cursor-not-allowed text-background"
+            <div
+              className="relative z-10 flex items-center justify-between px-5 py-4"
+              onClick={(e) => e.stopPropagation()}
             >
-              <ChevronLeft className="w-5 h-5" />
-            </button>
-
-            <div className="relative w-full h-full max-h-[70vh]">
-              <Image
-                src={images[lightboxIndex].url}
-                alt={images[lightboxIndex].alt ?? hotelName}
-                fill
-                className="object-contain"
-                sizes="(max-width: 768px) 100vw, 90vw"
-              />
+              <p className="text-sm font-medium text-background/80">
+                {hotelName}
+              </p>
+              <div className="flex items-center gap-3">
+                <span className="text-xs text-background/40 tabular-nums">
+                  {lightboxIndex + 1} / {images.length}
+                </span>
+                <Button
+                  onClick={closeLightbox}
+                  className="flex items-center justify-center w-8 h-8 rounded-full"
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
             </div>
 
-            <button
-              onClick={next}
-              disabled={lightboxIndex === images.length - 1}
-              className="absolute right-4 flex items-center justify-center w-10 h-10 rounded-full bg-background/10 hover:bg-background/20 disabled:opacity-20 disabled:cursor-not-allowed text-background"
+            <div
+              className="relative z-10 flex-1 flex items-center justify-center px-14 pb-6"
+              onClick={(e) => e.stopPropagation()}
             >
-              <ChevronRight className="w-5 h-5" />
-            </button>
-          </div>
-
-          <div
-            className="relative z-10 flex justify-center gap-2 px-4 pb-5 overflow-x-auto"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {images.map((img, i) => (
               <button
-                key={i}
-                onClick={() => setLightboxIndex(i)}
-                className={`relative shrink-0 w-14 h-10 rounded-md overflow-hidden ${
-                  i === lightboxIndex
-                    ? "ring-2 ring-background opacity-100"
-                    : "opacity-40 hover:opacity-70"
-                }`}
+                onClick={prev}
+                disabled={lightboxIndex === 0}
+                className="absolute left-4 flex items-center justify-center w-10 h-10 rounded-full bg-background/10 hover:bg-background/20 disabled:opacity-20 disabled:cursor-not-allowed text-background"
               >
-                <Image
-                  src={img.url}
-                  alt=""
-                  fill
-                  className="object-cover"
-                  sizes="56px"
-                />
+                <ChevronLeft className="w-5 h-5" />
               </button>
-            ))}
-          </div>
-        </div>
-      )}
+
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={lightboxIndex}
+                  className="relative w-full h-full max-h-[70vh]"
+                  initial={{ opacity: 0, scale: 0.92 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  transition={{ duration: 0.22, ease: "easeOut" }}
+                >
+                  <Image
+                    src={images[lightboxIndex].url}
+                    alt={images[lightboxIndex].alt ?? hotelName}
+                    fill
+                    className="object-contain"
+                    sizes="(max-width: 768px) 100vw, 90vw"
+                  />
+                </motion.div>
+              </AnimatePresence>
+
+              <button
+                onClick={next}
+                disabled={lightboxIndex === images.length - 1}
+                className="absolute right-4 flex items-center justify-center w-10 h-10 rounded-full bg-background/10 hover:bg-background/20 disabled:opacity-20 disabled:cursor-not-allowed text-background"
+              >
+                <ChevronRight className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div
+              className="relative z-10 flex justify-center gap-2 px-4 pb-5 overflow-x-auto"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {images.map((img, i) => (
+                <motion.button
+                  key={i}
+                  onClick={() => setLightboxIndex(i)}
+                  className={`relative shrink-0 w-14 h-10 rounded-md overflow-hidden ${
+                    i === lightboxIndex
+                      ? "ring-2 ring-background opacity-100"
+                      : "opacity-40 hover:opacity-70"
+                  }`}
+                  whileHover={{ scale: 1.08 }}
+                  transition={{ duration: 0.15 }}
+                >
+                  <Image
+                    src={img.url}
+                    alt=""
+                    fill
+                    className="object-cover"
+                    sizes="56px"
+                  />
+                </motion.button>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   );
 };

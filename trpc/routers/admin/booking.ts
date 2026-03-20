@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { adminProcedure, createTRPCRouter } from "@/trpc/init";
-import { Prisma } from "@/generated/prisma/client";
+import { Prisma } from "@/prisma/generated/prisma/client";
 import { stripe } from "@/lib/stripe";
 import { checkRateLimit, rateLimiters } from "@/lib/rate-limit";
 import {

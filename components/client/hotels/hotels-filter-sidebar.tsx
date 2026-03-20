@@ -10,6 +10,7 @@ import { Star, RotateCcw } from "lucide-react";
 import { useHotelFilterOptions } from "@/hooks/client/use-hotels";
 import { hotelSearchParsers } from "@/lib/search-params/hotel-search";
 import { formatCurrencyUSD } from "@/lib/utils";
+import { motion, AnimatePresence, Variants } from "framer-motion";
 
 const STAR_OPTIONS = [5, 4, 3, 2, 1];
 const RATING_OPTIONS = [
@@ -17,6 +18,22 @@ const RATING_OPTIONS = [
   { label: "Rất tốt (4.0+)", value: 4.0 },
   { label: "Tốt (3.5+)", value: 3.5 },
 ];
+
+const sectionVariants: Variants = {
+  hidden: { opacity: 0, height: 0, overflow: "hidden" },
+  visible: {
+    opacity: 1,
+    height: "auto",
+    overflow: "hidden",
+    transition: { duration: 0.3, ease: "easeOut" },
+  },
+  exit: {
+    opacity: 0,
+    height: 0,
+    overflow: "hidden",
+    transition: { duration: 0.2, ease: "easeIn" },
+  },
+};
 
 export const HotelsFilterSidebar = () => {
   const [params, setParams] = useQueryStates(hotelSearchParsers);
@@ -58,17 +75,26 @@ export const HotelsFilterSidebar = () => {
     <div className="space-y-5">
       <div className="flex items-center justify-between">
         <h3 className="font-semibold text-sm text-foreground">Bộ lọc</h3>
-        {hasFilters && (
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-7 gap-1 text-xs text-muted-foreground hover:text-foreground hover:bg-muted"
-            onClick={resetAll}
-          >
-            <RotateCcw className="w-3 h-3" />
-            Xoá lọc
-          </Button>
-        )}
+        <AnimatePresence>
+          {hasFilters && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.85 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.85 }}
+              transition={{ duration: 0.18, ease: "easeOut" }}
+            >
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 gap-1 text-xs text-muted-foreground hover:text-foreground hover:bg-muted"
+                onClick={resetAll}
+              >
+                <RotateCcw className="w-3 h-3" />
+                Xoá lọc
+              </Button>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       <div>
@@ -157,92 +183,116 @@ export const HotelsFilterSidebar = () => {
         </div>
       </div>
 
-      {options?.amenities?.length ? (
-        <>
-          <Separator className="bg-border" />
-          <div>
-            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-3">
-              Tiện nghi
-            </p>
-            <div className="space-y-2">
-              {options.amenities.slice(0, 8).map((a) => (
-                <div key={a.id} className="flex items-center gap-2.5">
-                  <Checkbox
-                    id={`amenity-${a.id}`}
-                    checked={(params.amenities ?? []).includes(a.name)}
-                    onCheckedChange={() => toggleArray("amenities", a.name)}
-                    className="border-border data-[state=checked]:bg-primary data-[state=checked]:border-primary"
-                  />
-                  <Label
-                    htmlFor={`amenity-${a.id}`}
-                    className="text-sm cursor-pointer text-foreground"
-                  >
-                    {a.name}
-                  </Label>
-                </div>
-              ))}
+      <AnimatePresence>
+        {options?.amenities?.length ? (
+          <motion.div
+            key="amenities"
+            variants={sectionVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+          >
+            <Separator className="bg-border mb-5" />
+            <div>
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-3">
+                Tiện nghi
+              </p>
+              <div className="space-y-2">
+                {options.amenities.slice(0, 8).map((a) => (
+                  <div key={a.id} className="flex items-center gap-2.5">
+                    <Checkbox
+                      id={`amenity-${a.id}`}
+                      checked={(params.amenities ?? []).includes(a.name)}
+                      onCheckedChange={() => toggleArray("amenities", a.name)}
+                      className="border-border data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+                    />
+                    <Label
+                      htmlFor={`amenity-${a.id}`}
+                      className="text-sm cursor-pointer text-foreground"
+                    >
+                      {a.name}
+                    </Label>
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
-        </>
-      ) : null}
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
 
-      {options?.bedTypes?.length ? (
-        <>
-          <Separator className="bg-border" />
-          <div>
-            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-3">
-              Loại giường
-            </p>
-            <div className="space-y-2">
-              {options.bedTypes.map((b) => (
-                <div key={b.id} className="flex items-center gap-2.5">
-                  <Checkbox
-                    id={`bed-${b.id}`}
-                    checked={(params.bedTypes ?? []).includes(b.name)}
-                    onCheckedChange={() => toggleArray("bedTypes", b.name)}
-                    className="border-border data-[state=checked]:bg-primary data-[state=checked]:border-primary"
-                  />
-                  <Label
-                    htmlFor={`bed-${b.id}`}
-                    className="text-sm cursor-pointer text-foreground"
-                  >
-                    {b.name}
-                  </Label>
-                </div>
-              ))}
+      <AnimatePresence>
+        {options?.bedTypes?.length ? (
+          <motion.div
+            key="bedTypes"
+            variants={sectionVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+          >
+            <Separator className="bg-border mb-5" />
+            <div>
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-3">
+                Loại giường
+              </p>
+              <div className="space-y-2">
+                {options.bedTypes.map((b) => (
+                  <div key={b.id} className="flex items-center gap-2.5">
+                    <Checkbox
+                      id={`bed-${b.id}`}
+                      checked={(params.bedTypes ?? []).includes(b.name)}
+                      onCheckedChange={() => toggleArray("bedTypes", b.name)}
+                      className="border-border data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+                    />
+                    <Label
+                      htmlFor={`bed-${b.id}`}
+                      className="text-sm cursor-pointer text-foreground"
+                    >
+                      {b.name}
+                    </Label>
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
-        </>
-      ) : null}
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
 
-      {options?.roomTypes?.length ? (
-        <>
-          <Separator className="bg-border" />
-          <div>
-            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-3">
-              Loại phòng
-            </p>
-            <div className="space-y-2">
-              {options.roomTypes.map((r) => (
-                <div key={r.id} className="flex items-center gap-2.5">
-                  <Checkbox
-                    id={`rt-${r.id}`}
-                    checked={(params.roomTypes ?? []).includes(r.name)}
-                    onCheckedChange={() => toggleArray("roomTypes", r.name)}
-                    className="border-border data-[state=checked]:bg-primary data-[state=checked]:border-primary"
-                  />
-                  <Label
-                    htmlFor={`rt-${r.id}`}
-                    className="text-sm cursor-pointer text-foreground"
-                  >
-                    {r.name}
-                  </Label>
-                </div>
-              ))}
+      <AnimatePresence>
+        {options?.roomTypes?.length ? (
+          <motion.div
+            key="roomTypes"
+            variants={sectionVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+          >
+            <Separator className="bg-border mb-5" />
+            <div>
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-3">
+                Loại phòng
+              </p>
+              <div className="space-y-2">
+                {options.roomTypes.map((r) => (
+                  <div key={r.id} className="flex items-center gap-2.5">
+                    <Checkbox
+                      id={`rt-${r.id}`}
+                      checked={(params.roomTypes ?? []).includes(r.name)}
+                      onCheckedChange={() => toggleArray("roomTypes", r.name)}
+                      className="border-border data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+                    />
+                    <Label
+                      htmlFor={`rt-${r.id}`}
+                      className="text-sm cursor-pointer text-foreground"
+                    >
+                      {r.name}
+                    </Label>
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
-        </>
-      ) : null}
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
     </div>
   );
 };

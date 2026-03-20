@@ -7,8 +7,14 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "db:migrate": "prisma migrate dev",
+    "db:generate": "prisma generate",
+    "db:studio": "prisma studio",
+    "db:push": "prisma db push",
+    "db:reset": "prisma migrate reset",
     "postinstall": "prisma generate",
-    "cron:setup": "curl \"http://localhost:3000/api/cron/setup-crons?secret=YOUR_SECRET\""
+    "cron:setup": "curl \"http://localhost:3000/api/cron/setup-crons?secret=YOUR_SECRET\"",
+    "gen:secret": "node -e \"console.log(require('crypto').randomBytes(32).toString('hex'))\""
   },
   "dependencies": {
     "@fullcalendar/core": "^6.1.20",

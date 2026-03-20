@@ -1,10 +1,10 @@
 import { z } from "zod";
 import { createTRPCRouter, baseProcedure } from "@/trpc/init";
 import { TRPCError } from "@trpc/server";
-import { Prisma } from "@/generated/prisma/client";
 import { getOrSet, CACHE_KEYS, TTL } from "@/lib/redis";
 import { checkRateLimit, rateLimiters } from "@/lib/rate-limit";
 import { popNextCursor, buildCursorWhere, cursorInput } from "@/trpc/helpers";
+import { Prisma } from "@/prisma/generated/prisma/browser";
 
 const hotelSearchInput = z.object({
   search: z.string().optional(),

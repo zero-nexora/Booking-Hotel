@@ -23,6 +23,7 @@ import { PasswordStrengthBar } from "@/components/common/password-strength-bar";
 import { authClient } from "@/lib/auth-client";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
 
 const schema = z
   .object({
@@ -91,7 +92,12 @@ const SignUpPage = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <motion.div
+      className="space-y-6"
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: "easeOut" }}
+    >
       <div className="space-y-1.5">
         <h1 className="text-2xl font-semibold tracking-tight text-foreground">
           Tạo tài khoản mới
@@ -102,7 +108,6 @@ const SignUpPage = () => {
       </div>
 
       <GoogleButton label="Đăng ký với Google" disabled={isLoading} />
-
       <AuthDivider label="hoặc đăng ký bằng email" />
 
       <Form {...form}>
@@ -250,7 +255,7 @@ const SignUpPage = () => {
           Đăng nhập
         </Link>
       </p>
-    </div>
+    </motion.div>
   );
 };
 

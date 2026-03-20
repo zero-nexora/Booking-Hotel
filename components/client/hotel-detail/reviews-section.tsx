@@ -7,12 +7,37 @@ import { useHotelReviews } from "@/hooks/client/use-hotels";
 import { Card } from "@/components/ui/card";
 import { formatDateShort } from "@/lib/utils";
 import { LoadMoreTrigger } from "@/components/common/load-more-trigger";
+import { motion, useInView } from "framer-motion";
+import { useRef } from "react";
 
 interface ReviewsSectionProps {
   hotelId: string;
   avgRating: number | null;
   reviewCount: number;
 }
+
+const RatingBar = ({ star, pct }: { star: number; pct: number }) => {
+  const ref = useRef<HTMLDivElement>(null);
+  const inView = useInView(ref, { once: true, margin: "-40px" });
+
+  return (
+    <div key={star} className="flex items-center gap-2">
+      <span className="text-xs w-3 text-muted-foreground">{star}</span>
+      <Star className="w-3 h-3 fill-primary text-primary" />
+      <div
+        ref={ref}
+        className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden"
+      >
+        <motion.div
+          className="h-full bg-primary rounded-full"
+          initial={{ width: 0 }}
+          animate={{ width: inView ? `${pct}%` : 0 }}
+          transition={{ duration: 0.7, ease: "easeOut", delay: star * 0.06 }}
+        />
+      </div>
+    </div>
+  );
+};
 
 export const ReviewsSection = ({
   hotelId,
@@ -54,23 +79,7 @@ export const ReviewsSection = ({
                 (r) => r.overallRating === star,
               ).length;
               const pct = reviews.length ? (count / reviews.length) * 100 : 0;
-              return (
-                <div key={star} className="flex items-center gap-2">
-                  <span className="text-xs w-3 text-muted-foreground">
-                    {star}
-                  </span>
-                  <Star className="w-3 h-3 fill-primary text-primary" />
-                  <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-primary rounded-full"
-                      style={{ width: `${pct}%` }}
-                    />
-                  </div>
-                  <span className="text-xs text-muted-foreground w-4">
-                    {count}
-                  </span>
-                </div>
-              );
+              return <RatingBar key={star} star={star} pct={pct} />;
             })}
           </div>
         </div>
@@ -87,52 +96,70 @@ export const ReviewsSection = ({
           Chưa có đánh giá nào cho khách sạn này.
         </Card>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <motion.div
+          className="grid grid-cols-1 md:grid-cols-2 gap-4"
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-60px" }}
+          variants={{
+            hidden: {},
+            visible: { transition: { staggerChildren: 0.08 } },
+          }}
+        >
           {reviews.map((review) => (
-            <Card
+            <motion.div
               key={review.id}
-              className="rounded-2xl border border-border bg-card p-4 flex flex-col gap-3 relative shadow-none"
+              variants={{
+                hidden: { opacity: 0, y: 20 },
+                visible: {
+                  opacity: 1,
+                  y: 0,
+                  transition: { duration: 0.4, ease: "easeOut" },
+                },
+              }}
             >
-              <Quote className="w-5 h-5 text-primary/15 absolute top-3 right-3" />
-              <div className="flex items-center gap-0.5">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <Star
-                    key={i}
-                    className={`w-3 h-3 ${
-                      i < review.overallRating
-                        ? "fill-primary text-primary"
-                        : "text-muted-foreground/20"
-                    }`}
-                  />
-                ))}
-              </div>
-              {review.title && (
-                <p className="font-semibold text-sm leading-tight text-foreground">
-                  {review.title}
+              <Card className="rounded-2xl border border-border bg-card p-4 flex flex-col gap-3 relative shadow-none">
+                <Quote className="w-5 h-5 text-primary/15 absolute top-3 right-3" />
+                <div className="flex items-center gap-0.5">
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <Star
+                      key={i}
+                      className={`w-3 h-3 ${
+                        i < review.overallRating
+                          ? "fill-primary text-primary"
+                          : "text-muted-foreground/20"
+                      }`}
+                    />
+                  ))}
+                </div>
+                {review.title && (
+                  <p className="font-semibold text-sm leading-tight text-foreground">
+                    {review.title}
+                  </p>
+                )}
+                <p className="text-sm text-muted-foreground leading-relaxed line-clamp-4 flex-1">
+                  {review.comment}
                 </p>
-              )}
-              <p className="text-sm text-muted-foreground leading-relaxed line-clamp-4 flex-1">
-                {review.comment}
-              </p>
-              <div className="flex items-center gap-2 pt-3 border-t border-border">
-                <Avatar className="w-7 h-7">
-                  <AvatarImage src={review.user.image ?? undefined} />
-                  <AvatarFallback className="text-xs bg-primary/10 text-primary">
-                    {review.user.name.charAt(0).toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs font-medium truncate text-foreground">
-                    {review.user.name}
+                <div className="flex items-center gap-2 pt-3 border-t border-border">
+                  <Avatar className="w-7 h-7">
+                    <AvatarImage src={review.user.image ?? undefined} />
+                    <AvatarFallback className="text-xs bg-primary/10 text-primary">
+                      {review.user.name.charAt(0).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-medium truncate text-foreground">
+                      {review.user.name}
+                    </p>
+                  </div>
+                  <p className="text-xs text-muted-foreground shrink-0">
+                    {formatDateShort(review.createdAt)}
                   </p>
                 </div>
-                <p className="text-xs text-muted-foreground shrink-0">
-                  {formatDateShort(review.createdAt)}
-                </p>
-              </div>
-            </Card>
+              </Card>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       )}
 
       <LoadMoreTrigger
