@@ -19,7 +19,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { calcNights, formatDateShort, formatCurrencyUSD } from "@/lib/utils";
+import { calcNights, formatDateShort, formatCurrencyUSD, toDateParam } from "@/lib/utils";
 import { motion, Variants } from "framer-motion";
 
 type Room = {
@@ -80,12 +80,12 @@ export const AvailableRooms = ({
 
   const buildBookingUrl = (room: Room) => {
     const p = new URLSearchParams({
-      checkIn: checkIn!.toISOString(),
-      checkOut: checkOut!.toISOString(),
+      checkIn: toDateParam(checkIn!),
+      checkOut: toDateParam(checkOut!),
       adults: String(adults),
       children: String(childCount),
     });
-    return `/booking/${hotelSlug}/${room.slug}?${p.toString()}`;
+    return `/hotels/${hotelSlug}/${room.slug}?${p.toString()}`;
   };
 
   if (!rooms.length) {

@@ -35,6 +35,9 @@ export const env = createEnv({
     NODE_ENV: z
       .enum(["development", "production", "test"])
       .default("development"),
+
+    // AI gemini
+    GEMINI_API_KEY: z.string(),
   },
 
   client: {
@@ -65,5 +68,6 @@ export const env = createEnv({
       process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY,
     BETTER_AUTH_URL: process.env.BETTER_AUTH_URL,
     NODE_ENV: process.env.NODE_ENV,
+    GEMINI_API_KEY: process.env.GEMINI_API_KEY,
   },
 });

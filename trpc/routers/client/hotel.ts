@@ -412,4 +412,59 @@ export const hotelRouter = createTRPCRouter({
       TTL.LONG,
     ),
   ),
+
+  roomDetail: baseProcedure
+    .input(
+      z.object({
+        hotelSlug: z.string(),
+        roomSlug: z.string(),
+        checkIn: z.date().optional(),
+        checkOut: z.date().optional(),
+        adults: z.number().int().min(1).default(1),
+        children: z.number().int().min(0).default(0),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const { roomSlug, hotelSlug, adults, children, checkIn, checkOut } =
+        input;
+
+      const room = await ctx.db.room.findFirst({
+        where: {
+          slug: roomSlug,
+          isActive: true,
+          hotel: { slug: hotelSlug, status: "ACTIVE" },
+          capacity: {
+            gte: adults + children,
+          },
+        },
+        include: {
+          roomType: true,
+          beds: { include: { bedType: true } },
+          amenities: { include: { amenity: true } },
+          images: { orderBy: [{ isPrimary: "desc" }, { sortOrder: "asc" }] },
+          hotel: {
+            include: {
+              policy: true,
+              address: { include: { city: { include: { country: true } } } },
+            },
+          },
+        },
+      });
+
+      if (!room) throw new TRPCError({ code: "NOT_FOUND" });
+
+      let isAvailable = true;
+      if (input.checkIn && input.checkOut) {
+        const conflict = await ctx.db.roomAvailability.findFirst({
+          where: {
+            roomId: room.id,
+            date: { gte: checkIn, lt: checkOut },
+            status: { not: "AVAILABLE" },
+          },
+        });
+        isAvailable = !conflict;
+      }
+
+      return { ...room, isAvailable };
+    }),
 });

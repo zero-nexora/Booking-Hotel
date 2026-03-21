@@ -6,11 +6,12 @@ import HeroBannerLight from "@/public/images/hero-banner-light.svg";
 import { useTheme } from "next-themes";
 import { CountUp } from "@/components/common/count-up";
 import { motion, Variants } from "framer-motion";
+import { Star } from "lucide-react";
 
 const STATS = [
   { value: 500, suffix: "+", label: "Khách sạn" },
   { value: 50, suffix: "K+", label: "Lượt đặt phòng" },
-  { value: 4.9, suffix: "⭐", label: "Đánh giá" },
+  { value: 4.9, suffix: "star", label: "Đánh giá" },
   { value: 50, suffix: "+", label: "Thành phố" },
 ];
 
@@ -62,12 +63,12 @@ export const HeroSection = () => {
           initial="hidden"
           animate="visible"
         >
-          <h1 className="text-4xl sm:text-5xl font-bold tracking-tight text-foreground">
+          <h1 className="text-5xl font-bold tracking-tight text-foreground">
             Tìm khách sạn hoàn hảo
             <br />
             <span className="text-primary">cho chuyến đi của bạn</span>
           </h1>
-          <p className="text-base sm:text-lg text-secondary-foreground max-w-xl mx-auto">
+          <p className="text-lg text-secondary-foreground max-w-xl mx-auto">
             Hàng nghìn khách sạn cao cấp, giá tốt nhất, đặt phòng trong vài
             giây.
           </p>
@@ -90,11 +91,17 @@ export const HeroSection = () => {
         >
           {STATS.map(({ value, label, suffix }) => (
             <motion.div key={label} variants={statItemVariants}>
-              <p className="text-xl font-bold text-primary">
-                <CountUp to={value} triggerOnView />
-                {suffix}
+              <p className="text-3xl font-bold text-primary">
+                <div className="flex items-center gap-1">
+                  <CountUp to={value} triggerOnView />
+                  {suffix === "star" ? (
+                    <Star className="fill-primary text-primary" size={28} />
+                  ) : (
+                    suffix
+                  )}
+                </div>
               </p>
-              <p className="text-xs text-white/40 mt-0.5">{label}</p>
+              <p className="text-xs text-muted-foreground mt-0.5">{label}</p>
             </motion.div>
           ))}
         </motion.div>

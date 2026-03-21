@@ -3,6 +3,7 @@
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { useTRPC } from "@/trpc/client";
 import { HotelSearchParams } from "@/lib/search-params/hotel-search";
+import { roomDetailParams } from "@/lib/search-params/room-params";
 
 export function useHotelSearch(params: HotelSearchParams) {
   const trpc = useTRPC();
@@ -68,4 +69,22 @@ export function useHotelReviews(hotelId: string) {
 export function useHotelFilterOptions() {
   const trpc = useTRPC();
   return useQuery(trpc.client.hotel.filterOptions.queryOptions());
+}
+
+export function useRoomDetail(
+  roomSlug: string,
+  hotelSlug: string,
+  params: roomDetailParams,
+) {
+  const trpc = useTRPC();
+  return useQuery(
+    trpc.client.hotel.roomDetail.queryOptions({
+      roomSlug,
+      hotelSlug,
+      checkIn: params.checkIn || undefined,
+      checkOut: params.checkOut || undefined,
+      adults: params.adults,
+      children: params.children,
+    }),
+  );
 }

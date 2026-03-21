@@ -34,6 +34,8 @@ import { useTRPC } from "@/trpc/client";
 const navLinks = [
   { label: "Khách sạn", href: "/hotels" },
   { label: "Bản đồ", href: "/hotels?view=map" },
+  { label: "Điều khoản sử dụng", href: "/terms" },
+  { label: "Chính sách bảo mật", href: "/privacy" },
 ];
 
 export const ClientHeader = () => {

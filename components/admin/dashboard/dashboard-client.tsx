@@ -48,12 +48,12 @@ import { CountUp } from "@/components/common/count-up";
 import { motion, Variants } from "framer-motion";
 
 const PIE_COLORS = [
-  "var(--chart-1)",
-  "var(--chart-2)",
-  "var(--chart-3)",
-  "var(--chart-4)",
-  "var(--chart-5)",
-  "var(--destructive)",
+  "oklch(0.65 0.09 75)",
+  "oklch(0.58 0.14 160)",
+  "oklch(0.58 0.14 250)",
+  "oklch(0.52 0.18 300)",
+  "oklch(0.60 0.18 28)",
+  "oklch(0.52 0.02 70)",
 ];
 
 const CHART_TOOLTIP_STYLE: React.CSSProperties = {
@@ -61,7 +61,8 @@ const CHART_TOOLTIP_STYLE: React.CSSProperties = {
   borderRadius: 8,
   backgroundColor: "var(--card)",
   border: "1px solid var(--border)",
-  color: "var(--foreground)",
+  color: "var(--primary)",
+  boxShadow: "0 4px 12px oklch(0 0 0 / 0.12)",
 };
 
 const statsContainerVariants: Variants = {
@@ -283,6 +284,8 @@ const RevenueChartSection = () => {
                     return `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}/${d.getFullYear()}`;
                   }}
                   contentStyle={CHART_TOOLTIP_STYLE}
+                  labelStyle={{ color: "var(--foreground)", fontWeight: 500 }}
+                  itemStyle={{ color: "var(--muted-foreground)" }}
                 />
                 <Area
                   type="monotone"
@@ -356,6 +359,8 @@ const BookingStatusChartSection = () => {
                 <Tooltip
                   formatter={(v, name) => [v, name]}
                   contentStyle={CHART_TOOLTIP_STYLE}
+                  labelStyle={{ color: "var(--foreground)", fontWeight: 500 }}
+                  itemStyle={{ color: "var(--muted-foreground)" }}
                 />
               </PieChart>
             </ResponsiveContainer>
