@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import { X, ChevronLeft, ChevronRight, Grid2x2, Images } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -20,26 +20,17 @@ export const ImageGallery = ({ images, hotelName }: ImageGalleryProps) => {
 
   const openLightbox = (i: number) => setLightboxIndex(i);
   const closeLightbox = () => setLightboxIndex(null);
-  const prev = useCallback(
-    () => setLightboxIndex((i) => (i != null && i > 0 ? i - 1 : i)),
-    [],
-  );
-  const next = useCallback(
-    () =>
-      setLightboxIndex((i) => (i != null && i < images.length - 1 ? i + 1 : i)),
-    [images.length],
-  );
 
   useEffect(() => {
     if (lightboxIndex === null) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "ArrowLeft") prev();
-      if (e.key === "ArrowRight") next();
+      if (e.key === "ArrowLeft") setLightboxIndex((i) => (i! > 0 ? i! - 1 : images.length - 1));;
+      if (e.key === "ArrowRight") setLightboxIndex((i) => (i! < images.length - 1 ? i! + 1 : 0));
       if (e.key === "Escape") closeLightbox();
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [lightboxIndex, prev, next]);
+  }, [lightboxIndex]);
 
   if (!primary) return null;
 
@@ -130,12 +121,14 @@ export const ImageGallery = ({ images, hotelName }: ImageGalleryProps) => {
                 {hotelName}
               </p>
               <div className="flex items-center gap-3">
-                <span className="text-xs text-background/40 tabular-nums">
+                <span className="text-xs text-muted-foreground tabular-nums">
                   {lightboxIndex + 1} / {images.length}
                 </span>
                 <Button
                   onClick={closeLightbox}
-                  className="flex items-center justify-center w-8 h-8 rounded-full"
+                  variant="ghost"
+                  size="icon"
+                  className="w-8 h-8 rounded-full text-foreground hover:bg-muted"
                 >
                   <X className="w-4 h-4" />
                 </Button>
@@ -147,9 +140,10 @@ export const ImageGallery = ({ images, hotelName }: ImageGalleryProps) => {
               onClick={(e) => e.stopPropagation()}
             >
               <button
-                onClick={prev}
-                disabled={lightboxIndex === 0}
-                className="absolute left-4 flex items-center justify-center w-10 h-10 rounded-full bg-background/10 hover:bg-background/20 disabled:opacity-20 disabled:cursor-not-allowed text-background"
+                onClick={() =>
+                  setLightboxIndex((i) => (i! > 0 ? i! - 1 : images.length - 1))
+                }
+                className="absolute left-4 flex items-center justify-center w-10 h-10 rounded-full bg-muted/60 hover:bg-muted text-foreground disabled:opacity-20 disabled:cursor-not-allowed"
               >
                 <ChevronLeft className="w-5 h-5" />
               </button>
@@ -174,9 +168,10 @@ export const ImageGallery = ({ images, hotelName }: ImageGalleryProps) => {
               </AnimatePresence>
 
               <button
-                onClick={next}
-                disabled={lightboxIndex === images.length - 1}
-                className="absolute right-4 flex items-center justify-center w-10 h-10 rounded-full bg-background/10 hover:bg-background/20 disabled:opacity-20 disabled:cursor-not-allowed text-background"
+                onClick={() =>
+                  setLightboxIndex((i) => (i! < images.length - 1 ? i! + 1 : 0))
+                }
+                className="absolute right-4 flex items-center justify-center w-10 h-10 rounded-full bg-muted/60 hover:bg-muted text-foreground disabled:opacity-20 disabled:cursor-not-allowed"
               >
                 <ChevronRight className="w-5 h-5" />
               </button>

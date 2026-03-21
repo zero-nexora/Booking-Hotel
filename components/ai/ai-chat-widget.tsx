@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { AIChatMessage } from "./ai-chat-message";
+import { motion, AnimatePresence, Variants } from "framer-motion";
 
 type Message = {
   id: string;
@@ -20,6 +21,47 @@ const SUGGESTIONS = [
   "Tips when checking in at a hotel",
   "Best time to visit Ha Long Bay?",
 ];
+
+const panelVariants: Variants = {
+  hidden: { opacity: 0, scale: 0.92, y: 12, originX: 1, originY: 1 },
+  visible: {
+    opacity: 1,
+    scale: 1,
+    y: 0,
+    transition: { duration: 0.25, ease: "easeOut" },
+  },
+  exit: {
+    opacity: 0,
+    scale: 0.92,
+    y: 12,
+    transition: { duration: 0.18, ease: "easeIn" },
+  },
+};
+
+const messageVariants: Variants = {
+  hidden: { opacity: 0, y: 10 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.3, ease: "easeOut" },
+  },
+};
+
+const suggestionContainerVariants: Variants = {
+  hidden: {},
+  visible: {
+    transition: { staggerChildren: 0.06, delayChildren: 0.1 },
+  },
+};
+
+const suggestionItemVariants: Variants = {
+  hidden: { opacity: 0, scale: 0.9 },
+  visible: {
+    opacity: 1,
+    scale: 1,
+    transition: { duration: 0.2, ease: "easeOut" },
+  },
+};
 
 export const AIChatWidget = () => {
   const [open, setOpen] = useState(false);
@@ -135,124 +177,213 @@ export const AIChatWidget = () => {
 
   return (
     <>
-      <button
+      <motion.button
         onClick={() => setOpen((v) => !v)}
         aria-label="AI Assistant"
         className={cn(
-          "fixed bottom-6 right-6 z-50 w-13 h-13 rounded-full shadow-lg",
+          "fixed bottom-6 right-6 z-50 rounded-full shadow-lg",
           "flex items-center justify-center",
           "bg-primary text-primary-foreground hover:bg-primary/90",
-          open && "rotate-90",
         )}
         style={{ width: 52, height: 52 }}
+        whileHover={{ scale: 1.08 }}
+        whileTap={{ scale: 0.94 }}
+        transition={{ duration: 0.18 }}
+        animate={{ rotate: open ? 90 : 0 }}
       >
-        {open ? <X className="w-5 h-5" /> : <Sparkles className="w-5 h-5" />}
-      </button>
-
-      <div
-        className={cn(
-          "fixed bottom-24 right-6 z-50 w-90 max-w-[calc(100vw-2rem)]",
-          "rounded-2xl border border-border bg-background shadow-2xl",
-          "flex flex-col origin-bottom-right",
-          open
-            ? "opacity-100 scale-100 pointer-events-auto"
-            : "opacity-0 scale-95 pointer-events-none",
-        )}
-        style={{ height: 520 }}
-      >
-        <div className="flex items-center justify-between px-4 py-3 border-b border-border shrink-0">
-          <div className="flex items-center gap-2.5">
-            <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center">
-              <Bot className="w-3.5 h-3.5 text-primary" />
-            </div>
-            <div>
-              <p className="text-sm font-semibold leading-none text-foreground">
-                Staywise AI
-              </p>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                Travel assistant
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center gap-1">
-            {messages.length > 1 && (
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-7 w-7 text-muted-foreground hover:text-foreground hover:bg-muted"
-                onClick={reset}
-              >
-                <RotateCcw className="w-3.5 h-3.5" />
-              </Button>
-            )}
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-7 w-7 text-muted-foreground hover:text-foreground hover:bg-muted"
-              onClick={() => setOpen(false)}
+        <AnimatePresence mode="wait">
+          {open ? (
+            <motion.span
+              key="close"
+              initial={{ opacity: 0, rotate: -45 }}
+              animate={{ opacity: 1, rotate: 0 }}
+              exit={{ opacity: 0, rotate: 45 }}
+              transition={{ duration: 0.15 }}
             >
-              <X className="w-3.5 h-3.5" />
-            </Button>
-          </div>
-        </div>
+              <X className="w-5 h-5" />
+            </motion.span>
+          ) : (
+            <motion.span
+              key="open"
+              initial={{ opacity: 0, rotate: 45 }}
+              animate={{ opacity: 1, rotate: 0 }}
+              exit={{ opacity: 0, rotate: -45 }}
+              transition={{ duration: 0.15 }}
+            >
+              <Sparkles className="w-5 h-5" />
+            </motion.span>
+          )}
+        </AnimatePresence>
+      </motion.button>
 
-        <div className="flex-1 overflow-y-auto px-3 py-3 space-y-3 min-h-0">
-          {messages.map((msg) => (
-            <AIChatMessage key={msg.id} message={msg} />
-          ))}
-
-          {messages.length <= 1 && (
-            <div className="pt-1 space-y-1.5">
-              <p className="text-xs text-muted-foreground px-1">
-                Gợi ý / Suggestions
-              </p>
-              <div className="flex flex-wrap gap-1.5">
-                {SUGGESTIONS.map((s) => (
-                  <button
-                    key={s}
-                    onClick={() => send(s)}
-                    className="text-xs px-2.5 py-1.5 rounded-full border border-border bg-muted/40 hover:bg-muted text-muted-foreground hover:text-foreground text-left"
-                  >
-                    {s}
-                  </button>
-                ))}
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            variants={panelVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            className={cn(
+              "fixed bottom-24 right-6 z-50 w-90 max-w-[calc(100vw-2rem)]",
+              "rounded-2xl border border-border bg-background shadow-2xl",
+              "flex flex-col origin-bottom-right",
+            )}
+            style={{ height: 520 }}
+          >
+            <div className="flex items-center justify-between px-4 py-3 border-b border-border shrink-0">
+              <div className="flex items-center gap-2.5">
+                <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center">
+                  <Bot className="w-3.5 h-3.5 text-primary" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold leading-none text-foreground">
+                    Staywise AI
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Travel assistant
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-1">
+                <AnimatePresence>
+                  {messages.length > 1 && (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.8 }}
+                      transition={{ duration: 0.18, ease: "easeOut" }}
+                    >
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7 text-muted-foreground hover:text-foreground hover:bg-muted"
+                        onClick={reset}
+                      >
+                        <RotateCcw className="w-3.5 h-3.5" />
+                      </Button>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7 text-muted-foreground hover:text-foreground hover:bg-muted"
+                  onClick={() => setOpen(false)}
+                >
+                  <X className="w-3.5 h-3.5" />
+                </Button>
               </div>
             </div>
-          )}
 
-          <div ref={bottomRef} />
-        </div>
+            <div className="flex-1 overflow-y-auto px-3 py-3 space-y-3 min-h-0">
+              <AnimatePresence initial={false}>
+                {messages.map((msg) => (
+                  <motion.div
+                    key={msg.id}
+                    variants={messageVariants}
+                    initial="hidden"
+                    animate="visible"
+                    layout
+                  >
+                    <AIChatMessage message={msg} />
+                  </motion.div>
+                ))}
+              </AnimatePresence>
 
-        <div className="px-3 py-3 border-t border-border shrink-0">
-          <div className="flex items-end gap-2">
-            <Textarea
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder="Hỏi bất cứ điều gì... / Ask anything..."
-              rows={1}
-              disabled={loading}
-              className="resize-none text-sm rounded-xl border-border bg-muted/30 text-foreground placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-primary py-2.5 leading-relaxed"
-              style={{ minHeight: 40, maxHeight: 112 }}
-            />
-            <Button
-              size="icon"
-              className="shrink-0 h-9 w-9 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90"
-              disabled={!input.trim() || loading}
-              onClick={() => send(input)}
-            >
-              {loading ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <Send className="w-4 h-4" />
-              )}
-            </Button>
-          </div>
-          <p className="text-[10px] text-muted-foreground/50 text-center mt-1.5">
-            Enter to send · Shift+Enter for new line
-          </p>
-        </div>
-      </div>
+              <AnimatePresence>
+                {messages.length <= 1 && (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className="pt-1 space-y-1.5"
+                  >
+                    <p className="text-xs text-muted-foreground px-1">
+                      Gợi ý / Suggestions
+                    </p>
+                    <motion.div
+                      className="flex flex-wrap gap-1.5"
+                      variants={suggestionContainerVariants}
+                      initial="hidden"
+                      animate="visible"
+                    >
+                      {SUGGESTIONS.map((s) => (
+                        <motion.button
+                          key={s}
+                          variants={suggestionItemVariants}
+                          whileHover={{ scale: 1.03 }}
+                          whileTap={{ scale: 0.97 }}
+                          onClick={() => send(s)}
+                          className="text-xs px-2.5 py-1.5 rounded-full border border-border bg-muted/40 hover:bg-muted text-muted-foreground hover:text-foreground text-left"
+                        >
+                          {s}
+                        </motion.button>
+                      ))}
+                    </motion.div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              <div ref={bottomRef} />
+            </div>
+
+            <div className="px-3 py-3 border-t border-border shrink-0">
+              <div className="flex items-end gap-2">
+                <Textarea
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  placeholder="Hỏi bất cứ điều gì... / Ask anything..."
+                  rows={1}
+                  disabled={loading}
+                  className="resize-none text-sm rounded-xl border-border bg-muted/30 text-foreground placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-primary py-2.5 leading-relaxed"
+                  style={{ minHeight: 40, maxHeight: 112 }}
+                />
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  transition={{ duration: 0.15 }}
+                >
+                  <Button
+                    size="icon"
+                    className="shrink-0 h-9 w-9 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90"
+                    disabled={!input.trim() || loading}
+                    onClick={() => send(input)}
+                  >
+                    <AnimatePresence mode="wait">
+                      {loading ? (
+                        <motion.span
+                          key="loading"
+                          initial={{ opacity: 0, scale: 0.6 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          exit={{ opacity: 0, scale: 0.6 }}
+                          transition={{ duration: 0.15 }}
+                        >
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        </motion.span>
+                      ) : (
+                        <motion.span
+                          key="send"
+                          initial={{ opacity: 0, scale: 0.6 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          exit={{ opacity: 0, scale: 0.6 }}
+                          transition={{ duration: 0.15 }}
+                        >
+                          <Send className="w-4 h-4" />
+                        </motion.span>
+                      )}
+                    </AnimatePresence>
+                  </Button>
+                </motion.div>
+              </div>
+              <p className="text-[10px] text-muted-foreground/50 text-center mt-1.5">
+                Enter to send · Shift+Enter for new line
+              </p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   );
 };

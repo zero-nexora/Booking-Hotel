@@ -3,8 +3,14 @@ import { createTRPCRouter, baseProcedure } from "@/trpc/init";
 import { TRPCError } from "@trpc/server";
 import { getOrSet, CACHE_KEYS, TTL } from "@/lib/redis";
 import { checkRateLimit, rateLimiters } from "@/lib/rate-limit";
-import { popNextCursor, buildCursorWhere, cursorInput } from "@/trpc/helpers";
+import {
+  popNextCursor,
+  buildCursorWhere,
+  cursorInput,
+  assertFound,
+} from "@/trpc/helpers";
 import { Prisma } from "@/prisma/generated/prisma/browser";
+import { calcNights } from "@/lib/utils";
 
 const hotelSearchInput = z.object({
   search: z.string().optional(),
@@ -425,46 +431,70 @@ export const hotelRouter = createTRPCRouter({
       }),
     )
     .query(async ({ ctx, input }) => {
-      const { roomSlug, hotelSlug, adults, children, checkIn, checkOut } =
+      const { hotelSlug, roomSlug, adults, children, checkIn, checkOut } =
         input;
-
-      const room = await ctx.db.room.findFirst({
-        where: {
-          slug: roomSlug,
-          isActive: true,
-          hotel: { slug: hotelSlug, status: "ACTIVE" },
-          capacity: {
-            gte: adults + children,
-          },
-        },
-        include: {
-          roomType: true,
-          beds: { include: { bedType: true } },
-          amenities: { include: { amenity: true } },
-          images: { orderBy: [{ isPrimary: "desc" }, { sortOrder: "asc" }] },
-          hotel: {
-            include: {
-              policy: true,
-              address: { include: { city: { include: { country: true } } } },
+ 
+      await checkRateLimit(rateLimiters.search, "room-detail");
+ 
+      const room = await getOrSet(
+        CACHE_KEYS.ROOM_DETAIL(hotelSlug, roomSlug),
+        () =>
+          ctx.db.room.findFirst({
+            where: {
+              slug: roomSlug,
+              isActive: true,
+              hotel: { slug: hotelSlug, status: "ACTIVE" },
             },
-          },
-        },
-      });
-
-      if (!room) throw new TRPCError({ code: "NOT_FOUND" });
-
+            include: {
+              roomType: true,
+              beds: { include: { bedType: true } },
+              amenities: { include: { amenity: true } },
+              images: {
+                orderBy: [{ isPrimary: "desc" }, { sortOrder: "asc" }],
+              },
+              hotel: {
+                include: {
+                  policy: true,
+                  address: {
+                    include: { city: { include: { country: true } } },
+                  },
+                },
+              },
+            },
+          }),
+        TTL.SHORT,
+      );
+ 
+      assertFound(room);
+ 
+      const guestCount = adults + children;
+      if (room!.capacity < guestCount)
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: `Phòng chỉ chứa tối đa ${room!.capacity} khách`,
+        });
+ 
+      const hasDateRange = !!(checkIn && checkOut);
+ 
       let isAvailable = true;
-      if (input.checkIn && input.checkOut) {
+      let nights: number | undefined;
+      let totalPrice: number | undefined;
+ 
+      if (hasDateRange) {
         const conflict = await ctx.db.roomAvailability.findFirst({
           where: {
-            roomId: room.id,
+            roomId: room!.id,
             date: { gte: checkIn, lt: checkOut },
             status: { not: "AVAILABLE" },
           },
+          select: { id: true },
         });
+ 
         isAvailable = !conflict;
+        nights = calcNights(checkIn!, checkOut!);
+        totalPrice = Number(room!.basePrice) * nights;
       }
-
-      return { ...room, isAvailable };
+ 
+      return { ...room!, isAvailable, nights, totalPrice };
     }),
 });

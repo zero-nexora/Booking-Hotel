@@ -51,6 +51,7 @@ export const BookingClient = ({ hotelSlug, roomSlug }: BookingClientProps) => {
   const adults = params.adults || 1;
   const children = params.children || 0;
 
+  
   const { data: hotel, isLoading } = useHotelDetail(
     hotelSlug,
     checkIn,
@@ -58,7 +59,7 @@ export const BookingClient = ({ hotelSlug, roomSlug }: BookingClientProps) => {
     adults,
     children,
   );
-
+  
   const { data: me } = useMe();
 
   const [step, setStep] = useState<Step>("guest");

@@ -1,13 +1,15 @@
-import { generateQRBase64 } from "@/lib/qr-code";
-import { Img } from "@react-email/components";
+"use client";
 
-const NotFound = async () => {
-  const base64 = await generateQRBase64(
-    "http://localhost:3000/" +
-      "cmmu63to0000104lah1jlqsmu",
-  );
+import { useConfetti } from "@/hooks/use-confetti";
+
+const NotFound = () => {
+  const canvasRef = useConfetti(true);
   return (
-    <Img src={base64} width={160} height={160} alt={`QR xác minh đặt phòng`} />
+    <canvas
+      ref={canvasRef}
+      // className="fixed inset-0 pointer-events-none"
+      style={{ zIndex: 9999 }}
+    />
   );
 };
 

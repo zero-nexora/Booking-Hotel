@@ -49,6 +49,7 @@ export const CACHE_KEYS = {
   HOTELS_FILTER_OPTIONS: "hotels:filter-options",
   HOTEL_DETAIL: (slug: string) => `hotel:${slug}`,
   HOTEL_SEARCH: (params: string) => `hotel:search:${params}`,
+  ROOM_DETAIL: (hotelSlug: string, roomSlug: string) => `room:${hotelSlug}:${roomSlug}`,
   ADMIN_DASHBOARD_STATS: "admin:dashboard:stats",
   ADMIN_DASHBOARD_REVENUE: "admin:dashboard:revenue",
   ADMIN_DASHBOARD_BOOKING_STATUS: "admin:dashboard:booking-status",

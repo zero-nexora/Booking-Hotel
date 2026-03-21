@@ -27,7 +27,7 @@ export function useBookingConfirmation(bookingRef: string) {
       {
         enabled: !!bookingRef,
         refetchInterval: (query) => {
-          const status = query.state.data?.paymentStatus;
+          const status = query.state.data?.payments[0].status;
           if (!status || status === "PENDING") return 3000;
           return false;
         },

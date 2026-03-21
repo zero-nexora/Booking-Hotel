@@ -24,7 +24,7 @@ interface RoomImageGalleryProps {
   roomName: string;
 }
 
-export function RoomImageGallery({ images, roomName }: RoomImageGalleryProps) {
+export const RoomImageGallery = ({ images, roomName }: RoomImageGalleryProps) => {
   const [lightbox, setLightbox] = useState<number | null>(null);
 
   useEffect(() => {

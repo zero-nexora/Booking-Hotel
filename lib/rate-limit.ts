@@ -20,6 +20,7 @@ export const rateLimiters = {
   adminMutation: createLimiter(40, "1 m", "rl:admin-mutation"),
   userMutation: createLimiter(20, "1 m", "rl:user-mutation"),
   userCancel: createLimiter(5, "10 m", "rl:user-cancel"),
+  aiChat: createLimiter(20, "1 m", "rl:ai-chat"),
 } as const;
 
 export type RateLimiterKey = keyof typeof rateLimiters;

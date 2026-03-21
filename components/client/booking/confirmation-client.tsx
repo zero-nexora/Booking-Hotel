@@ -48,10 +48,11 @@ const sectionVariants: Variants = {
 };
 
 export const ConfirmationClient = ({ bookingRef }: ConfirmationClientProps) => {
-  const { data: booking, isFetching } = useBookingConfirmation(bookingRef);
-  const canvasRef = useConfetti();
+  const { data: booking, isLoading } = useBookingConfirmation(bookingRef);
+  const enable = !isLoading && booking?.payments[0].status === "PAID";
+  const canvasRef = useConfetti(enable);
 
-  if (isFetching) return <ConfirmationSkeleton />;
+  if (isLoading) return <ConfirmationSkeleton />;
   if (!booking) return null;
 
   const item = booking.items[0];
