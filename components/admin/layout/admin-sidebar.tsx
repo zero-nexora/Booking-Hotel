@@ -34,6 +34,7 @@ import { useConfirmDialogStore } from "@/store/confirm-dialog-store";
 import { useQueryClient } from "@tanstack/react-query";
 import { useTRPC } from "@/trpc/client";
 import { motion, Variants } from "framer-motion";
+import { User } from "better-auth";
 
 const navItems = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
@@ -57,13 +58,6 @@ const navItemVariants: Variants = {
   hidden: { opacity: 0, x: -12 },
   visible: { opacity: 1, x: 0, transition: { duration: 0.3, ease: "easeOut" } },
 };
-
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  image?: string | null;
-}
 
 interface AdminSidebarProps {
   collapsed: boolean;

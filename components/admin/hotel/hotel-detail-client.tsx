@@ -22,6 +22,7 @@ import {
   useDeleteHotel,
 } from "@/hooks/admin/use-admin-hotels";
 import { formatDateShort } from "@/lib/utils";
+import { LocationMap } from "@/components/client/hotel-detail/location-map";
 
 type HotelDetail = RouterOutput["admin"]["hotel"]["detail"];
 
@@ -110,8 +111,8 @@ const HotelStats = ({ hotel }: { hotel: HotelDetail }) => (
       { label: "Booking", value: hotel._count.bookings },
       { label: "Đánh giá", value: hotel._count.reviews },
     ].map(({ label, value }) => (
-      <Card key={label} className="bg-card border-border shadow-none">
-        <CardContent className="">
+      <Card key={label}>
+        <CardContent>
           <p className="text-sm text-muted-foreground">{label}</p>
           <p className="text-3xl font-bold text-foreground">{value}</p>
         </CardContent>
@@ -133,108 +134,132 @@ const InfoRow = ({
   </div>
 );
 
-const HotelInfoTab = ({ hotel }: { hotel: HotelDetail }) => (
-  <div className="grid grid-cols-2 gap-4">
-    <Card className="bg-card border-border shadow-none">
-      <CardHeader>
-        <CardTitle className="text-base text-foreground">
-          Thông tin cơ bản
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-3 text-sm">
-        <InfoRow
-          label="Slug"
-          value={
-            <span className="font-mono text-muted-foreground">
-              {hotel.slug}
-            </span>
-          }
-        />
-        <InfoRow label="Điện thoại" value={hotel.phone ?? "—"} />
-        <InfoRow label="Email" value={hotel.email ?? "—"} />
-        <InfoRow label="Ngày tạo" value={formatDateShort(hotel.createdAt)} />
-      </CardContent>
-    </Card>
+const HotelInfoTab = ({ hotel }: { hotel: HotelDetail }) => {
+  const fullAddress = [
+    hotel.address.street,
+    hotel.address.city.name,
+    hotel.address.city.country.name,
+  ].join(", ");
 
-    <Card className="bg-card border-border shadow-none">
-      <CardHeader>
-        <CardTitle className="text-base text-foreground">Địa chỉ</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-3 text-sm">
-        <InfoRow label="Đường" value={hotel.address.street} />
-        {hotel.address.state && (
-          <InfoRow label="Tỉnh/Bang" value={hotel.address.state} />
-        )}
-        <InfoRow label="Thành phố" value={hotel.address.city.name} />
-        <InfoRow label="Quốc gia" value={hotel.address.city.country.name} />
-        {hotel.address.latitude && hotel.address.longitude && (
+  return (
+    <div className="grid grid-cols-2 gap-4">
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base text-foreground">
+            Thông tin cơ bản
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3 text-sm">
           <InfoRow
-            label="Tọa độ"
+            label="Slug"
             value={
-              <span className="font-mono text-xs text-muted-foreground">
-                {hotel.address.latitude.toFixed(4)},{" "}
-                {hotel.address.longitude.toFixed(4)}
+              <span className="font-mono text-muted-foreground">
+                {hotel.slug}
               </span>
             }
           />
-        )}
-      </CardContent>
-    </Card>
-
-    <Card className="bg-card border-border shadow-none">
-      <CardHeader>
-        <CardTitle className="text-base text-foreground">Chính sách</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-3 text-sm">
-        <InfoRow
-          label="Check-in"
-          value={hotel.policy?.checkInTime ?? "14:00"}
-        />
-        <InfoRow
-          label="Check-out"
-          value={hotel.policy?.checkOutTime ?? "12:00"}
-        />
-      </CardContent>
-    </Card>
-
-    <Card className="bg-card border-border shadow-none">
-      <CardHeader>
-        <CardTitle className="text-base text-foreground">Tiện nghi</CardTitle>
-      </CardHeader>
-      <CardContent>
-        {hotel.amenities.length === 0 ? (
-          <p className="text-sm text-muted-foreground">Chưa có tiện nghi</p>
-        ) : (
-          <div className="flex flex-wrap gap-2">
-            {hotel.amenities.map(({ amenity }) => (
-              <Badge
-                key={amenity.id}
-                variant="outline"
-                className="bg-muted text-muted-foreground border-border"
-              >
-                {amenity.icon && <span className="mr-1">{amenity.icon}</span>}
-                {amenity.name}
-              </Badge>
-            ))}
-          </div>
-        )}
-      </CardContent>
-    </Card>
-
-    {hotel.description && (
-      <Card className="col-span-2 bg-card border-border shadow-none">
-        <CardHeader>
-          <CardTitle className="text-base text-foreground">Mô tả</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-            {hotel.description}
-          </p>
+          <InfoRow label="Điện thoại" value={hotel.phone ?? "—"} />
+          <InfoRow label="Email" value={hotel.email ?? "—"} />
+          <InfoRow label="Ngày tạo" value={formatDateShort(hotel.createdAt)} />
         </CardContent>
       </Card>
-    )}
-  </div>
-);
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base text-foreground">Địa chỉ</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3 text-sm">
+          <InfoRow label="Đường" value={hotel.address.street} />
+          {hotel.address.state && (
+            <InfoRow label="Tỉnh/Bang" value={hotel.address.state} />
+          )}
+          <InfoRow label="Thành phố" value={hotel.address.city.name} />
+          <InfoRow label="Quốc gia" value={hotel.address.city.country.name} />
+          {hotel.address.latitude && hotel.address.longitude && (
+            <InfoRow
+              label="Tọa độ"
+              value={
+                <span className="font-mono text-xs text-muted-foreground">
+                  {hotel.address.latitude.toFixed(4)},{" "}
+                  {hotel.address.longitude.toFixed(4)}
+                </span>
+              }
+            />
+          )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base text-foreground">
+            Chính sách
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3 text-sm">
+          <InfoRow
+            label="Check-in"
+            value={hotel.policy?.checkInTime ?? "14:00"}
+          />
+          <InfoRow
+            label="Check-out"
+            value={hotel.policy?.checkOutTime ?? "12:00"}
+          />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base text-foreground">Tiện nghi</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {hotel.amenities.length === 0 ? (
+            <p className="text-sm text-muted-foreground">Chưa có tiện nghi</p>
+          ) : (
+            <div className="flex flex-wrap gap-2">
+              {hotel.amenities.map(({ amenity }) => (
+                <Badge
+                  key={amenity.id}
+                  variant="outline"
+                  className="bg-muted text-muted-foreground border-border"
+                >
+                  {amenity.icon && <span className="mr-1">{amenity.icon}</span>}
+                  {amenity.name}
+                </Badge>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card className="col-span-2 bg-card border-border shadow-none">
+        <CardHeader>
+          <CardTitle className="text-base text-foreground">Vị trí</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <LocationMap
+            latitude={hotel.address.latitude}
+            longitude={hotel.address.longitude}
+            address={fullAddress}
+            hotelName={hotel.name}
+          />
+        </CardContent>
+      </Card>
+
+      {hotel.description && (
+        <Card className="col-span-2 bg-card border-border shadow-none">
+          <CardHeader>
+            <CardTitle className="text-base text-foreground">Mô tả</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+              {hotel.description}
+            </p>
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  );
+};
 
 export const HotelDetailClient = ({ hotelId }: HotelDetailClientProps) => {
   const { data: hotel, isLoading } = useAdminHotelDetail(hotelId);

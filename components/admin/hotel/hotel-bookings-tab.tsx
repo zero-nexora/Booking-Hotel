@@ -10,7 +10,6 @@ import {
 } from "@/components/ui/select";
 import {
   Table,
-  TableBody,
   TableCell,
   TableHead,
   TableHeader,
@@ -25,9 +24,9 @@ import { useQueryStates } from "nuqs";
 import { useCallback } from "react";
 import { RouterOutput } from "@/trpc/client";
 import { BookingStatus, PaymentStatus } from "@/prisma/generated/prisma/enums";
-import { TableSkeleton } from "@/components/common/table-skeleton";
 import { DEFAULT_PAGE } from "@/lib/constants";
 import { formatDateShort, formatCurrencyUSD } from "@/lib/utils";
+import { DataTableBody } from "@/components/common/table-body";
 
 type Booking = RouterOutput["admin"]["booking"]["list"]["items"][number];
 
@@ -45,6 +44,7 @@ const PAYMENT_STATUS_LABEL: Record<string, string> = {
   PENDING: "Đang xử lý",
   PAID: "Đã TT",
   REFUNDED: "Hoàn tiền",
+  CANCELLED: "Đã hủy",
   FAILED: "Thất bại",
 };
 
@@ -165,7 +165,7 @@ export const HotelBookingsTab = ({ hotelId }: HotelBookingsTabProps) => {
         </Select>
       </div>
 
-      <Card className="bg-card border-border shadow-none">
+      <Card>
         <Table>
           <TableHeader>
             <TableRow className="border-border hover:bg-transparent">
@@ -189,26 +189,15 @@ export const HotelBookingsTab = ({ hotelId }: HotelBookingsTabProps) => {
               </TableHead>
             </TableRow>
           </TableHeader>
-          {isLoading ? (
-            <TableSkeleton cols={6} />
-          ) : (
-            <TableBody>
-              {data?.items.length === 0 ? (
-                <TableRow>
-                  <TableCell
-                    colSpan={6}
-                    className="text-center text-muted-foreground py-12"
-                  >
-                    Chưa có booking nào
-                  </TableCell>
-                </TableRow>
-              ) : (
-                data?.items.map((booking) => (
-                  <BookingRow key={booking.id} booking={booking} />
-                ))
-              )}
-            </TableBody>
-          )}
+          <DataTableBody
+            data={data?.items}
+            isLoading={isLoading}
+            cols={6}
+            emptyMessage="Chưa có booking nào"
+            renderRow={(booking) => (
+              <BookingRow key={booking.id} booking={booking} />
+            )}
+          />
         </Table>
         {data && data.totalPages > 1 && (
           <Pagination

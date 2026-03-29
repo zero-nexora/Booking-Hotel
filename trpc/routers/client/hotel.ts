@@ -11,6 +11,7 @@ import {
 } from "@/trpc/helpers";
 import { Prisma } from "@/prisma/generated/prisma/browser";
 import { calcNights } from "@/lib/utils";
+import { DEFAULT_PAGE_SIZE } from "@/lib/constants";
 
 const hotelSearchInput = z.object({
   search: z.string().optional(),
@@ -29,7 +30,7 @@ const hotelSearchInput = z.object({
     .enum(["price_asc", "price_desc", "rating", "stars"])
     .default("price_asc"),
   cursor: cursorInput,
-  limit: z.number().int().min(1).max(50).default(12),
+  limit: z.number().int().min(1).max(50).default(DEFAULT_PAGE_SIZE),
 });
 
 const hotelPublicInclude = {
@@ -191,6 +192,7 @@ export const hotelRouter = createTRPCRouter({
       }
 
       const isPriceSort = sort === "price_asc" || sort === "price_desc";
+      const isRatingSort = sort === "rating";
 
       const hotelWhere: Prisma.HotelWhereInput = {
         status: "ACTIVE",
@@ -224,7 +226,7 @@ export const hotelRouter = createTRPCRouter({
         });
       }
 
-      if (!isPriceSort && cursor) {
+      if (!isPriceSort && !isRatingSort && cursor) {
         andConditions.push(buildCursorWhere(cursor)!);
       }
 
@@ -239,7 +241,7 @@ export const hotelRouter = createTRPCRouter({
 
       const rows = await ctx.db.hotel.findMany({
         where: hotelWhere,
-        take: isPriceSort ? 500 : limit + 1,
+        take: isPriceSort || isRatingSort ? 500 : limit + 1,
         orderBy,
         include: {
           ...hotelPublicInclude,
@@ -268,6 +270,15 @@ export const hotelRouter = createTRPCRouter({
           const pb = Number(b.minPrice ?? Infinity);
           return sort === "price_asc" ? pa - pb : pb - pa;
         });
+
+        if (cursor) {
+          const cursorIndex = results.findIndex((r) => r.id === cursor.id);
+          if (cursorIndex !== -1) results = results.slice(cursorIndex + 1);
+        }
+      }
+
+      if (isRatingSort) {
+        results.sort((a, b) => (b.avgRating ?? 0) - (a.avgRating ?? 0));
 
         if (cursor) {
           const cursorIndex = results.findIndex((r) => r.id === cursor.id);
@@ -433,9 +444,9 @@ export const hotelRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       const { hotelSlug, roomSlug, adults, children, checkIn, checkOut } =
         input;
- 
+
       await checkRateLimit(rateLimiters.search, "room-detail");
- 
+
       const room = await getOrSet(
         CACHE_KEYS.ROOM_DETAIL(hotelSlug, roomSlug),
         () =>
@@ -464,22 +475,22 @@ export const hotelRouter = createTRPCRouter({
           }),
         TTL.SHORT,
       );
- 
+
       assertFound(room);
- 
+
       const guestCount = adults + children;
       if (room!.capacity < guestCount)
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: `Phòng chỉ chứa tối đa ${room!.capacity} khách`,
         });
- 
+
       const hasDateRange = !!(checkIn && checkOut);
- 
+
       let isAvailable = true;
       let nights: number | undefined;
       let totalPrice: number | undefined;
- 
+
       if (hasDateRange) {
         const conflict = await ctx.db.roomAvailability.findFirst({
           where: {
@@ -489,12 +500,12 @@ export const hotelRouter = createTRPCRouter({
           },
           select: { id: true },
         });
- 
+
         isAvailable = !conflict;
         nights = calcNights(checkIn!, checkOut!);
         totalPrice = Number(room!.basePrice) * nights;
       }
- 
+
       return { ...room!, isAvailable, nights, totalPrice };
     }),
 });

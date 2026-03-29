@@ -3,7 +3,6 @@
 import { Card } from "@/components/ui/card";
 import {
   Table,
-  TableBody,
   TableCell,
   TableHead,
   TableHeader,
@@ -18,8 +17,8 @@ import {
   useDeleteBedType,
 } from "@/hooks/admin/use-admin-bed-types";
 import { ListHeader } from "@/components/common/list-header";
-import { TableSkeleton } from "@/components/common/table-skeleton";
 import { RowActions } from "@/components/common/row-actions";
+import { DataTableBody } from "@/components/common/table-body";
 
 type BedType = RouterOutput["admin"]["bedType"]["list"][number];
 
@@ -60,7 +59,7 @@ export const BedTypeListClient = () => {
         addLabel="Thêm loại giường"
         onAdd={openCreate}
       />
-      <Card className="bg-card border-border shadow-none">
+      <Card>
         <Table>
           <TableHeader>
             <TableRow className="border-border hover:bg-transparent">
@@ -73,20 +72,20 @@ export const BedTypeListClient = () => {
               <TableHead />
             </TableRow>
           </TableHeader>
-          {isLoading ? (
-            <TableSkeleton cols={3} />
-          ) : (
-            <TableBody>
-              {data?.map((bedType) => (
-                <BedTypeRow
-                  key={bedType.id}
-                  bedType={bedType}
-                  onEdit={openEdit}
-                  onDelete={handleDelete}
-                />
-              ))}
-            </TableBody>
-          )}
+          <DataTableBody
+            data={data}
+            isLoading={isLoading}
+            cols={3}
+            emptyMessage="Không tìm thấy loại giường nào"
+            renderRow={(bedType) => (
+              <BedTypeRow
+                key={bedType.id}
+                bedType={bedType}
+                onEdit={openEdit}
+                onDelete={handleDelete}
+              />
+            )}
+          />
         </Table>
       </Card>
     </div>

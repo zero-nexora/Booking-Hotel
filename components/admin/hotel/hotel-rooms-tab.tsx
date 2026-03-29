@@ -12,7 +12,6 @@ import {
 } from "@/components/ui/select";
 import {
   Table,
-  TableBody,
   TableCell,
   TableHead,
   TableHeader,
@@ -32,9 +31,9 @@ import { CreateRoomForm, EditRoomForm } from "./room-form-sheet";
 import { useAdminRoomList, useDeleteRoom } from "@/hooks/admin/use-admin-rooms";
 import { useRoomTypeList } from "@/hooks/admin/use-admin-room-type";
 import { ListHeader } from "@/components/common/list-header";
-import { TableSkeleton } from "@/components/common/table-skeleton";
 import { DEFAULT_PAGE } from "@/lib/constants";
 import { formatCurrencyUSD } from "@/lib/utils";
+import { DataTableBody } from "@/components/common/table-body";
 
 type Room = RouterOutput["admin"]["room"]["list"]["items"][number];
 
@@ -214,32 +213,21 @@ export const HotelRoomsTab = ({ hotelId }: HotelRoomsTabProps) => {
               <TableHead />
             </TableRow>
           </TableHeader>
-          {isLoading ? (
-            <TableSkeleton cols={7} />
-          ) : (
-            <TableBody>
-              {data?.items.length === 0 ? (
-                <TableRow>
-                  <TableCell
-                    colSpan={7}
-                    className="text-center text-muted-foreground py-12"
-                  >
-                    Chưa có phòng nào
-                  </TableCell>
-                </TableRow>
-              ) : (
-                data?.items.map((room) => (
-                  <RoomRow
-                    key={room.id}
-                    room={room}
-                    onNavigate={handleNavigate}
-                    onEdit={openEdit}
-                    onDelete={handleDelete}
-                  />
-                ))
-              )}
-            </TableBody>
-          )}
+          <DataTableBody
+            data={data?.items}
+            isLoading={isLoading}
+            cols={7}
+            emptyMessage="Chưa có phòng nào"
+            renderRow={(room) => (
+              <RoomRow
+                key={room.id}
+                room={room}
+                onNavigate={handleNavigate}
+                onEdit={openEdit}
+                onDelete={handleDelete}
+              />
+            )}
+          />
         </Table>
         {data && data.totalPages > 1 && (
           <Pagination

@@ -3,7 +3,6 @@
 import { Card } from "@/components/ui/card";
 import {
   Table,
-  TableBody,
   TableCell,
   TableHead,
   TableHeader,
@@ -14,12 +13,12 @@ import { useModalDialogStore } from "@/store/modal-dialog-store";
 import { RouterOutput } from "@/trpc/client";
 import { CreateRoomTypeForm, EditRoomTypeForm } from "./room-type-form-modal";
 import { ListHeader } from "@/components/common/list-header";
-import { TableSkeleton } from "@/components/common/table-skeleton";
 import {
   useDeleteRoomType,
   useRoomTypeList,
 } from "@/hooks/admin/use-admin-room-type";
 import { RowActions } from "@/components/common/row-actions";
+import { DataTableBody } from "@/components/common/table-body";
 
 type RoomType = RouterOutput["admin"]["roomType"]["list"][number];
 
@@ -73,20 +72,20 @@ export const RoomTypeListClient = () => {
               <TableHead />
             </TableRow>
           </TableHeader>
-          {isLoading ? (
-            <TableSkeleton cols={3} />
-          ) : (
-            <TableBody>
-              {data?.map((roomType) => (
-                <RoomTypeRow
-                  key={roomType.id}
-                  roomType={roomType}
-                  onEdit={openEdit}
-                  onDelete={handleDelete}
-                />
-              ))}
-            </TableBody>
-          )}
+          <DataTableBody
+            data={data}
+            isLoading={isLoading}
+            cols={3}
+            emptyMessage="Không tìm thấy loại phòng nào"
+            renderRow={(roomType) => (
+              <RoomTypeRow
+                key={roomType.id}
+                roomType={roomType}
+                onEdit={openEdit}
+                onDelete={handleDelete}
+              />
+            )}
+          />
         </Table>
       </Card>
     </div>

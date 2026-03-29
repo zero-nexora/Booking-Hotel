@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { Calendar, Users, Minus, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -73,7 +73,7 @@ export const BookingSidebar = ({
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.45, ease: "easeOut", delay: 0.15 }}
     >
-      <Card className="rounded-2xl border border-border bg-card p-5 shadow-none">
+      <Card className="rounded-2xl border border-border p-5">
         {minPrice && (
           <div>
             <div className="flex items-baseline gap-1">
@@ -111,6 +111,7 @@ export const BookingSidebar = ({
             <PopoverContent
               className="w-auto p-0 bg-card border-border"
               align="start"
+              side="top"
             >
               <CalendarUI
                 mode="single"

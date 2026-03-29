@@ -18,7 +18,6 @@ import {
 } from "@/components/ui/select";
 import {
   Table,
-  TableBody,
   TableCell,
   TableHead,
   TableHeader,
@@ -37,9 +36,9 @@ import { adminBookingParsers } from "@/lib/search-params/admin-bookings";
 import { useQueryStates } from "nuqs";
 import { BookingStatus, PaymentStatus } from "@/prisma/generated/prisma/enums";
 import { ListHeader } from "@/components/common/list-header";
-import { TableSkeleton } from "@/components/common/table-skeleton";
 import { formatDateShort, formatCurrencyUSD } from "@/lib/utils";
 import { DEFAULT_PAGE } from "@/lib/constants";
+import { DataTableBody } from "@/components/common/table-body";
 
 type Booking = RouterOutput["admin"]["booking"]["list"]["items"][number];
 
@@ -283,7 +282,7 @@ export const BookingListClient = () => {
       </ListHeader>
 
       {currentView === "list" ? (
-        <Card className="bg-card border-border shadow-none overflow-hidden">
+        <Card className="overflow-hidden">
           <Table>
             <TableHeader>
               <TableRow className="border-border hover:bg-transparent bg-muted/30">
@@ -310,30 +309,19 @@ export const BookingListClient = () => {
                 </TableHead>
               </TableRow>
             </TableHeader>
-            {isLoading ? (
-              <TableSkeleton cols={7} />
-            ) : (
-              <TableBody>
-                {data?.items.length === 0 ? (
-                  <TableRow>
-                    <TableCell
-                      colSpan={7}
-                      className="text-center text-muted-foreground py-16 text-sm"
-                    >
-                      Không có booking nào
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  data?.items.map((booking) => (
-                    <BookingRow
-                      key={booking.id}
-                      booking={booking}
-                      onClick={handleRowClick}
-                    />
-                  ))
-                )}
-              </TableBody>
-            )}
+            <DataTableBody
+              data={data?.items}
+              isLoading={isLoading}
+              cols={7}
+              emptyMessage="Không có booking nào"
+              renderRow={(booking) => (
+                <BookingRow
+                  key={booking.id}
+                  booking={booking}
+                  onClick={handleRowClick}
+                />
+              )}
+            />
           </Table>
           {data && data.totalPages > 1 && (
             <Pagination
@@ -347,7 +335,7 @@ export const BookingListClient = () => {
           )}
         </Card>
       ) : (
-        <Card className="bg-card border-border shadow-none p-5">
+        <Card className="p-5">
           <FullCalendar
             ref={calendarRef}
             plugins={[dayGridPlugin, listPlugin, interactionPlugin]}

@@ -46,14 +46,23 @@ const SignInPage = () => {
 
   const onSubmit = async (values: Values) => {
     try {
-      await authClient.signIn.email({
-        email: values.email,
-        password: values.password,
-        rememberMe: values.rememberMe,
-        callbackURL: "/",
-      });
-      router.push("/");
-      router.refresh();
+      const response = await authClient.signIn.email(
+        {
+          email: values.email,
+          password: values.password,
+          rememberMe: values.rememberMe,
+          callbackURL: "/",
+        },
+        {
+          onError: () => {
+            toast.error("Email hoặc mật khẩu không đúng. Vui lòng thử lại.");
+          },
+        },
+      );
+      if (response && response.data) {
+        router.push("/");
+        router.refresh();
+      }
     } catch {
       toast.error("Email hoặc mật khẩu không đúng. Vui lòng thử lại.");
     }

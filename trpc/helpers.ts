@@ -1,9 +1,10 @@
+import { DEFAULT_PAGE, DEFAULT_PAGE_SIZE } from "@/lib/constants";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
 export const paginationInput = z.object({
-  page: z.number().min(1).default(1),
-  limit: z.number().min(1).max(100).default(20),
+  page: z.number().min(1).default(DEFAULT_PAGE),
+  limit: z.number().min(1).max(100).default(DEFAULT_PAGE_SIZE),
 });
 
 export type PaginationInput = z.infer<typeof paginationInput>;

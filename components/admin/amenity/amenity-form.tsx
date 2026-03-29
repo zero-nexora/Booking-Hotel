@@ -74,7 +74,6 @@ export const AmenityForm = ({
               <FormControl>
                 <Input
                   {...field}
-                  placeholder="🏊"
                   className="bg-background border-border text-foreground placeholder:text-muted-foreground focus-visible:ring-primary"
                 />
               </FormControl>

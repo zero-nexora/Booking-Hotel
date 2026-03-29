@@ -54,7 +54,7 @@ export const PopularDestinations = () => {
           key={dest.id}
           variants={itemVariants}
           onClick={() =>
-            router.push(`/hotels?city=${encodeURIComponent(dest.name)}`)
+            router.push(`/hotels?search=${encodeURIComponent(dest.name)}`)
           }
           className="group flex items-center gap-3 p-4 rounded-xl border border-border bg-card hover:bg-primary hover:border-primary text-left"
         >

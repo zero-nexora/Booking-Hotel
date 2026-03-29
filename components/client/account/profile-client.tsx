@@ -210,7 +210,7 @@ export const ProfileClient = () => {
 
   const avatarSrc = user.image ?? undefined;
   const hasCredentialAccount =
-    accounts?.some((acc) => acc.providerId === "credentials") ?? false;
+    accounts?.some((acc) => acc.providerId === "credential") ?? false;
 
   return (
     <div className="space-y-6">
@@ -267,7 +267,7 @@ export const ProfileClient = () => {
                       transition={{ duration: 0.2, ease: "easeOut" }}
                     >
                       <UploadButton
-                        endpoint="roomImages"
+                        endpoint="profileImage"
                         onClientUploadComplete={(res) => {
                           profileForm.setValue("image", res[0].ufsUrl);
                         }}
@@ -483,7 +483,7 @@ export const ProfileClient = () => {
                         </FormItem>
                       )}
                     />
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-start">
                       <FormField
                         control={passwordForm.control}
                         name="newPassword"

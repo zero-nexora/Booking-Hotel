@@ -24,8 +24,10 @@ export const ImageGallery = ({ images, hotelName }: ImageGalleryProps) => {
   useEffect(() => {
     if (lightboxIndex === null) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "ArrowLeft") setLightboxIndex((i) => (i! > 0 ? i! - 1 : images.length - 1));;
-      if (e.key === "ArrowRight") setLightboxIndex((i) => (i! < images.length - 1 ? i! + 1 : 0));
+      if (e.key === "ArrowLeft")
+        setLightboxIndex((i) => (i! > 0 ? i! - 1 : images.length - 1));
+      if (e.key === "ArrowRight")
+        setLightboxIndex((i) => (i! < images.length - 1 ? i! + 1 : 0));
       if (e.key === "Escape") closeLightbox();
     };
     window.addEventListener("keydown", onKey);
@@ -162,7 +164,6 @@ export const ImageGallery = ({ images, hotelName }: ImageGalleryProps) => {
                     alt={images[lightboxIndex].alt ?? hotelName}
                     fill
                     className="object-contain"
-                    sizes="(max-width: 768px) 100vw, 90vw"
                   />
                 </motion.div>
               </AnimatePresence>

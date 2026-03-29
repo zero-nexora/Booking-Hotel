@@ -12,7 +12,6 @@ import {
 } from "@/components/ui/select";
 import {
   Table,
-  TableBody,
   TableCell,
   TableHead,
   TableHeader,
@@ -28,8 +27,8 @@ import {
   useDeleteCity,
 } from "@/hooks/admin/use-admin-locations";
 import { ListHeader } from "@/components/common/list-header";
-import { TableSkeleton } from "@/components/common/table-skeleton";
 import { RowActions } from "@/components/common/row-actions";
+import { DataTableBody } from "@/components/common/table-body";
 
 type City = RouterOutput["admin"]["location"]["listCities"][number];
 
@@ -106,7 +105,7 @@ export const CityListClient = () => {
         </Select>
       </ListHeader>
 
-      <Card className="bg-card border-border shadow-none">
+      <Card>
         <Table>
           <TableHeader>
             <TableRow className="border-border hover:bg-transparent">
@@ -122,20 +121,20 @@ export const CityListClient = () => {
               <TableHead />
             </TableRow>
           </TableHeader>
-          {isLoading ? (
-            <TableSkeleton cols={4} />
-          ) : (
-            <TableBody>
-              {cities?.map((city) => (
-                <CityRow
-                  key={city.id}
-                  city={city}
-                  onEdit={openEdit}
-                  onDelete={handleDelete}
-                />
-              ))}
-            </TableBody>
-          )}
+          <DataTableBody
+            data={cities}
+            isLoading={isLoading}
+            cols={4}
+            emptyMessage="Không tìm thấy thành phố nào"
+            renderRow={(city) => (
+              <CityRow
+                key={city.id}
+                city={city}
+                onEdit={openEdit}
+                onDelete={handleDelete}
+              />
+            )}
+          />
         </Table>
       </Card>
     </div>

@@ -11,7 +11,6 @@ import {
 } from "@/components/ui/select";
 import {
   Table,
-  TableBody,
   TableCell,
   TableHead,
   TableHeader,
@@ -33,9 +32,9 @@ import {
   useSetUserRole,
 } from "@/hooks/admin/use-admin-users";
 import { ListHeader } from "@/components/common/list-header";
-import { TableSkeleton } from "@/components/common/table-skeleton";
 import { DEFAULT_PAGE, DEFAULT_PAGE_SIZE } from "@/lib/constants";
 import { formatDateShort } from "@/lib/utils";
+import { DataTableBody } from "@/components/common/table-body";
 
 type User = RouterOutput["admin"]["user"]["list"]["items"][number];
 
@@ -147,21 +146,20 @@ export const UserListClient = () => {
               <TableHead />
             </TableRow>
           </TableHeader>
-          {isLoading || isPending ? (
-            <TableSkeleton cols={DEFAULT_PAGE_SIZE} />
-          ) : (
-            <TableBody>
-              {user &&
-                data?.items.map((u) => (
-                  <UserRow
-                    key={u.id}
-                    user={u}
-                    currentUserId={user.id}
-                    onChangeRole={handleChangeRole}
-                  />
-                ))}
-            </TableBody>
-          )}
+          <DataTableBody
+            data={user ? data?.items : undefined}
+            isLoading={isLoading || isPending}
+            cols={DEFAULT_PAGE_SIZE}
+            emptyMessage="Không tìm thấy người dùng nào"
+            renderRow={(u) => (
+              <UserRow
+                key={u.id}
+                user={u}
+                currentUserId={user!.id}
+                onChangeRole={handleChangeRole}
+              />
+            )}
+          />
         </Table>
         {data && data.totalPages > 1 && (
           <Pagination

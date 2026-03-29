@@ -98,8 +98,8 @@ interface StatCardProps {
 
 const StatCard = ({ title, value, sub, icon: Icon }: StatCardProps) => (
   <motion.div variants={statCardVariants}>
-    <Card className="bg-card border-border shadow-none">
-      <CardContent className="pt-6">
+    <Card>
+      <CardContent>
         <div className="flex items-start justify-between">
           <div className="space-y-1">
             <p className="text-sm text-muted-foreground">{title}</p>
@@ -118,8 +118,8 @@ const StatCard = ({ title, value, sub, icon: Icon }: StatCardProps) => (
 );
 
 const StatCardSkeleton = () => (
-  <Card className="bg-card border-border shadow-none">
-    <CardContent className="pt-6 space-y-3">
+  <Card>
+    <CardContent className="space-y-3">
       <Skeleton className="h-4 w-28 bg-muted" />
       <Skeleton className="h-8 w-24 bg-muted" />
       <Skeleton className="h-3 w-36 bg-muted" />
@@ -144,7 +144,7 @@ const StatsSection = () => {
 
   return (
     <motion.div
-      className="grid grid-cols-2 lg:grid-cols-4 gap-4"
+      className="grid grid-cols-2 md:grid-cols-4 gap-4 items-stretch"
       variants={statsContainerVariants}
       initial="hidden"
       animate="visible"
@@ -215,7 +215,7 @@ const RevenueChartSection = () => {
   const { data, isLoading } = useDashboardRevenueChart();
 
   return (
-    <Card className="bg-card border-border shadow-none">
+    <Card>
       <CardHeader>
         <CardTitle className="text-base text-foreground">
           Doanh thu 30 ngày qua
@@ -309,7 +309,7 @@ const BookingStatusChartSection = () => {
   const { data, isLoading } = useDashboardBookingStatusChart();
 
   return (
-    <Card className="bg-card border-border shadow-none">
+    <Card>
       <CardHeader>
         <CardTitle className="text-base text-foreground">
           Booking theo trạng thái (tháng này)
@@ -376,7 +376,7 @@ const TopHotelsSection = () => {
   const router = useRouter();
 
   return (
-    <Card className="bg-card border-border shadow-none">
+    <Card>
       <CardHeader>
         <CardTitle className="text-base text-foreground">
           Top khách sạn (tháng này)
@@ -454,7 +454,7 @@ const RecentBookingsSection = () => {
   const router = useRouter();
 
   return (
-    <Card className="bg-card border-border shadow-none">
+    <Card>
       <CardHeader>
         <CardTitle className="text-base text-foreground">
           Booking gần đây
@@ -564,15 +564,15 @@ export const DashboardClient = () => (
       </p>
     </div>
     <StatsSection />
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-      <div className="lg:col-span-2">
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="md:col-span-2">
         <RevenueChartSection />
       </div>
       <BookingStatusChartSection />
     </div>
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
       <TopHotelsSection />
-      <div className="lg:col-span-2">
+      <div className="md:col-span-2">
         <RecentBookingsSection />
       </div>
     </div>

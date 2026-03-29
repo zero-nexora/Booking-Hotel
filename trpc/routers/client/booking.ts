@@ -25,6 +25,7 @@ import { sendBookingCancellation } from "@/lib/email";
 import { format } from "date-fns";
 import { env } from "@/lib/env";
 import { Prisma } from "@/prisma/generated/prisma/client";
+import { DEFAULT_PAGE_SIZE } from "@/lib/constants";
 
 const isPrismaUniqueError = (e: unknown): boolean =>
   e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002";
@@ -286,7 +287,7 @@ export const bookingRouter = createTRPCRouter({
           ])
           .optional(),
         cursor: cursorInput,
-        limit: z.number().int().default(10),
+        limit: z.number().int().default(DEFAULT_PAGE_SIZE),
       }),
     )
     .query(async ({ ctx, input }) => {
@@ -407,7 +408,6 @@ export const bookingRouter = createTRPCRouter({
       }
 
       const hasRefund = refunds.length > 0;
-      // Nếu đã thanh toán nhưng refundPercent = 0 → PAID (không hoàn), còn lại → CANCELLED
       const newPaymentStatus = hasRefund
         ? "REFUNDED"
         : booking!.payments.length > 0

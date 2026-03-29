@@ -3,7 +3,6 @@
 import { Card } from "@/components/ui/card";
 import {
   Table,
-  TableBody,
   TableCell,
   TableHead,
   TableHeader,
@@ -18,10 +17,10 @@ import {
   useDeleteAmenity,
 } from "@/hooks/admin/use-admin-amenities";
 import { ListHeader } from "@/components/common/list-header";
-import { TableSkeleton } from "@/components/common/table-skeleton";
 import { RowActions } from "@/components/common/row-actions";
 import { getAmenityIcon } from "@/lib/utils";
 import { LucideIcon } from "lucide-react";
+import { DataTableBody } from "@/components/common/table-body";
 
 type Amenity = RouterOutput["admin"]["amenity"]["list"][number];
 
@@ -62,44 +61,46 @@ export const AmenityListClient = () => {
         addLabel="Thêm tiện nghi"
         onAdd={openCreate}
       />
-      <Card className="bg-card border-border shadow-none">
+      <Card>
         <Table>
           <TableHeader>
             <TableRow className="border-border hover:bg-transparent">
               <TableHead className="text-muted-foreground font-medium">
                 Icon
               </TableHead>
+
               <TableHead className="text-muted-foreground font-medium">
                 Tên
               </TableHead>
+
               <TableHead className="text-center text-muted-foreground font-medium">
                 Khách sạn dùng
               </TableHead>
+
               <TableHead className="text-center text-muted-foreground font-medium">
                 Phòng dùng
               </TableHead>
-              <TableHead />
             </TableRow>
           </TableHeader>
 
-          {isLoading ? (
-            <TableSkeleton cols={5} />
-          ) : (
-            <TableBody>
-              {data?.map((amenity) => {
-                const Icon = getAmenityIcon(amenity.icon);
-                return (
-                  <AmenityRow
-                    key={amenity.id}
-                    amenity={amenity}
-                    Icon={Icon}
-                    onEdit={openEdit}
-                    onDelete={handleDelete}
-                  />
-                );
-              })}
-            </TableBody>
-          )}
+          <DataTableBody
+            data={data}
+            isLoading={isLoading}
+            cols={5}
+            emptyMessage="Không tìm thấy tiện nghi nào"
+            renderRow={(amenity) => {
+              const Icon = getAmenityIcon(amenity.icon);
+              return (
+                <AmenityRow
+                  key={amenity.id}
+                  amenity={amenity}
+                  Icon={Icon}
+                  onEdit={openEdit}
+                  onDelete={handleDelete}
+                />
+              );
+            }}
+          />
         </Table>
       </Card>
     </div>

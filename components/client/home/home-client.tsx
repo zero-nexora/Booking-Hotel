@@ -33,7 +33,7 @@ const SectionHeader = ({
         variant="ghost"
         size="sm"
         asChild
-        className="gap-1 text-primary hover:text-primary hover:bg-primary/10"
+        className="gap-1 text-primary hover:text-foreground hover:bg-primary/10"
       >
         <Link href={action.href}>
           {action.label} <ArrowRight className="w-3.5 h-3.5" />

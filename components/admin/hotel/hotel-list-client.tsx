@@ -10,7 +10,6 @@ import {
 } from "@/components/ui/select";
 import {
   Table,
-  TableBody,
   TableCell,
   TableHead,
   TableHeader,
@@ -36,8 +35,8 @@ import {
 } from "@/hooks/admin/use-admin-hotels";
 import { useCityList, useCountryList } from "@/hooks/admin/use-admin-locations";
 import { ListHeader } from "@/components/common/list-header";
-import { TableSkeleton } from "@/components/common/table-skeleton";
 import { DEFAULT_PAGE } from "@/lib/constants";
+import { DataTableBody } from "@/components/common/table-body";
 
 type Hotel = RouterOutput["admin"]["hotel"]["list"]["items"][number];
 
@@ -261,7 +260,7 @@ export const HotelListClient = () => {
         </div>
       </ListHeader>
 
-      <Card className="bg-card border-border shadow-none">
+      <Card>
         <Table>
           <TableHeader>
             <TableRow className="border-border hover:bg-transparent">
@@ -289,21 +288,21 @@ export const HotelListClient = () => {
               <TableHead />
             </TableRow>
           </TableHeader>
-          {isLoading ? (
-            <TableSkeleton cols={8} />
-          ) : (
-            <TableBody>
-              {data?.items.map((hotel) => (
-                <HotelRow
-                  key={hotel.id}
-                  hotel={hotel}
-                  onNavigate={handleNavigate}
-                  onEdit={openEdit}
-                  onDelete={handleDelete}
-                />
-              ))}
-            </TableBody>
-          )}
+          <DataTableBody
+            data={data?.items}
+            isLoading={isLoading}
+            cols={8}
+            emptyMessage="Không tìm thấy khách sạn nào"
+            renderRow={(hotel) => (
+              <HotelRow
+                key={hotel.id}
+                hotel={hotel}
+                onNavigate={handleNavigate}
+                onEdit={openEdit}
+                onDelete={handleDelete}
+              />
+            )}
+          />
         </Table>
         {data && data.totalPages > 1 && (
           <Pagination

@@ -3,14 +3,7 @@
 import { useAdminUI } from "@/store/admin-ui";
 import { AdminSidebar } from "./admin-sidebar";
 import { AdminHeader } from "./admin-header";
-
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  image?: string | null;
-  role: string;
-}
+import { User } from "better-auth";
 
 export const AdminShell = ({
   children,
@@ -31,7 +24,7 @@ export const AdminShell = ({
       />
       {mobileOpen && (
         <div
-          className="fixed inset-0 z-20 bg-foreground/40 lg:hidden"
+          className="fixed inset-0 z-20 bg-foreground/40 box-hidden"
           onClick={() => setMobileOpen(false)}
         />
       )}

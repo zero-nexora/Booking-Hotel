@@ -11,6 +11,7 @@ import {
   cursorInput,
   popNextCursor,
 } from "@/trpc/helpers";
+import { DEFAULT_PAGE_SIZE } from "@/lib/constants";
 
 export const reviewRouter = createTRPCRouter({
   create: protectedProcedure
@@ -83,7 +84,7 @@ export const reviewRouter = createTRPCRouter({
     .input(
       z.object({
         cursor: cursorInput,
-        limit: z.number().int().default(10),
+        limit: z.number().int().default(DEFAULT_PAGE_SIZE),
       }),
     )
     .query(async ({ ctx, input }) => {

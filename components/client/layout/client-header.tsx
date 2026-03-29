@@ -97,7 +97,7 @@ export const ClientHeader = () => {
 
           {user ? (
             <DropdownMenu modal={false}>
-              <DropdownMenuTrigger asChild>
+              <DropdownMenuTrigger asChild className="box-hidden">
                 <button className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm font-medium hover:bg-muted transition-colors">
                   <Avatar className="size-7">
                     <AvatarImage src={user.image ?? undefined} />
@@ -159,7 +159,7 @@ export const ClientHeader = () => {
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
-            <div className=" items-center gap-2 box-hidden">
+            <div className="flex items-center gap-2 box-hidden">
               <Button
                 variant="outline"
                 size="sm"
@@ -216,6 +216,13 @@ export const ClientHeader = () => {
                       className="flex items-center gap-2 h-10 px-3 rounded-lg text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground"
                     >
                       <BookOpen className="size-4" /> Đặt phòng của tôi
+                    </Link>
+                    <Link
+                      href="/admin"
+                      onClick={() => setMobileOpen(false)}
+                      className="flex items-center gap-2 h-10 px-3 rounded-lg text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground"
+                    >
+                      <LayoutDashboard className="size-4" /> Quản trị
                     </Link>
                     <button
                       onClick={() => {

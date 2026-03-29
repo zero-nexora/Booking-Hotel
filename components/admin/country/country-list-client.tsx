@@ -3,7 +3,6 @@
 import { Card } from "@/components/ui/card";
 import {
   Table,
-  TableBody,
   TableCell,
   TableHead,
   TableHeader,
@@ -18,8 +17,8 @@ import {
   useDeleteCountry,
 } from "@/hooks/admin/use-admin-locations";
 import { ListHeader } from "@/components/common/list-header";
-import { TableSkeleton } from "@/components/common/table-skeleton";
 import { RowActions } from "@/components/common/row-actions";
+import { DataTableBody } from "@/components/common/table-body";
 
 type Country = RouterOutput["admin"]["location"]["listCountries"][number];
 
@@ -60,7 +59,8 @@ export const CountryListClient = () => {
         addLabel="Thêm quốc gia"
         onAdd={openCreate}
       />
-      <Card className="bg-card border-border shadow-none">
+
+      <Card>
         <Table>
           <TableHeader>
             <TableRow className="border-border hover:bg-transparent">
@@ -73,20 +73,20 @@ export const CountryListClient = () => {
               <TableHead />
             </TableRow>
           </TableHeader>
-          {isLoading ? (
-            <TableSkeleton cols={3} />
-          ) : (
-            <TableBody>
-              {data?.map((country) => (
-                <CountryRow
-                  key={country.id}
-                  country={country}
-                  onEdit={openEdit}
-                  onDelete={handleDelete}
-                />
-              ))}
-            </TableBody>
-          )}
+          <DataTableBody
+            data={data}
+            isLoading={isLoading}
+            cols={3}
+            emptyMessage="Không tìm thấy quốc gia nào"
+            renderRow={(country) => (
+              <CountryRow
+                key={country.id}
+                country={country}
+                onEdit={openEdit}
+                onDelete={handleDelete}
+              />
+            )}
+          />
         </Table>
       </Card>
     </div>

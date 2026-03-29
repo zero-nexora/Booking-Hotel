@@ -1,33 +1,50 @@
 import { useEffect, useRef } from "react";
 
 const CONFETTI_COLORS = [
-  "#b89a6f", "#c9a87c", "#8c7355", "#d4b896",
-  "#6b563e", "#e0cdb0", "#a0845c", "#f0e0c8",
+  "#b89a6f",
+  "#c9a87c",
+  "#8c7355",
+  "#d4b896",
+  "#6b563e",
+  "#e0cdb0",
+  "#a0845c",
+  "#f0e0c8",
 ];
 
 type ConfettiShape = "rect" | "circle" | "ribbon";
 
 type Particle = {
-  x: number; y: number; vx: number; vy: number;
-  color: string; width: number; height: number;
-  rotation: number; rotationSpeed: number;
-  opacity: number; shape: ConfettiShape;
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  color: string;
+  width: number;
+  height: number;
+  rotation: number;
+  rotationSpeed: number;
+  opacity: number;
+  shape: ConfettiShape;
 };
 
 const spawnBurst = (canvas: HTMLCanvasElement, count: number): Particle[] =>
   Array.from({ length: count }, () => {
     const side = Math.random() < 0.5 ? canvas.width * 0.2 : canvas.width * 0.8;
     return {
-      x: side, y: -10,
+      x: side,
+      y: -10,
       vx: (Math.random() - 0.5) * 12,
       vy: Math.random() * 4 + 2,
-      color: CONFETTI_COLORS[Math.floor(Math.random() * CONFETTI_COLORS.length)],
+      color:
+        CONFETTI_COLORS[Math.floor(Math.random() * CONFETTI_COLORS.length)],
       width: Math.random() * 8 + 4,
       height: Math.random() * 14 + 6,
       rotation: Math.random() * Math.PI * 2,
       rotationSpeed: (Math.random() - 0.5) * 0.22,
       opacity: 1,
-      shape: (["rect", "circle", "ribbon"] as ConfettiShape[])[Math.floor(Math.random() * 3)],
+      shape: (["rect", "circle", "ribbon"] as ConfettiShape[])[
+        Math.floor(Math.random() * 3)
+      ],
     };
   });
 
