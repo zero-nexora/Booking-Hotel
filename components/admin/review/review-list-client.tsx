@@ -29,6 +29,7 @@ import { formatDateShort } from "@/lib/utils";
 import { DataTableBody } from "@/components/common/table-body";
 import { useModalDialogStore } from "@/store/modal-dialog-store";
 import { ViewReviewDialog } from "./view-review-dialog";
+import { useConfirmDialogStore } from "@/store/confirm-dialog-store";
 
 export type Review = RouterOutput["admin"]["review"]["list"]["items"][number];
 
@@ -37,6 +38,7 @@ export const ReviewListClient = () => {
   const { data, isLoading } = useAdminReviewList(params);
   const updateStatus = useUpdateReviewStatus();
   const { openModal } = useModalDialogStore();
+  const { openConfirm } = useConfirmDialogStore();
 
   const handleSearchChange = useCallback(
     (v: string) => setParams({ search: v, page: 1 }),
@@ -64,6 +66,21 @@ export const ReviewListClient = () => {
       title: "Chi tiết đánh giá",
       content: <ViewReviewDialog review={review} />,
     });
+
+  const handleOpenUpdateStatus = (
+    id: string,
+    status: "APPROVED" | "REJECTED",
+  ) => {
+    openConfirm({
+      title: `Xác nhận ${status === "APPROVED" ? "duyệt" : "từ chối"} đánh giá`,
+      description: `Bạn có chắc chắn muốn ${status === "APPROVED" ? "duyệt" : "từ chối"} đánh giá này không?`,
+      onConfirm: () =>
+        updateStatus.mutate({
+          id,
+          status,
+        }),
+    });
+  };
 
   return (
     <div className="space-y-4">
@@ -194,10 +211,7 @@ export const ReviewListClient = () => {
                           className="h-7 w-7 text-primary hover:text-primary hover:bg-primary/10"
                           disabled={updateStatus.isPending}
                           onClick={() =>
-                            updateStatus.mutate({
-                              id: review.id,
-                              status: "APPROVED",
-                            })
+                            handleOpenUpdateStatus(review.id, "APPROVED")
                           }
                         >
                           <Check className="w-3.5 h-3.5" />
@@ -208,10 +222,7 @@ export const ReviewListClient = () => {
                           className="h-7 w-7 text-destructive hover:text-destructive hover:bg-destructive/10"
                           disabled={updateStatus.isPending}
                           onClick={() =>
-                            updateStatus.mutate({
-                              id: review.id,
-                              status: "REJECTED",
-                            })
+                            handleOpenUpdateStatus(review.id, "REJECTED")
                           }
                         >
                           <X className="w-3.5 h-3.5" />

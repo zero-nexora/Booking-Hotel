@@ -6,6 +6,7 @@ import {
   sendBookingConfirmation,
   sendPaymentFailed,
   sendRefundFailed,
+  sendRefundSuccess,
 } from "@/lib/email";
 import { format } from "date-fns";
 import Stripe from "stripe";
@@ -36,11 +37,14 @@ export async function POST(req: NextRequest) {
       case "payment_intent.payment_failed":
         await onPaymentFailed(event.data.object as Stripe.PaymentIntent);
         break;
-      case "charge.refunded":
-        await onChargeRefunded(event.data.object as Stripe.Charge);
+      case "refund.created":
+        await onRefundCreated(event.data.object as Stripe.Refund);
         break;
-      case "charge.refund.updated":
+      case "refund.updated":
         await onRefundUpdated(event.data.object as Stripe.Refund);
+        break;
+      case "refund.failed":
+        await onRefundFailed(event.data.object as Stripe.Refund);
         break;
     }
   } catch (err) {
@@ -209,50 +213,112 @@ async function onPaymentFailed(pi: Stripe.PaymentIntent) {
   }).catch((err) => console.error("[email] payment-failed failed", err));
 }
 
-async function onChargeRefunded(charge: Stripe.Charge) {
-  const piId =
-    typeof charge.payment_intent === "string"
-      ? charge.payment_intent
-      : charge.payment_intent?.id;
-
-  if (!piId) return;
-
-  const chargePayment = await prisma.payment.findFirst({
-    where: { stripePaymentIntentId: piId, type: "CHARGE" },
+async function onRefundCreated(refund: Stripe.Refund) {
+  const payment = await prisma.payment.findUnique({
+    where: { stripeRefundId: refund.id },
     select: {
+      id: true,
+      status: true,
+      amount: true,
+      currency: true,
+      booking: {
+        select: {
+          bookingRef: true,
+          checkIn: true,
+          checkOut: true,
+          cancelReason: true,
+          guestName: true,
+          guestEmail: true,
+          items: { select: { room: { select: { name: true } } } },
+          hotel: { select: { name: true } },
+        },
+      },
+    },
+  });
+
+  if (!payment) return;
+  if (payment.status === "REFUNDED") return;
+
+  await prisma.payment.update({
+    where: { id: payment.id },
+    data: { status: "REFUNDED", refundedAt: new Date() },
+  });
+
+  const { booking } = payment;
+  const item = booking.items[0];
+  if (!booking.guestEmail || !item) return;
+
+  await sendRefundSuccess({
+    to: booking.guestEmail,
+    name: booking.guestName,
+    bookingRef: booking.bookingRef,
+    hotelName: booking.hotel.name,
+    roomName: item.room.name,
+    checkIn: format(booking.checkIn, "dd/MM/yyyy"),
+    checkOut: format(booking.checkOut, "dd/MM/yyyy"),
+    refundAmount: Number(payment.amount).toLocaleString("vi-VN"),
+    currency: payment.currency,
+    cancelReason: booking.cancelReason ?? undefined,
+    bookingUrl: `${env.NEXT_PUBLIC_APP_URL}/account/bookings/${booking.bookingRef}`,
+  }).catch((err) => console.error("[email] refund-success failed", err));
+}
+
+async function onRefundFailed(refund: Stripe.Refund) {
+  const payment = await prisma.payment.findUnique({
+    where: { stripeRefundId: refund.id },
+    select: {
+      id: true,
+      status: true,
       bookingId: true,
-      booking: { select: { paymentStatus: true } },
+      booking: {
+        select: {
+          bookingRef: true,
+          checkIn: true,
+          checkOut: true,
+          totalAmount: true,
+          currency: true,
+          guestName: true,
+          guestEmail: true,
+          items: { select: { room: { select: { name: true } } } },
+          hotel: { select: { name: true } },
+        },
+      },
     },
   });
 
-  if (!chargePayment) return;
-
-  const refundIds = (charge.refunds?.data ?? []).map((r) => r.id);
-  if (refundIds.length === 0) return;
-
-  const pendingRefunds = await prisma.payment.findMany({
-    where: {
-      stripeRefundId: { in: refundIds },
-      type: "REFUND",
-      status: "PENDING",
-    },
-    select: { id: true },
-  });
-
-  if (pendingRefunds.length === 0) return;
-
-  const now = new Date();
+  if (!payment) return;
+  if (payment.status === "FAILED") return;
 
   await prisma.$transaction([
-    prisma.payment.updateMany({
-      where: { id: { in: pendingRefunds.map((p) => p.id) } },
-      data: { status: "REFUNDED", refundedAt: now },
+    prisma.payment.update({
+      where: { id: payment.id },
+      data: {
+        status: "FAILED",
+        failureMessage: refund.failure_reason ?? "Hoàn tiền thất bại",
+      },
     }),
     prisma.booking.update({
-      where: { id: chargePayment.bookingId },
-      data: { paymentStatus: "REFUNDED" },
+      where: { id: payment.bookingId },
+      data: { paymentStatus: "FAILED" },
     }),
   ]);
+
+  const { booking } = payment;
+  const item = booking.items[0];
+  if (!booking.guestEmail || !item) return;
+
+  await sendRefundFailed({
+    to: booking.guestEmail,
+    name: booking.guestName,
+    bookingRef: booking.bookingRef,
+    hotelName: booking.hotel.name,
+    roomName: item.room.name,
+    checkIn: format(booking.checkIn, "dd/MM/yyyy"),
+    checkOut: format(booking.checkOut, "dd/MM/yyyy"),
+    totalAmount: Number(booking.totalAmount).toLocaleString("vi-VN"),
+    currency: booking.currency,
+    supportUrl: `${env.NEXT_PUBLIC_APP_URL}/support`,
+  }).catch((err) => console.error("[email] refund-failed failed", err));
 }
 
 async function onRefundUpdated(refund: Stripe.Refund) {

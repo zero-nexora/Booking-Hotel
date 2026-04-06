@@ -265,7 +265,7 @@ export const HotelDetailClient = ({ hotelId }: HotelDetailClientProps) => {
   const { data: hotel, isLoading } = useAdminHotelDetail(hotelId);
   const { openConfirm } = useConfirmDialogStore();
   const { openSheet } = useSheetDialogStore();
-  const deleteHotel = useDeleteHotel();
+  const deleteHotel = useDeleteHotel({ redirectAfter: true });
 
   const openEdit = () =>
     openSheet({

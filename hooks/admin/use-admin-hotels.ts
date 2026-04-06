@@ -62,16 +62,21 @@ export function useUpdateHotel(id: string) {
   );
 }
 
-export function useDeleteHotel() {
+export function useDeleteHotel(options?: { redirectAfter?: boolean }) {
   const trpc = useTRPC();
   const qc = useQueryClient();
   const router = useRouter();
+
   return useMutation(
     trpc.admin.hotel.delete.mutationOptions({
       onSuccess: () => {
-        qc.invalidateQueries({ queryKey: trpc.admin.hotel.list.queryKey() });
+        void qc.invalidateQueries({
+          queryKey: trpc.admin.hotel.list.queryKey(),
+        });
         toast.success("Đã xóa khách sạn");
-        router.push("/admin/hotels");
+        if (options?.redirectAfter) {
+          router.push("/admin/hotels");
+        }
       },
       onError: (err) => toast.error(err.message ?? "Xóa khách sạn thất bại"),
     }),

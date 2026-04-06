@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/collapsible";
 import { useCancelBooking } from "@/hooks/client/use-booking";
 import { useRouter } from "next/navigation";
+import { useConfirmDialogStore } from "@/store/confirm-dialog-store";
 
 interface CancelSectionProps {
   bookingRef: string;
@@ -22,11 +23,20 @@ export const CancelSection = ({ bookingRef }: CancelSectionProps) => {
   const [open, setOpen] = useState(false);
   const [reason, setReason] = useState("");
   const cancel = useCancelBooking(bookingRef);
+  const { openConfirm } = useConfirmDialogStore();
 
   const handleCancel = async () => {
     await cancel.mutateAsync({ bookingRef, cancelReason: reason || undefined });
     router.refresh();
     setOpen(false);
+  };
+
+  const handleOpenCancel = () => {
+    openConfirm({
+      title: "Xác nhận huỷ đặt phòng",
+      description: "Bạn có chắc chắn muốn huỷ đặt phòng này không?",
+      onConfirm: handleCancel,
+    });
   };
 
   return (
@@ -75,7 +85,7 @@ export const CancelSection = ({ bookingRef }: CancelSectionProps) => {
                 size="sm"
                 className="rounded-xl bg-destructive text-destructive-foreground hover:bg-destructive/90"
                 disabled={cancel.isPending}
-                onClick={handleCancel}
+                onClick={handleOpenCancel}
               >
                 {cancel.isPending ? "Đang huỷ..." : "Xác nhận huỷ"}
               </Button>

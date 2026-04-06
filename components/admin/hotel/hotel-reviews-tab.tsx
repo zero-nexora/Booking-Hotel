@@ -18,6 +18,7 @@ import {
   useUpdateReviewStatus,
 } from "@/hooks/admin/use-admin-reviews";
 import { formatDatetime } from "@/lib/utils";
+import { useConfirmDialogStore } from "@/store/confirm-dialog-store";
 
 type Review = RouterOutput["admin"]["review"]["list"]["items"][number];
 
@@ -100,21 +101,12 @@ export const HotelReviewsTab = ({ hotelId }: HotelReviewsTabProps) => {
   const [params, setParams] = useQueryStates(adminReviewParsers);
   const { data, isLoading } = useAdminReviewList({ ...params, hotelId });
   const updateStatus = useUpdateReviewStatus();
+  const { openConfirm } = useConfirmDialogStore();
 
   const handleTabChange = useCallback(
     (v: string) =>
       setParams({ status: v === "all" ? null : (v as ReviewStatus), page: 1 }),
     [setParams],
-  );
-
-  const handleApprove = useCallback(
-    (id: string) => updateStatus.mutateAsync({ id, status: "APPROVED" }),
-    [updateStatus],
-  );
-
-  const handleReject = useCallback(
-    (id: string) => updateStatus.mutateAsync({ id, status: "REJECTED" }),
-    [updateStatus],
   );
 
   const handlePageChange = useCallback(
@@ -126,6 +118,17 @@ export const HotelReviewsTab = ({ hotelId }: HotelReviewsTabProps) => {
     (l: number) => setParams({ limit: l, page: 1 }),
     [setParams],
   );
+
+  const handleOpenUpdateStatus = (
+    id: string,
+    status: "APPROVED" | "REJECTED",
+  ) => {
+    openConfirm({
+      title: `Xác nhận ${status === "APPROVED" ? "duyệt" : "từ chối"} đánh giá`,
+      description: `Bạn có chắc chắn muốn ${status === "APPROVED" ? "duyệt" : "từ chối"} đánh giá này không?`,
+      onConfirm: () => void updateStatus.mutate({ id, status }),
+    });
+  };
 
   return (
     <div className="space-y-4">
@@ -160,8 +163,8 @@ export const HotelReviewsTab = ({ hotelId }: HotelReviewsTabProps) => {
             <ReviewCard
               key={review.id}
               review={review}
-              onApprove={handleApprove}
-              onReject={handleReject}
+              onApprove={() => handleOpenUpdateStatus(review.id, "APPROVED")}
+              onReject={() => handleOpenUpdateStatus(review.id, "REJECTED")}
               isPending={updateStatus.isPending}
             />
           ))}

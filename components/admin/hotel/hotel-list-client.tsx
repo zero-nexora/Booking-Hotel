@@ -71,7 +71,7 @@ export const HotelListClient = () => {
         title: "Xóa khách sạn?",
         description: `Xóa "${hotel.name}"? Hành động này không thể hoàn tác.`,
         variant: "destructive",
-        onConfirm: () => void deleteHotel.mutateAsync({ id: hotel.id }),
+        onConfirm: () => void deleteHotel.mutate({ id: hotel.id }),
       }),
     [openConfirm, deleteHotel],
   );

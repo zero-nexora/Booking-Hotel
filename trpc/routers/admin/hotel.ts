@@ -271,6 +271,7 @@ export const adminHotelRouter = createTRPCRouter({
         where: { id: input.id },
         select: { slug: true, addressId: true, id: true },
       });
+
       assertFound(hotel);
 
       const activeBookings = await ctx.db.booking.count({
@@ -289,7 +290,6 @@ export const adminHotelRouter = createTRPCRouter({
       await ctx.db.$transaction(async (tx) => {
         await tx.hotel.delete({ where: { id: input.id } });
         await tx.address.delete({ where: { id: hotel!.addressId } });
-        await tx.hotelPolicy.delete({ where: { hotelId: hotel!.id } });
       });
 
       await invalidateHotelCaches(CACHE_KEYS.HOTEL_DETAIL(hotel!.slug));

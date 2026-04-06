@@ -9,10 +9,10 @@ import { motion, Variants } from "framer-motion";
 import { Star } from "lucide-react";
 
 const STATS = [
-  { value: 500, suffix: "+", label: "Khách sạn" },
-  { value: 50, suffix: "K+", label: "Lượt đặt phòng" },
-  { value: 4.9, suffix: "star", label: "Đánh giá" },
-  { value: 50, suffix: "+", label: "Thành phố" },
+  { value: 80, suffix: "%", label: "Đặt phòng trực tuyến" },
+  { value: 70, suffix: "%", label: "Khách tìm phòng trên di động" },
+  { value: 5, suffix: "⭐", label: "Đánh giá trung bình" },
+  { value: 95, suffix: "%", label: "Đọc review trước khi đặt" },
 ];
 
 const fadeUpVariants: Variants = {

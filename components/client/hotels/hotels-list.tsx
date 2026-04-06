@@ -32,7 +32,7 @@ export const HotelsList = () => {
     useHotelSearch(params);
 
   const hotels = data?.pages.flatMap((p) => p.items) ?? [];
-  const view = (params.view ?? "list") as "list" | "grid" | "map";
+  const view: "list" | "grid" | "map" = params.view ?? "list";
 
   if (isLoading) {
     if (view === "map") {

@@ -45,20 +45,76 @@ import { FormActions } from "@/components/common/form-actions";
 import { MapPicker } from "@/components/common/map-picker";
 
 export const hotelFormSchema = z.object({
-  name: z.string().min(2),
-  description: z.string().min(10),
-  starRating: z.number().min(1).max(5).int(),
-  status: z.enum(["ACTIVE", "INACTIVE", "MAINTENANCE"]),
+  name: z
+    .string({
+      error: (iss) =>
+        iss.input === undefined
+          ? "Tên khách sạn không được để trống"
+          : "Tên khách sạn phải là chuỗi",
+    })
+    .min(2, { error: "Tên khách sạn phải có ít nhất 2 ký tự" }),
+
+  description: z
+    .string({
+      error: "Mô tả không hợp lệ",
+    })
+    .min(10, { error: "Mô tả phải có ít nhất 10 ký tự" }),
+
+  starRating: z
+    .number({
+      error: "Số sao phải là số",
+    })
+    .min(1, { error: "Số sao tối thiểu là 1" })
+    .max(5, { error: "Số sao tối đa là 5" })
+    .int({ error: "Số sao phải là số nguyên" }),
+
+  status: z.enum(["ACTIVE", "INACTIVE", "MAINTENANCE"], {
+    error: "Trạng thái không hợp lệ",
+  }),
+
   phone: z.string().optional(),
-  email: z.string().email().optional().or(z.literal("")),
-  checkInTime: z.string(),
-  checkOutTime: z.string(),
-  street: z.string().min(2),
-  countryId: z.string().min(1, "Vui lòng chọn quốc gia"),
-  cityId: z.string().min(1, "Vui lòng chọn thành phố"),
-  latitude: z.number().optional(),
-  longitude: z.number().optional(),
-  amenityIds: z.array(z.string()),
+
+  email: z
+    .string()
+    .email({ error: "Email không hợp lệ" })
+    .optional()
+    .or(z.literal("")),
+
+  checkInTime: z.string({
+    error: "Vui lòng nhập giờ check-in",
+  }),
+
+  checkOutTime: z.string({
+    error: "Vui lòng nhập giờ check-out",
+  }),
+
+  street: z
+    .string({
+      error: "Địa chỉ không hợp lệ",
+    })
+    .min(2, { error: "Địa chỉ phải có ít nhất 2 ký tự" }),
+
+  countryId: z.string().min(1, { error: "Vui lòng chọn quốc gia" }),
+
+  cityId: z.string().min(1, { error: "Vui lòng chọn thành phố" }),
+
+  latitude: z
+    .number({
+      error: "Vĩ độ phải là số",
+    })
+    .optional(),
+
+  longitude: z
+    .number({
+      error: "Kinh độ phải là số",
+    })
+    .optional(),
+
+  amenityIds: z
+    .array(z.string(), {
+      error: "Vui lòng chọn tiện nghi",
+    })
+    .min(1, { error: "Phải chọn ít nhất 1 tiện nghi" }),
 });
 
 export type HotelFormValues = z.infer<typeof hotelFormSchema>;
@@ -450,56 +506,58 @@ export const HotelForm = ({
             )}
           />
 
-          <FormField
-            control={form.control}
-            name="countryId"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-foreground font-medium">
-                  Quốc gia
-                </FormLabel>
-                <FormControl>
-                  <ComboboxField
-                    value={field.value}
-                    onChange={handleCountryChange}
-                    options={countries}
-                    placeholder="Chọn quốc gia"
-                    searchPlaceholder="Tìm quốc gia..."
-                    emptyText="Không tìm thấy quốc gia"
-                  />
-                </FormControl>
-                <FormMessage className="text-destructive" />
-              </FormItem>
-            )}
-          />
+          <div className="col-span-2 grid grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="countryId"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-foreground font-medium">
+                    Quốc gia
+                  </FormLabel>
+                  <FormControl>
+                    <ComboboxField
+                      value={field.value}
+                      onChange={handleCountryChange}
+                      options={countries}
+                      placeholder="Chọn quốc gia"
+                      searchPlaceholder="Tìm quốc gia..."
+                      emptyText="Không tìm thấy quốc gia"
+                    />
+                  </FormControl>
+                  <FormMessage className="text-destructive" />
+                </FormItem>
+              )}
+            />
 
-          <FormField
-            control={form.control}
-            name="cityId"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-foreground font-medium">
-                  Thành phố
-                </FormLabel>
-                <FormControl>
-                  <ComboboxField
-                    value={field.value}
-                    onChange={field.onChange}
-                    options={cities}
-                    placeholder="Chọn thành phố"
-                    searchPlaceholder="Tìm thành phố..."
-                    emptyText={
-                      selectedCountryId
-                        ? "Không tìm thấy thành phố"
-                        : "Chọn quốc gia trước"
-                    }
-                    disabled={!selectedCountryId}
-                  />
-                </FormControl>
-                <FormMessage className="text-destructive" />
-              </FormItem>
-            )}
-          />
+            <FormField
+              control={form.control}
+              name="cityId"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-foreground font-medium">
+                    Thành phố
+                  </FormLabel>
+                  <FormControl>
+                    <ComboboxField
+                      value={field.value}
+                      onChange={field.onChange}
+                      options={cities}
+                      placeholder="Chọn thành phố"
+                      searchPlaceholder="Tìm thành phố..."
+                      emptyText={
+                        selectedCountryId
+                          ? "Không tìm thấy thành phố"
+                          : "Chọn quốc gia trước"
+                      }
+                      disabled={!selectedCountryId}
+                    />
+                  </FormControl>
+                  <FormMessage className="text-destructive" />
+                </FormItem>
+              )}
+            />
+          </div>
         </div>
 
         <div className="space-y-2">

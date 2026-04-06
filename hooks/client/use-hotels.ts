@@ -26,7 +26,7 @@ export function useHotelSearch(params: HotelSearchParams) {
         sort:
           (params.sort as "price_asc" | "price_desc" | "rating" | "stars") ??
           "price_asc",
-        limit: params.limit,
+        limit: params.view === "map" ? 50 : params.limit,
       },
       {
         getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,

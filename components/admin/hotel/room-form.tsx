@@ -31,23 +31,72 @@ import { RouterOutput } from "@/trpc/client";
 import { useBedTypeList } from "@/hooks/admin/use-admin-bed-types";
 
 export const roomFormSchema = z.object({
-  name: z.string().min(2),
-  roomTypeId: z.string().min(1, "Vui lòng chọn loại phòng"),
-  description: z.string().min(10),
-  capacity: z.number().min(1),
-  sizeM2: z.number().optional(),
-  floor: z.number().optional(),
-  basePrice: z.number().min(0),
-  isActive: z.boolean(),
-  amenityIds: z.array(z.string()),
+  name: z
+    .string({
+      error: "Tên phòng không hợp lệ",
+    })
+    .min(2, { error: "Tên phòng phải có ít nhất 2 ký tự" }),
+
+  roomTypeId: z.string().min(1, { error: "Vui lòng chọn loại phòng" }),
+
+  description: z
+    .string({
+      error: "Mô tả không hợp lệ",
+    })
+    .min(10, { error: "Mô tả phải có ít nhất 10 ký tự" }),
+
+  capacity: z
+    .number({
+      error: "Sức chứa phải là số",
+    })
+    .min(1, { error: "Sức chứa phải lớn hơn hoặc bằng 1" }),
+
+  sizeM2: z
+    .number({
+      error: "Diện tích phải là số",
+    })
+    .optional(),
+
+  floor: z
+    .number({
+      error: "Tầng phải là số",
+    })
+    .optional(),
+
+  basePrice: z
+    .number({
+      error: "Giá cơ bản phải là số",
+    })
+    .min(1, { error: "Giá cơ bản không được là số âm" }),
+
+  isActive: z.boolean({
+    error: "Trạng thái phòng phải là true/false",
+  }),
+
+  amenityIds: z
+    .array(z.string(), {
+      error: "Danh sách tiện nghi không hợp lệ",
+    })
+    .min(1, { error: "Vui lòng chọn ít nhất 1 tiện nghi" }),
+
   beds: z
     .array(
       z.object({
-        bedTypeId: z.string().min(1, "Vui lòng chọn loại giường"),
-        quantity: z.number().int().min(1).max(10),
+        bedTypeId: z.string().min(1, { error: "Vui lòng chọn loại giường" }),
+
+        quantity: z
+          .number({
+            error: "Số lượng giường phải là số nguyên",
+          })
+          .int({ error: "Số lượng giường phải là số nguyên" })
+          .min(1, { error: "Số lượng giường tối thiểu là 1" })
+          .max(10, { error: "Số lượng giường tối đa là 10" }),
       }),
+      {
+        error: "Dữ liệu giường không hợp lệ",
+      },
     )
-    .min(1, "Phải có ít nhất 1 loại giường"),
+    .min(1, { error: "Phải có ít nhất 1 loại giường" }),
 });
 
 export type RoomFormValues = z.infer<typeof roomFormSchema>;
