@@ -29,6 +29,7 @@ async function handler(_req: NextRequest) {
       where: { id: { in: bookingIds } },
       data: {
         status: "CANCELLED",
+        paymentStatus: "CANCELLED",
         cancelledAt: now,
         cancelReason: "Hết thời gian thanh toán",
       },

@@ -44,6 +44,8 @@ import { useConfirmDialogStore } from "@/store/confirm-dialog-store";
 import { PasswordInput } from "@/components/common/password-input";
 import { PasswordStrengthBar } from "@/components/common/password-strength-bar";
 import { motion, AnimatePresence, Variants } from "framer-motion";
+import { useQueryClient } from "@tanstack/react-query";
+import { useTRPC } from "@/trpc/client";
 
 const profileSchema = z.object({
   name: z.string().min(1, "Vui lòng nhập tên"),
@@ -92,6 +94,8 @@ const expandVariants: Variants = {
 
 export const ProfileClient = () => {
   const router = useRouter();
+  const queryClient = useQueryClient();
+  const trpc = useTRPC();
   const { openConfirm } = useConfirmDialogStore();
 
   const { data: user, isLoading } = useMe();
@@ -157,6 +161,12 @@ export const ProfileClient = () => {
     router.refresh();
   };
 
+  const handleSignOut = async () => {
+    await authClient.signOut();
+    queryClient.removeQueries({ queryKey: trpc.client.user.me.queryKey() });
+    router.push("/");
+  };
+
   const handlePasswordSubmit = async (values: PasswordValues) => {
     setChangingPassword(true);
     try {
@@ -167,6 +177,9 @@ export const ProfileClient = () => {
       });
       toast.success("Đổi mật khẩu thành công");
       handleCancelPassword();
+      setTimeout(() => {
+        handleSignOut();
+      }, 2000);
     } catch {
       toast.error("Mật khẩu hiện tại không đúng");
     } finally {

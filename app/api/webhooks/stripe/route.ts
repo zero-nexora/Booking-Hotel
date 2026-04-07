@@ -6,10 +6,12 @@ import {
   sendBookingConfirmation,
   sendPaymentFailed,
   sendRefundFailed,
+  sendRefundSuccess,
 } from "@/lib/email";
 import { format } from "date-fns";
 import Stripe from "stripe";
 import { generateQRBase64 } from "@/lib/qr-code";
+import { formatCurrencyUSD } from "@/lib/utils";
 
 export async function POST(req: NextRequest) {
   const body = await req.text();
@@ -178,7 +180,7 @@ async function onPaymentFailed(pi: Stripe.PaymentIntent) {
           currency: true,
           guestName: true,
           guestEmail: true,
-          items: { select: { room: { select: { name: true } } } },
+          items: { select: { id: true, room: { select: { name: true } } } },
           hotel: { select: { name: true, slug: true } },
         },
       },
@@ -188,15 +190,41 @@ async function onPaymentFailed(pi: Stripe.PaymentIntent) {
   if (!payment) return;
   if (payment.status === "FAILED") return;
 
-  await prisma.payment.update({
-    where: { id: payment.id },
-    data: {
-      status: "FAILED",
-      failureMessage: pi.last_payment_error?.message ?? "Thanh toán thất bại",
-    },
-  });
-
   const { booking } = payment;
+  const itemIds = booking.items.map((i) => i.id);
+
+  await prisma.$transaction([
+    prisma.payment.update({
+      where: { id: payment.id },
+      data: {
+        status: "FAILED",
+        failureMessage: pi.last_payment_error?.message ?? "Thanh toán thất bại",
+      },
+    }),
+    prisma.booking.updateMany({
+      where: { id: booking.id, status: "PENDING" },
+      data: {
+        status: "CANCELLED",
+        paymentStatus: "CANCELLED",
+        cancelledAt: new Date(),
+        cancelReason: "Thanh toán thất bại",
+      },
+    }),
+    prisma.bookingItem.updateMany({
+      where: { bookingId: booking.id, status: "PENDING" },
+      data: { status: "CANCELLED" },
+    }),
+    prisma.roomAvailability.updateMany({
+      where: { bookingItemId: { in: itemIds } },
+      data: {
+        status: "AVAILABLE",
+        bookingItemId: null,
+        lockToken: null,
+        lockExpiresAt: null,
+      },
+    }),
+  ]);
+
   const item = booking.items[0];
   if (!booking.guestEmail || !item) return;
 
@@ -248,6 +276,20 @@ async function onRefundCreated(refund: Stripe.Refund) {
   const { booking } = payment;
   const item = booking.items[0];
   if (!booking.guestEmail || !item) return;
+
+  await sendRefundSuccess({
+    to: booking.guestEmail,
+    name: booking.guestName,
+    bookingRef: booking.bookingRef,
+    hotelName: booking.hotel.name,
+    roomName: item.room.name,
+    checkIn: format(booking.checkIn, "dd/MM/yyyy"),
+    checkOut: format(booking.checkOut, "dd/MM/yyyy"),
+    refundAmount: formatCurrencyUSD(Number(payment.amount)),
+    currency: payment.currency,
+    cancelReason: booking.cancelReason ?? undefined,
+    bookingUrl: `${env.NEXT_PUBLIC_APP_URL}/account/bookings/${booking.bookingRef}`,
+  }).catch((err) => console.error("[email] refund-success failed", err));
 }
 
 async function onRefundFailed(refund: Stripe.Refund) {
