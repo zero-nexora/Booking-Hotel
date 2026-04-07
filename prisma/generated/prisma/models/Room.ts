@@ -247,7 +247,7 @@ export type RoomGroupByOutputType = {
   roomTypeId: string
   description: string
   capacity: number
-  sizeM2: number | null
+  sizeM2: number
   floor: number | null
   basePrice: runtime.Decimal
   isActive: boolean
@@ -286,7 +286,7 @@ export type RoomWhereInput = {
   roomTypeId?: Prisma.StringFilter<"Room"> | string
   description?: Prisma.StringFilter<"Room"> | string
   capacity?: Prisma.IntFilter<"Room"> | number
-  sizeM2?: Prisma.FloatNullableFilter<"Room"> | number | null
+  sizeM2?: Prisma.FloatFilter<"Room"> | number
   floor?: Prisma.IntNullableFilter<"Room"> | number | null
   basePrice?: Prisma.DecimalFilter<"Room"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   isActive?: Prisma.BoolFilter<"Room"> | boolean
@@ -309,7 +309,7 @@ export type RoomOrderByWithRelationInput = {
   roomTypeId?: Prisma.SortOrder
   description?: Prisma.SortOrder
   capacity?: Prisma.SortOrder
-  sizeM2?: Prisma.SortOrderInput | Prisma.SortOrder
+  sizeM2?: Prisma.SortOrder
   floor?: Prisma.SortOrderInput | Prisma.SortOrder
   basePrice?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
@@ -336,7 +336,7 @@ export type RoomWhereUniqueInput = Prisma.AtLeast<{
   roomTypeId?: Prisma.StringFilter<"Room"> | string
   description?: Prisma.StringFilter<"Room"> | string
   capacity?: Prisma.IntFilter<"Room"> | number
-  sizeM2?: Prisma.FloatNullableFilter<"Room"> | number | null
+  sizeM2?: Prisma.FloatFilter<"Room"> | number
   floor?: Prisma.IntNullableFilter<"Room"> | number | null
   basePrice?: Prisma.DecimalFilter<"Room"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   isActive?: Prisma.BoolFilter<"Room"> | boolean
@@ -359,7 +359,7 @@ export type RoomOrderByWithAggregationInput = {
   roomTypeId?: Prisma.SortOrder
   description?: Prisma.SortOrder
   capacity?: Prisma.SortOrder
-  sizeM2?: Prisma.SortOrderInput | Prisma.SortOrder
+  sizeM2?: Prisma.SortOrder
   floor?: Prisma.SortOrderInput | Prisma.SortOrder
   basePrice?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
@@ -383,7 +383,7 @@ export type RoomScalarWhereWithAggregatesInput = {
   roomTypeId?: Prisma.StringWithAggregatesFilter<"Room"> | string
   description?: Prisma.StringWithAggregatesFilter<"Room"> | string
   capacity?: Prisma.IntWithAggregatesFilter<"Room"> | number
-  sizeM2?: Prisma.FloatNullableWithAggregatesFilter<"Room"> | number | null
+  sizeM2?: Prisma.FloatWithAggregatesFilter<"Room"> | number
   floor?: Prisma.IntNullableWithAggregatesFilter<"Room"> | number | null
   basePrice?: Prisma.DecimalWithAggregatesFilter<"Room"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   isActive?: Prisma.BoolWithAggregatesFilter<"Room"> | boolean
@@ -397,7 +397,7 @@ export type RoomCreateInput = {
   slug: string
   description: string
   capacity: number
-  sizeM2?: number | null
+  sizeM2: number
   floor?: number | null
   basePrice: runtime.Decimal | runtime.DecimalJsLike | number | string
   isActive?: boolean
@@ -420,7 +420,7 @@ export type RoomUncheckedCreateInput = {
   roomTypeId: string
   description: string
   capacity: number
-  sizeM2?: number | null
+  sizeM2: number
   floor?: number | null
   basePrice: runtime.Decimal | runtime.DecimalJsLike | number | string
   isActive?: boolean
@@ -439,7 +439,7 @@ export type RoomUpdateInput = {
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.StringFieldUpdateOperationsInput | string
   capacity?: Prisma.IntFieldUpdateOperationsInput | number
-  sizeM2?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  sizeM2?: Prisma.FloatFieldUpdateOperationsInput | number
   floor?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   basePrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -462,7 +462,7 @@ export type RoomUncheckedUpdateInput = {
   roomTypeId?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.StringFieldUpdateOperationsInput | string
   capacity?: Prisma.IntFieldUpdateOperationsInput | number
-  sizeM2?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  sizeM2?: Prisma.FloatFieldUpdateOperationsInput | number
   floor?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   basePrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -483,7 +483,7 @@ export type RoomCreateManyInput = {
   roomTypeId: string
   description: string
   capacity: number
-  sizeM2?: number | null
+  sizeM2: number
   floor?: number | null
   basePrice: runtime.Decimal | runtime.DecimalJsLike | number | string
   isActive?: boolean
@@ -497,7 +497,7 @@ export type RoomUpdateManyMutationInput = {
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.StringFieldUpdateOperationsInput | string
   capacity?: Prisma.IntFieldUpdateOperationsInput | number
-  sizeM2?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  sizeM2?: Prisma.FloatFieldUpdateOperationsInput | number
   floor?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   basePrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -513,7 +513,7 @@ export type RoomUncheckedUpdateManyInput = {
   roomTypeId?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.StringFieldUpdateOperationsInput | string
   capacity?: Prisma.IntFieldUpdateOperationsInput | number
-  sizeM2?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  sizeM2?: Prisma.FloatFieldUpdateOperationsInput | number
   floor?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   basePrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -687,6 +687,14 @@ export type RoomUncheckedUpdateManyWithoutRoomTypeNestedInput = {
   deleteMany?: Prisma.RoomScalarWhereInput | Prisma.RoomScalarWhereInput[]
 }
 
+export type FloatFieldUpdateOperationsInput = {
+  set?: number
+  increment?: number
+  decrement?: number
+  multiply?: number
+  divide?: number
+}
+
 export type NullableIntFieldUpdateOperationsInput = {
   set?: number | null
   increment?: number
@@ -779,7 +787,7 @@ export type RoomCreateWithoutHotelInput = {
   slug: string
   description: string
   capacity: number
-  sizeM2?: number | null
+  sizeM2: number
   floor?: number | null
   basePrice: runtime.Decimal | runtime.DecimalJsLike | number | string
   isActive?: boolean
@@ -800,7 +808,7 @@ export type RoomUncheckedCreateWithoutHotelInput = {
   roomTypeId: string
   description: string
   capacity: number
-  sizeM2?: number | null
+  sizeM2: number
   floor?: number | null
   basePrice: runtime.Decimal | runtime.DecimalJsLike | number | string
   isActive?: boolean
@@ -850,7 +858,7 @@ export type RoomScalarWhereInput = {
   roomTypeId?: Prisma.StringFilter<"Room"> | string
   description?: Prisma.StringFilter<"Room"> | string
   capacity?: Prisma.IntFilter<"Room"> | number
-  sizeM2?: Prisma.FloatNullableFilter<"Room"> | number | null
+  sizeM2?: Prisma.FloatFilter<"Room"> | number
   floor?: Prisma.IntNullableFilter<"Room"> | number | null
   basePrice?: Prisma.DecimalFilter<"Room"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   isActive?: Prisma.BoolFilter<"Room"> | boolean
@@ -864,7 +872,7 @@ export type RoomCreateWithoutRoomTypeInput = {
   slug: string
   description: string
   capacity: number
-  sizeM2?: number | null
+  sizeM2: number
   floor?: number | null
   basePrice: runtime.Decimal | runtime.DecimalJsLike | number | string
   isActive?: boolean
@@ -885,7 +893,7 @@ export type RoomUncheckedCreateWithoutRoomTypeInput = {
   slug: string
   description: string
   capacity: number
-  sizeM2?: number | null
+  sizeM2: number
   floor?: number | null
   basePrice: runtime.Decimal | runtime.DecimalJsLike | number | string
   isActive?: boolean
@@ -930,7 +938,7 @@ export type RoomCreateWithoutImagesInput = {
   slug: string
   description: string
   capacity: number
-  sizeM2?: number | null
+  sizeM2: number
   floor?: number | null
   basePrice: runtime.Decimal | runtime.DecimalJsLike | number | string
   isActive?: boolean
@@ -952,7 +960,7 @@ export type RoomUncheckedCreateWithoutImagesInput = {
   roomTypeId: string
   description: string
   capacity: number
-  sizeM2?: number | null
+  sizeM2: number
   floor?: number | null
   basePrice: runtime.Decimal | runtime.DecimalJsLike | number | string
   isActive?: boolean
@@ -986,7 +994,7 @@ export type RoomUpdateWithoutImagesInput = {
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.StringFieldUpdateOperationsInput | string
   capacity?: Prisma.IntFieldUpdateOperationsInput | number
-  sizeM2?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  sizeM2?: Prisma.FloatFieldUpdateOperationsInput | number
   floor?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   basePrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1008,7 +1016,7 @@ export type RoomUncheckedUpdateWithoutImagesInput = {
   roomTypeId?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.StringFieldUpdateOperationsInput | string
   capacity?: Prisma.IntFieldUpdateOperationsInput | number
-  sizeM2?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  sizeM2?: Prisma.FloatFieldUpdateOperationsInput | number
   floor?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   basePrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1026,7 +1034,7 @@ export type RoomCreateWithoutBedsInput = {
   slug: string
   description: string
   capacity: number
-  sizeM2?: number | null
+  sizeM2: number
   floor?: number | null
   basePrice: runtime.Decimal | runtime.DecimalJsLike | number | string
   isActive?: boolean
@@ -1048,7 +1056,7 @@ export type RoomUncheckedCreateWithoutBedsInput = {
   roomTypeId: string
   description: string
   capacity: number
-  sizeM2?: number | null
+  sizeM2: number
   floor?: number | null
   basePrice: runtime.Decimal | runtime.DecimalJsLike | number | string
   isActive?: boolean
@@ -1082,7 +1090,7 @@ export type RoomUpdateWithoutBedsInput = {
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.StringFieldUpdateOperationsInput | string
   capacity?: Prisma.IntFieldUpdateOperationsInput | number
-  sizeM2?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  sizeM2?: Prisma.FloatFieldUpdateOperationsInput | number
   floor?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   basePrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1104,7 +1112,7 @@ export type RoomUncheckedUpdateWithoutBedsInput = {
   roomTypeId?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.StringFieldUpdateOperationsInput | string
   capacity?: Prisma.IntFieldUpdateOperationsInput | number
-  sizeM2?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  sizeM2?: Prisma.FloatFieldUpdateOperationsInput | number
   floor?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   basePrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1122,7 +1130,7 @@ export type RoomCreateWithoutAmenitiesInput = {
   slug: string
   description: string
   capacity: number
-  sizeM2?: number | null
+  sizeM2: number
   floor?: number | null
   basePrice: runtime.Decimal | runtime.DecimalJsLike | number | string
   isActive?: boolean
@@ -1144,7 +1152,7 @@ export type RoomUncheckedCreateWithoutAmenitiesInput = {
   roomTypeId: string
   description: string
   capacity: number
-  sizeM2?: number | null
+  sizeM2: number
   floor?: number | null
   basePrice: runtime.Decimal | runtime.DecimalJsLike | number | string
   isActive?: boolean
@@ -1178,7 +1186,7 @@ export type RoomUpdateWithoutAmenitiesInput = {
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.StringFieldUpdateOperationsInput | string
   capacity?: Prisma.IntFieldUpdateOperationsInput | number
-  sizeM2?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  sizeM2?: Prisma.FloatFieldUpdateOperationsInput | number
   floor?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   basePrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1200,7 +1208,7 @@ export type RoomUncheckedUpdateWithoutAmenitiesInput = {
   roomTypeId?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.StringFieldUpdateOperationsInput | string
   capacity?: Prisma.IntFieldUpdateOperationsInput | number
-  sizeM2?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  sizeM2?: Prisma.FloatFieldUpdateOperationsInput | number
   floor?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   basePrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1218,7 +1226,7 @@ export type RoomCreateWithoutAvailabilityInput = {
   slug: string
   description: string
   capacity: number
-  sizeM2?: number | null
+  sizeM2: number
   floor?: number | null
   basePrice: runtime.Decimal | runtime.DecimalJsLike | number | string
   isActive?: boolean
@@ -1240,7 +1248,7 @@ export type RoomUncheckedCreateWithoutAvailabilityInput = {
   roomTypeId: string
   description: string
   capacity: number
-  sizeM2?: number | null
+  sizeM2: number
   floor?: number | null
   basePrice: runtime.Decimal | runtime.DecimalJsLike | number | string
   isActive?: boolean
@@ -1274,7 +1282,7 @@ export type RoomUpdateWithoutAvailabilityInput = {
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.StringFieldUpdateOperationsInput | string
   capacity?: Prisma.IntFieldUpdateOperationsInput | number
-  sizeM2?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  sizeM2?: Prisma.FloatFieldUpdateOperationsInput | number
   floor?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   basePrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1296,7 +1304,7 @@ export type RoomUncheckedUpdateWithoutAvailabilityInput = {
   roomTypeId?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.StringFieldUpdateOperationsInput | string
   capacity?: Prisma.IntFieldUpdateOperationsInput | number
-  sizeM2?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  sizeM2?: Prisma.FloatFieldUpdateOperationsInput | number
   floor?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   basePrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1314,7 +1322,7 @@ export type RoomCreateWithoutBookingItemsInput = {
   slug: string
   description: string
   capacity: number
-  sizeM2?: number | null
+  sizeM2: number
   floor?: number | null
   basePrice: runtime.Decimal | runtime.DecimalJsLike | number | string
   isActive?: boolean
@@ -1336,7 +1344,7 @@ export type RoomUncheckedCreateWithoutBookingItemsInput = {
   roomTypeId: string
   description: string
   capacity: number
-  sizeM2?: number | null
+  sizeM2: number
   floor?: number | null
   basePrice: runtime.Decimal | runtime.DecimalJsLike | number | string
   isActive?: boolean
@@ -1370,7 +1378,7 @@ export type RoomUpdateWithoutBookingItemsInput = {
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.StringFieldUpdateOperationsInput | string
   capacity?: Prisma.IntFieldUpdateOperationsInput | number
-  sizeM2?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  sizeM2?: Prisma.FloatFieldUpdateOperationsInput | number
   floor?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   basePrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1392,7 +1400,7 @@ export type RoomUncheckedUpdateWithoutBookingItemsInput = {
   roomTypeId?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.StringFieldUpdateOperationsInput | string
   capacity?: Prisma.IntFieldUpdateOperationsInput | number
-  sizeM2?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  sizeM2?: Prisma.FloatFieldUpdateOperationsInput | number
   floor?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   basePrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1411,7 +1419,7 @@ export type RoomCreateManyHotelInput = {
   roomTypeId: string
   description: string
   capacity: number
-  sizeM2?: number | null
+  sizeM2: number
   floor?: number | null
   basePrice: runtime.Decimal | runtime.DecimalJsLike | number | string
   isActive?: boolean
@@ -1425,7 +1433,7 @@ export type RoomUpdateWithoutHotelInput = {
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.StringFieldUpdateOperationsInput | string
   capacity?: Prisma.IntFieldUpdateOperationsInput | number
-  sizeM2?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  sizeM2?: Prisma.FloatFieldUpdateOperationsInput | number
   floor?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   basePrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1446,7 +1454,7 @@ export type RoomUncheckedUpdateWithoutHotelInput = {
   roomTypeId?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.StringFieldUpdateOperationsInput | string
   capacity?: Prisma.IntFieldUpdateOperationsInput | number
-  sizeM2?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  sizeM2?: Prisma.FloatFieldUpdateOperationsInput | number
   floor?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   basePrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1466,7 +1474,7 @@ export type RoomUncheckedUpdateManyWithoutHotelInput = {
   roomTypeId?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.StringFieldUpdateOperationsInput | string
   capacity?: Prisma.IntFieldUpdateOperationsInput | number
-  sizeM2?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  sizeM2?: Prisma.FloatFieldUpdateOperationsInput | number
   floor?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   basePrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1481,7 +1489,7 @@ export type RoomCreateManyRoomTypeInput = {
   slug: string
   description: string
   capacity: number
-  sizeM2?: number | null
+  sizeM2: number
   floor?: number | null
   basePrice: runtime.Decimal | runtime.DecimalJsLike | number | string
   isActive?: boolean
@@ -1495,7 +1503,7 @@ export type RoomUpdateWithoutRoomTypeInput = {
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.StringFieldUpdateOperationsInput | string
   capacity?: Prisma.IntFieldUpdateOperationsInput | number
-  sizeM2?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  sizeM2?: Prisma.FloatFieldUpdateOperationsInput | number
   floor?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   basePrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1516,7 +1524,7 @@ export type RoomUncheckedUpdateWithoutRoomTypeInput = {
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.StringFieldUpdateOperationsInput | string
   capacity?: Prisma.IntFieldUpdateOperationsInput | number
-  sizeM2?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  sizeM2?: Prisma.FloatFieldUpdateOperationsInput | number
   floor?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   basePrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1536,7 +1544,7 @@ export type RoomUncheckedUpdateManyWithoutRoomTypeInput = {
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.StringFieldUpdateOperationsInput | string
   capacity?: Prisma.IntFieldUpdateOperationsInput | number
-  sizeM2?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  sizeM2?: Prisma.FloatFieldUpdateOperationsInput | number
   floor?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   basePrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1726,7 +1734,7 @@ export type $RoomPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     roomTypeId: string
     description: string
     capacity: number
-    sizeM2: number | null
+    sizeM2: number
     floor: number | null
     basePrice: runtime.Decimal
     isActive: boolean

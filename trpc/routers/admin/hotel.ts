@@ -10,6 +10,7 @@ import {
   getSkip,
   paginationInput,
 } from "@/trpc/helpers";
+import { Prisma } from "@/prisma/generated/prisma/client";
 
 const addressSchema = z.object({
   cityId: z.string(),
@@ -287,10 +288,35 @@ export const adminHotelRouter = createTRPCRouter({
           message: `Không thể xóa: khách sạn đang có ${activeBookings} đặt phòng hoạt động`,
         });
 
-      await ctx.db.$transaction(async (tx) => {
-        await tx.hotel.delete({ where: { id: input.id } });
-        await tx.address.delete({ where: { id: hotel!.addressId } });
+      // Check toàn bộ booking (bao gồm đã hủy/hoàn thành)
+      const totalBookings = await ctx.db.booking.count({
+        where: { hotelId: input.id },
       });
+
+      if (totalBookings)
+        throw new TRPCError({
+          code: "PRECONDITION_FAILED",
+          message: `Không thể xóa: khách sạn còn ${totalBookings} lịch sử đặt phòng trong hệ thống`,
+        });
+
+      try {
+        await ctx.db.$transaction(async (tx) => {
+          await tx.hotel.delete({ where: { id: input.id } });
+          await tx.address.delete({ where: { id: hotel!.addressId } });
+        });
+      } catch (err) {
+        if (
+          err instanceof Prisma.PrismaClientKnownRequestError &&
+          err.code === "P2003"
+        ) {
+          throw new TRPCError({
+            code: "PRECONDITION_FAILED",
+            message:
+              "Không thể xóa: khách sạn đang được tham chiếu bởi dữ liệu khác trong hệ thống",
+          });
+        }
+        throw err;
+      }
 
       await invalidateHotelCaches(CACHE_KEYS.HOTEL_DETAIL(hotel!.slug));
       return { success: true };

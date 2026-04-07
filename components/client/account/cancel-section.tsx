@@ -35,6 +35,7 @@ export const CancelSection = ({ bookingRef }: CancelSectionProps) => {
     openConfirm({
       title: "Xác nhận huỷ đặt phòng",
       description: "Bạn có chắc chắn muốn huỷ đặt phòng này không?",
+      variant: "destructive",
       onConfirm: handleCancel,
     });
   };

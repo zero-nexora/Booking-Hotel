@@ -30,6 +30,7 @@ import { DataTableBody } from "@/components/common/table-body";
 import { useModalDialogStore } from "@/store/modal-dialog-store";
 import { ViewReviewDialog } from "./view-review-dialog";
 import { useConfirmDialogStore } from "@/store/confirm-dialog-store";
+import { DEFAULT_PAGE } from "@/lib/constants";
 
 export type Review = RouterOutput["admin"]["review"]["list"]["items"][number];
 
@@ -41,13 +42,16 @@ export const ReviewListClient = () => {
   const { openConfirm } = useConfirmDialogStore();
 
   const handleSearchChange = useCallback(
-    (v: string) => setParams({ search: v, page: 1 }),
+    (v: string) => setParams({ search: v, page: DEFAULT_PAGE }),
     [setParams],
   );
 
   const handleTabChange = useCallback(
     (v: string) =>
-      setParams({ status: v === "all" ? null : (v as ReviewStatus), page: 1 }),
+      setParams({
+        status: v === "all" ? null : (v as ReviewStatus),
+        page: DEFAULT_PAGE,
+      }),
     [setParams],
   );
 
@@ -57,7 +61,7 @@ export const ReviewListClient = () => {
   );
 
   const handleLimitChange = useCallback(
-    (l: number) => setParams({ limit: l, page: 1 }),
+    (l: number) => setParams({ limit: l, page: DEFAULT_PAGE }),
     [setParams],
   );
 

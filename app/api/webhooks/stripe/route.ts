@@ -6,7 +6,6 @@ import {
   sendBookingConfirmation,
   sendPaymentFailed,
   sendRefundFailed,
-  sendRefundSuccess,
 } from "@/lib/email";
 import { format } from "date-fns";
 import Stripe from "stripe";
@@ -28,6 +27,8 @@ export async function POST(req: NextRequest) {
   } catch {
     return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
   }
+
+  console.log(`[stripe-webhook] Received event: ${event.type}`);
 
   try {
     switch (event.type) {
@@ -247,20 +248,6 @@ async function onRefundCreated(refund: Stripe.Refund) {
   const { booking } = payment;
   const item = booking.items[0];
   if (!booking.guestEmail || !item) return;
-
-  await sendRefundSuccess({
-    to: booking.guestEmail,
-    name: booking.guestName,
-    bookingRef: booking.bookingRef,
-    hotelName: booking.hotel.name,
-    roomName: item.room.name,
-    checkIn: format(booking.checkIn, "dd/MM/yyyy"),
-    checkOut: format(booking.checkOut, "dd/MM/yyyy"),
-    refundAmount: Number(payment.amount).toLocaleString("vi-VN"),
-    currency: payment.currency,
-    cancelReason: booking.cancelReason ?? undefined,
-    bookingUrl: `${env.NEXT_PUBLIC_APP_URL}/account/bookings/${booking.bookingRef}`,
-  }).catch((err) => console.error("[email] refund-success failed", err));
 }
 
 async function onRefundFailed(refund: Stripe.Refund) {

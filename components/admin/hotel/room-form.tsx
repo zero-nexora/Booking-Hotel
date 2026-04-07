@@ -55,7 +55,7 @@ export const roomFormSchema = z.object({
     .number({
       error: "Diện tích phải là số",
     })
-    .optional(),
+    .positive({ error: "Diện tích phải lớn hơn 0" }),
 
   floor: z
     .number({
@@ -67,7 +67,7 @@ export const roomFormSchema = z.object({
     .number({
       error: "Giá cơ bản phải là số",
     })
-    .min(1, { error: "Giá cơ bản không được là số âm" }),
+    .min(1, { error: "Giá cơ bản phải lớn hơn 0" }),
 
   isActive: z.boolean({
     error: "Trạng thái phòng phải là true/false",
@@ -108,7 +108,7 @@ export const DEFAULT_ROOM_FORM_VALUES: RoomFormValues = {
   roomTypeId: "",
   description: "",
   capacity: 2,
-  sizeM2: undefined,
+  sizeM2: 1,
   floor: undefined,
   basePrice: 0,
   isActive: true,

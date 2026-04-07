@@ -16,10 +16,13 @@ type Message = {
 };
 
 const SUGGESTIONS = [
-  "Tư vấn khách sạn 5 sao Đà Nẵng",
-  "Chính sách huỷ phòng như thế nào?",
-  "Tips when checking in at a hotel",
-  "Best time to visit Ha Long Bay?",
+  "Chính sách huỷ phòng và hoàn tiền như thế nào?",
+  "Tôi có thể huỷ booking khi nào?",
+  "Thanh toán thất bại thì phải làm sao?",
+  "Booking đang PENDING là gì?",
+  "Bao lâu thì nhận được tiền hoàn lại?",
+  "Làm sao để xem lại booking của tôi?",
+  "Sau khi check-out thì có thể đánh giá không?",
 ];
 
 const panelVariants: Variants = {
@@ -82,7 +85,7 @@ export const AIChatWidget = () => {
           id: "welcome",
           role: "model",
           content:
-            "Xin chào! Tôi là Staywise Assistant 🏨\nTôi có thể tư vấn khách sạn, du lịch và giải đáp thắc mắc đặt phòng.\n\nHello! I can help with hotels, travel tips, and booking questions.",
+            "Xin chào! Tôi là Staywise Assistant \nTôi có thể tư vấn khách sạn, du lịch và giải đáp thắc mắc đặt phòng.\n\nHello! I can help with hotels, travel tips, and booking questions.",
         },
       ]);
     }

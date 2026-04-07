@@ -142,7 +142,7 @@ export const adminRoomRouter = createTRPCRouter({
         roomTypeId: z.string(),
         description: z.string().min(10),
         capacity: z.number().int().min(1).max(100),
-        sizeM2: z.number().positive().optional(),
+        sizeM2: z.number().positive(),
         floor: z.number().int().optional(),
         basePrice: z.number().min(0),
         isActive: z.boolean().default(true),

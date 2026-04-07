@@ -8,6 +8,7 @@ import {
   getSkip,
   paginationInput,
 } from "@/trpc/helpers";
+import { Prisma } from "@/prisma/generated/prisma/client";
 
 const reviewStatusEnum = z.enum(["PENDING", "APPROVED", "REJECTED"]);
 
@@ -22,10 +23,19 @@ export const adminReviewRouter = createTRPCRouter({
       }),
     )
     .query(async ({ ctx, input }) => {
-      const { status, hotelId } = input;
-      const where = {
+      const { status, hotelId, search } = input;
+      const where: Prisma.ReviewWhereInput = {
         ...(status && { status }),
         ...(hotelId && { hotelId }),
+        ...(search && {
+          OR: [
+            { comment: { contains: input.search, mode: "insensitive" } },
+            { user: { name: { contains: input.search, mode: "insensitive" } } },
+            {
+              hotel: { name: { contains: input.search, mode: "insensitive" } },
+            },
+          ],
+        }),
       };
 
       const [items, total] = await Promise.all([

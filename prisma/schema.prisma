@@ -202,7 +202,7 @@ model Room {
   roomTypeId  String
   description String   @db.Text
   capacity    Int
-  sizeM2      Float?
+  sizeM2      Float
   floor       Int?
   basePrice   Decimal  @db.Decimal(10, 2)
   isActive    Boolean  @default(true)

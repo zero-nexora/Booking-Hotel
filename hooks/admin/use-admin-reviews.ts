@@ -15,6 +15,7 @@ export function useAdminReviewList(
       limit: params.limit,
       status: params.status || undefined,
       hotelId: params.hotelId || undefined,
+      search: params.search || undefined,
     }),
   );
 }

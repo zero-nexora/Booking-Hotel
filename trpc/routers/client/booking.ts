@@ -9,6 +9,7 @@ import Stripe from "stripe";
 import {
   calcNights,
   calcTotal,
+  formatCurrencyUSD,
   getBookingExpiresAt,
   getDatesInRange,
 } from "@/lib/utils";
@@ -463,10 +464,10 @@ export const bookingRouter = createTRPCRouter({
           roomName: item.room.name,
           checkIn: format(booking!.checkIn, "dd/MM/yyyy"),
           checkOut: format(booking!.checkOut, "dd/MM/yyyy"),
-          totalAmount: Number(booking!.totalAmount).toLocaleString("vi-VN"),
+          totalAmount: formatCurrencyUSD(Number(booking!.totalAmount)),
           currency: booking!.currency,
           refundAmount:
-            refundTotal > 0 ? refundTotal.toLocaleString("vi-VN") : "0",
+            refundTotal > 0 ? formatCurrencyUSD(refundTotal) : formatCurrencyUSD(0),
           cancelReason: input.cancelReason,
           hotelsUrl: `${env.NEXT_PUBLIC_APP_URL}/hotels`,
         }).catch((err) =>
