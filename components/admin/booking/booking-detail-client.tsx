@@ -1,9 +1,18 @@
 "use client";
 
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
 import {
   useAdminBookingDetail,
   useUpdateBookingStatus,
@@ -40,6 +49,8 @@ const TRANSITION_LABEL: Record<BookingStatus, string> = {
   NO_SHOW: "Không đến",
 };
 
+const REQUIRES_REASON = new Set<BookingStatus>(["CANCELLED", "NO_SHOW"]);
+
 const BookingDetailSkeleton = () => (
   <div className="space-y-6">
     <div className="flex items-center gap-4">
@@ -54,6 +65,72 @@ const BookingDetailSkeleton = () => (
     <Skeleton className="h-64 bg-muted" />
   </div>
 );
+
+interface ConfirmStatusDialogProps {
+  status: BookingStatus | null;
+  onConfirm: (reason?: string) => void;
+  onClose: () => void;
+  isPending: boolean;
+}
+
+const ConfirmStatusDialog = ({
+  status,
+  onConfirm,
+  onClose,
+  isPending,
+}: ConfirmStatusDialogProps) => {
+  const [reason, setReason] = useState("");
+
+  if (!status) return null;
+
+  const needsReason = REQUIRES_REASON.has(status);
+  const isNoShow = status === "NO_SHOW";
+
+  return (
+    <Dialog open onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>
+            {isNoShow ? "Xác nhận khách không đến" : "Xác nhận hủy booking"}
+          </DialogTitle>
+        </DialogHeader>
+        <div className="space-y-3 py-2 text-sm text-muted-foreground">
+          {isNoShow ? (
+            <p>
+              Booking sẽ chuyển sang trạng thái <strong>No-show</strong>. Phòng
+              sẽ được giải phóng. Tiền <strong>không hoàn lại</strong>.
+            </p>
+          ) : (
+            <p>
+              Booking sẽ bị hủy. Nếu đã thanh toán, toàn bộ số tiền sẽ được hoàn
+              qua Stripe.
+            </p>
+          )}
+          {needsReason && (
+            <Textarea
+              placeholder="Lý do (tuỳ chọn)"
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+              rows={3}
+            />
+          )}
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose} disabled={isPending}>
+            Huỷ
+          </Button>
+          <Button
+            variant="destructive"
+            disabled={isPending}
+            onClick={() => onConfirm(reason || undefined)}
+          >
+            {isPending ? "Đang xử lý..." : TRANSITION_LABEL[status]}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+};
 
 interface BookingHeaderProps {
   booking: BookingDetail;
@@ -103,11 +180,6 @@ const BookingHeader = ({
                 status === "CANCELLED" || status === "NO_SHOW"
                   ? "destructive"
                   : "default"
-              }
-              className={
-                status === "CANCELLED" || status === "NO_SHOW"
-                  ? "bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                  : "bg-primary text-primary-foreground hover:bg-primary/90"
               }
               disabled={isPending}
               onClick={() => onStatusChange(status)}
@@ -345,17 +417,36 @@ export const BookingDetailClient = ({
 }: BookingDetailClientProps) => {
   const { data: booking, isLoading } = useAdminBookingDetail(bookingId);
   const updateStatus = useUpdateBookingStatus(bookingId);
+  const [pendingStatus, setPendingStatus] = useState<BookingStatus | null>(
+    null,
+  );
 
   if (isLoading) return <BookingDetailSkeleton />;
   if (!booking) return null;
+
+  const handleStatusChange = (status: BookingStatus) => {
+    if (REQUIRES_REASON.has(status)) {
+      setPendingStatus(status);
+    } else {
+      void updateStatus.mutateAsync({ id: bookingId, status });
+    }
+  };
+
+  const handleConfirm = async (reason?: string) => {
+    if (!pendingStatus) return;
+    await updateStatus.mutateAsync({
+      id: bookingId,
+      status: pendingStatus,
+      cancelReason: reason,
+    });
+    setPendingStatus(null);
+  };
 
   return (
     <div className="space-y-6">
       <BookingHeader
         booking={booking}
-        onStatusChange={(status) =>
-          void updateStatus.mutateAsync({ id: bookingId, status })
-        }
+        onStatusChange={handleStatusChange}
         isPending={updateStatus.isPending}
       />
       <div className="grid grid-cols-3 gap-4">
@@ -365,6 +456,12 @@ export const BookingDetailClient = ({
       </div>
       <BookingItemsCard booking={booking} />
       <ReviewCard booking={booking} />
+      <ConfirmStatusDialog
+        status={pendingStatus}
+        onConfirm={handleConfirm}
+        onClose={() => setPendingStatus(null)}
+        isPending={updateStatus.isPending}
+      />
     </div>
   );
 };

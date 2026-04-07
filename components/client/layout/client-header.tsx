@@ -159,7 +159,7 @@ export const ClientHeader = () => {
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
-            <div className="flex items-center gap-2 box-hidden">
+            <div className="box-hidden gap-2 ">
               <Button
                 variant="outline"
                 size="sm"

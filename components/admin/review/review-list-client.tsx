@@ -78,6 +78,7 @@ export const ReviewListClient = () => {
     openConfirm({
       title: `Xác nhận ${status === "APPROVED" ? "duyệt" : "từ chối"} đánh giá`,
       description: `Bạn có chắc chắn muốn ${status === "APPROVED" ? "duyệt" : "từ chối"} đánh giá này không?`,
+      variant: status === "APPROVED" ? undefined : "destructive",
       onConfirm: () =>
         updateStatus.mutate({
           id,

@@ -49,8 +49,10 @@ export function useUpdateBookingStatus(id: string) {
   return useMutation(
     trpc.admin.booking.updateStatus.mutationOptions({
       onSuccess: () => {
-        qc.invalidateQueries({ queryKey: trpc.admin.booking.list.queryKey() });
-        qc.invalidateQueries({
+        void qc.invalidateQueries({
+          queryKey: trpc.admin.booking.list.queryKey(),
+        });
+        void qc.invalidateQueries({
           queryKey: trpc.admin.booking.detail.queryKey({ id }),
         });
         toast.success("Cập nhật trạng thái thành công");

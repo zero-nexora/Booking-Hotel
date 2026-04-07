@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { adminProcedure, createTRPCRouter } from "@/trpc/init";
-import { Prisma } from "@/prisma/generated/prisma/client";
+import { PaymentStatus, Prisma } from "@/prisma/generated/prisma/client";
 import { stripe } from "@/lib/stripe";
 import { checkRateLimit, rateLimiters } from "@/lib/rate-limit";
 import {
@@ -43,6 +43,8 @@ const BOOKING_ITEM_STATUS_MAP: Record<string, string> = {
   NO_SHOW: "CANCELLED",
 };
 
+const RELEASES_ROOM = new Set(["CHECKED_OUT", "CANCELLED", "NO_SHOW"]);
+
 const bookingListSelect = {
   id: true,
   bookingRef: true,
@@ -70,6 +72,7 @@ const bookingListSelect = {
 const bookingForUpdateSelect = {
   id: true,
   status: true,
+  paymentStatus: true,
   checkIn: true,
   checkOut: true,
   totalAmount: true,
@@ -94,7 +97,6 @@ type RefundRecord = {
   stripeRefundId: string;
   amount: Prisma.Decimal;
   currency: string;
-  refundAmount: number;
 };
 
 const processStripeRefunds = async (
@@ -115,7 +117,6 @@ const processStripeRefunds = async (
         stripeRefundId: refund.id,
         amount: payment.amount,
         currency: payment.currency,
-        refundAmount: Number(payment.amount),
       });
     } catch {
       throw new TRPCError({
@@ -265,33 +266,43 @@ export const adminBookingRouter = createTRPCRouter({
           message: `Không thể chuyển từ ${booking!.status} sang ${input.status}`,
         });
 
-      const isCancelling =
-        input.status === "CANCELLED" || input.status === "NO_SHOW";
-      const bookingItemIds = booking!.items.map((i) => i.id);
       const now = new Date();
+      const bookingItemIds = booking!.items.map((i) => i.id);
+      const releasesRoom = RELEASES_ROOM.has(input.status);
 
-      const refunds = isCancelling
-        ? await processStripeRefunds(booking!.payments)
-        : [];
-      const hasRefund = refunds.length > 0;
+      let refunds: RefundRecord[] = [];
+      let newPaymentStatus: PaymentStatus | undefined;
+
+      if (input.status === "CANCELLED") {
+        refunds = await processStripeRefunds(booking!.payments);
+        if (refunds.length > 0) {
+          newPaymentStatus = "REFUNDED";
+        } else if (booking!.paymentStatus === "UNPAID") {
+          newPaymentStatus = "CANCELLED";
+        }
+      }
 
       await ctx.db.$transaction([
         ctx.db.booking.update({
           where: { id: input.id },
           data: {
             status: input.status,
-            ...(isCancelling && {
-              cancelledAt: now,
-              cancelReason: input.cancelReason,
-              ...(hasRefund && { paymentStatus: "REFUNDED" }),
-            }),
+            ...(input.status === "CANCELLED" || input.status === "NO_SHOW"
+              ? {
+                  cancelledAt: now,
+                  cancelReason: input.cancelReason ?? null,
+                }
+              : {}),
+            ...(newPaymentStatus ? { paymentStatus: newPaymentStatus } : {}),
           },
         }),
         ctx.db.bookingItem.updateMany({
           where: { bookingId: input.id },
-          data: { status: BOOKING_ITEM_STATUS_MAP[input.status] as never },
+          data: {
+            status: BOOKING_ITEM_STATUS_MAP[input.status] as never,
+          },
         }),
-        ...(isCancelling
+        ...(releasesRoom
           ? [
               ctx.db.roomAvailability.updateMany({
                 where: { bookingItemId: { in: bookingItemIds } },
