@@ -229,3 +229,47 @@ export const sendRefundSuccess = async (opts: {
     react: RefundSuccessEmail(opts),
   });
 };
+
+export const sendCheckoutSummary = async (opts: {
+  to: string;
+  name: string;
+  bookingRef: string;
+  hotelName: string;
+  roomName: string;
+  checkIn: string;
+  checkOut: string;
+  nights: number;
+  totalAmount: string;
+  currency: string;
+  reviewUrl: string;
+  hotelsUrl: string;
+}) => {
+  const { CheckoutSummaryEmail } =
+    await import("../emails/checkout-summary-email");
+  return sendEmail({
+    to: opts.to,
+    subject: `Cảm ơn bạn đã lưu trú tại ${opts.hotelName}!`,
+    react: CheckoutSummaryEmail(opts),
+  });
+};
+
+export const sendNoShow = async (opts: {
+  to: string;
+  name: string;
+  bookingRef: string;
+  hotelName: string;
+  roomName: string;
+  checkIn: string;
+  checkOut: string;
+  totalAmount: string;
+  currency: string;
+  supportUrl: string;
+  hotelsUrl: string;
+}) => {
+  const { NoShowEmail } = await import("../emails/no-show-email");
+  return sendEmail({
+    to: opts.to,
+    subject: `Đặt phòng #${opts.bookingRef} — Bạn đã không đến nhận phòng`,
+    react: NoShowEmail(opts),
+  });
+};

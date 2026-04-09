@@ -26,6 +26,7 @@ import {
   formatDatetime,
   formatCurrencyUSD,
 } from "@/lib/utils";
+import { useConfirmDialogStore } from "@/store/confirm-dialog-store";
 
 type BookingDetail = RouterOutput["admin"]["booking"]["detail"];
 type BookingStatus =
@@ -80,11 +81,23 @@ const ConfirmStatusDialog = ({
   isPending,
 }: ConfirmStatusDialogProps) => {
   const [reason, setReason] = useState("");
+  const { openConfirm } = useConfirmDialogStore();
 
   if (!status) return null;
 
   const needsReason = REQUIRES_REASON.has(status);
   const isNoShow = status === "NO_SHOW";
+
+  const handleConfirmUpdateStatusOpen = () => {
+    openConfirm({
+      title: isNoShow ? "Xác nhận khách không đến" : "Xác nhận hủy booking",
+      description: isNoShow
+        ? "Vui lọc nhập lý do khách hàng không đến"
+        : "Vui lọc nhập lý do hủy booking",
+      variant: "destructive",
+      onConfirm: () => onConfirm(reason),
+    });
+  };
 
   return (
     <Dialog open onOpenChange={(open) => !open && onClose()}>
@@ -122,7 +135,7 @@ const ConfirmStatusDialog = ({
           <Button
             variant="destructive"
             disabled={isPending}
-            onClick={() => onConfirm(reason || undefined)}
+            onClick={() => handleConfirmUpdateStatusOpen()}
           >
             {isPending ? "Đang xử lý..." : TRANSITION_LABEL[status]}
           </Button>

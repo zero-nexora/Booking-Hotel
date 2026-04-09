@@ -10,6 +10,12 @@ import {
   getSkip,
   paginationInput,
 } from "@/trpc/helpers";
+import {
+  sendBookingCancellation,
+  sendCheckoutSummary,
+  sendNoShow,
+} from "@/lib/email";
+import { formatCurrencyUSD, formatDateShort } from "@/lib/utils";
 
 const VALID_TRANSITIONS: Record<string, string[]> = {
   PENDING: ["CONFIRMED", "CANCELLED"],
@@ -71,6 +77,7 @@ const bookingListSelect = {
 
 const bookingForUpdateSelect = {
   id: true,
+  bookingRef: true,
   status: true,
   paymentStatus: true,
   checkIn: true,
@@ -80,7 +87,17 @@ const bookingForUpdateSelect = {
   guestName: true,
   guestEmail: true,
   createdAt: true,
-  items: { select: { id: true, room: { select: { name: true } } } },
+  items: {
+    select: {
+      id: true,
+      nights: true,
+      room: {
+        select: {
+          name: true,
+        },
+      },
+    },
+  },
   hotel: { select: { name: true } },
   payments: {
     where: { status: "PAID" as const, type: "CHARGE" as const },
@@ -329,6 +346,77 @@ export const adminBookingRouter = createTRPCRouter({
           }),
         ),
       ]);
+
+      const firstItem = booking!.items[0];
+      const roomName = firstItem?.room?.name ?? "—";
+      const nights = firstItem?.nights ?? 0;
+      const checkIn = formatDateShort(booking!.checkIn);
+      const checkOut = formatDateShort(booking!.checkOut);
+      const totalAmount = formatCurrencyUSD(Number(booking!.totalAmount));
+      const { currency } = booking!;
+      const hotelName = booking!.hotel.name;
+      const BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://staywise.vn";
+
+      if (input.status === "CHECKED_OUT") {
+        sendCheckoutSummary({
+          to: booking!.guestEmail,
+          name: booking!.guestName,
+          bookingRef: booking!.bookingRef,
+          hotelName,
+          roomName,
+          checkIn,
+          checkOut,
+          nights,
+          totalAmount,
+          currency,
+          reviewUrl: `${BASE_URL}/reviews/new?booking=${booking!.bookingRef}`,
+          hotelsUrl: `${BASE_URL}/hotels`,
+        }).catch((err) =>
+          console.error("[email] sendCheckoutSummary failed:", err),
+        );
+      }
+
+      if (input.status === "NO_SHOW") {
+        sendNoShow({
+          to: booking!.guestEmail,
+          name: booking!.guestName,
+          bookingRef: booking!.bookingRef,
+          hotelName,
+          roomName,
+          checkIn,
+          checkOut,
+          totalAmount,
+          currency,
+          supportUrl: `${BASE_URL}/support?booking=${booking!.bookingRef}`,
+          hotelsUrl: `${BASE_URL}/hotels`,
+        }).catch((err) => console.error("[email] sendNoShow failed:", err));
+      }
+
+      if (input.status === "CANCELLED") {
+        const refundAmount =
+          refunds.length > 0
+            ? formatCurrencyUSD(
+                refunds.reduce((sum, r) => sum + Number(r.amount), 0),
+              )
+            : undefined;
+
+        sendBookingCancellation({
+          to: booking!.guestEmail,
+          name: booking!.guestName,
+          bookingRef: booking!.bookingRef,
+          hotelName,
+          roomName,
+          checkIn,
+          checkOut,
+          totalAmount,
+          currency,
+          refundAmount,
+          cancelReason: input.cancelReason,
+          hotelsUrl: `${BASE_URL}/hotels`,
+        }).catch((err) =>
+          console.error("[email] sendBookingCancellation failed:", err),
+        );
+      }
 
       return { success: true };
     }),

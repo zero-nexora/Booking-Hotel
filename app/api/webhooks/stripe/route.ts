@@ -11,7 +11,7 @@ import {
 import { format } from "date-fns";
 import Stripe from "stripe";
 import { generateQRBase64 } from "@/lib/qr-code";
-import { formatCurrencyUSD } from "@/lib/utils";
+import { formatCurrencyUSD, formatDateShort } from "@/lib/utils";
 
 export async function POST(req: NextRequest) {
   const body = await req.text();
@@ -148,12 +148,12 @@ async function onPaymentSucceeded(pi: Stripe.PaymentIntent) {
       hotelName: booking.hotel.name,
       hotelAddress,
       roomName: item.room.name,
-      checkIn: format(booking.checkIn, "EEEE, dd/MM/yyyy"),
-      checkOut: format(booking.checkOut, "EEEE, dd/MM/yyyy"),
+      checkIn: formatDateShort(booking.checkIn),
+      checkOut: formatDateShort(booking.checkOut),
       nights: item.nights,
       adults: item.adults,
       children: item.children,
-      totalAmount: Number(booking.totalAmount).toLocaleString("vi-VN"),
+      totalAmount: formatCurrencyUSD(Number(booking.totalAmount)),
       currency: booking.currency,
       bookingUrl: `${env.NEXT_PUBLIC_APP_URL}/account/bookings/${booking.bookingRef}`,
       verifyUrl,
@@ -234,9 +234,9 @@ async function onPaymentFailed(pi: Stripe.PaymentIntent) {
     bookingRef: booking.bookingRef,
     hotelName: booking.hotel.name,
     roomName: item.room.name,
-    checkIn: format(booking.checkIn, "dd/MM/yyyy"),
-    checkOut: format(booking.checkOut, "dd/MM/yyyy"),
-    totalAmount: Number(booking.totalAmount).toLocaleString("vi-VN"),
+    checkIn: formatDateShort(booking.checkIn),
+    checkOut: formatDateShort(booking.checkOut),
+    totalAmount: formatCurrencyUSD(Number(booking.totalAmount)),
     currency: booking.currency,
     retryUrl: `${env.NEXT_PUBLIC_APP_URL}/account/bookings/${booking.bookingRef}`,
   }).catch((err) => console.error("[email] payment-failed failed", err));
@@ -283,8 +283,8 @@ async function onRefundCreated(refund: Stripe.Refund) {
     bookingRef: booking.bookingRef,
     hotelName: booking.hotel.name,
     roomName: item.room.name,
-    checkIn: format(booking.checkIn, "dd/MM/yyyy"),
-    checkOut: format(booking.checkOut, "dd/MM/yyyy"),
+    checkIn: formatDateShort(booking.checkIn),
+    checkOut: formatDateShort(booking.checkOut),
     refundAmount: formatCurrencyUSD(Number(payment.amount)),
     currency: payment.currency,
     cancelReason: booking.cancelReason ?? undefined,
@@ -342,9 +342,9 @@ async function onRefundFailed(refund: Stripe.Refund) {
     bookingRef: booking.bookingRef,
     hotelName: booking.hotel.name,
     roomName: item.room.name,
-    checkIn: format(booking.checkIn, "dd/MM/yyyy"),
-    checkOut: format(booking.checkOut, "dd/MM/yyyy"),
-    totalAmount: Number(booking.totalAmount).toLocaleString("vi-VN"),
+    checkIn: formatDateShort(booking.checkIn),
+    checkOut: formatDateShort(booking.checkOut),
+    totalAmount: formatCurrencyUSD(Number(booking.totalAmount)),
     currency: booking.currency,
     supportUrl: `${env.NEXT_PUBLIC_APP_URL}/support`,
   }).catch((err) => console.error("[email] refund-failed failed", err));
@@ -402,9 +402,9 @@ async function onRefundUpdated(refund: Stripe.Refund) {
     bookingRef: booking.bookingRef,
     hotelName: booking.hotel.name,
     roomName: item.room.name,
-    checkIn: format(booking.checkIn, "dd/MM/yyyy"),
-    checkOut: format(booking.checkOut, "dd/MM/yyyy"),
-    totalAmount: Number(booking.totalAmount).toLocaleString("vi-VN"),
+    checkIn: formatDateShort(booking.checkIn),
+    checkOut: formatDateShort(booking.checkOut),
+    totalAmount: formatCurrencyUSD(Number(booking.totalAmount)),
     currency: booking.currency,
     supportUrl: `${env.NEXT_PUBLIC_APP_URL}/support`,
   }).catch((err) => console.error("[email] refund-failed failed", err));
