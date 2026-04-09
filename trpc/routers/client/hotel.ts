@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { createTRPCRouter, baseProcedure } from "@/trpc/init";
 import { TRPCError } from "@trpc/server";
-import { getOrSet, CACHE_KEYS, TTL } from "@/lib/redis";
+// import { getOrSet, CACHE_KEYS, TTL } from "@/lib/redis";
 import { checkRateLimit, rateLimiters } from "@/lib/rate-limit";
 import {
   popNextCursor,
@@ -51,95 +51,72 @@ const computeAvgRating = (
     : null;
 
 export const hotelRouter = createTRPCRouter({
-  featured: baseProcedure.query(({ ctx }) =>
-    getOrSet(
-      CACHE_KEYS.HOTELS_FEATURED,
-      async () => {
-        const hotels = await ctx.db.hotel.findMany({
-          where: { status: "ACTIVE" },
-          take: 6,
-          orderBy: { createdAt: "desc" },
-          include: {
-            images: { where: { isPrimary: true }, take: 1 },
-            address: { include: { city: { include: { country: true } } } },
-            reviews: {
-              where: { status: "APPROVED" },
-              select: { overallRating: true },
-            },
-          },
-        });
-        return hotels.map((h) => ({
-          ...h,
-          avgRating: computeAvgRating(h.reviews),
-          reviewCount: h.reviews.length,
-        }));
+  featured: baseProcedure.query(async ({ ctx }) => {
+    const hotels = await ctx.db.hotel.findMany({
+      where: { status: "ACTIVE" },
+      take: 6,
+      orderBy: { createdAt: "desc" },
+      include: {
+        images: { where: { isPrimary: true }, take: 1 },
+        address: { include: { city: { include: { country: true } } } },
+        reviews: {
+          where: { status: "APPROVED" },
+          select: { overallRating: true },
+        },
       },
-      TTL.LONG,
-    ),
-  ),
+    });
+    return hotels.map((h) => ({
+      ...h,
+      avgRating: computeAvgRating(h.reviews),
+      reviewCount: h.reviews.length,
+    }));
+  }),
 
-  popularDestinations: baseProcedure.query(({ ctx }) =>
-    getOrSet(
-      CACHE_KEYS.HOTELS_POPULAR_DESTINATIONS,
-      async () => {
-        const cities = await ctx.db.city.findMany({
+  popularDestinations: baseProcedure.query(async ({ ctx }) => {
+    const cities = await ctx.db.city.findMany({
+      include: {
+        country: true,
+        addresses: {
           include: {
-            country: true,
-            addresses: {
-              include: {
-                hotel: { where: { status: "ACTIVE" }, select: { id: true } },
-              },
-            },
+            hotel: { where: { status: "ACTIVE" }, select: { id: true } },
           },
-        });
-        return cities
-          .map((c) => ({
-            id: c.id,
-            name: c.name,
-            country: c.country.name,
-            hotelCount: c.addresses.filter((a) => a.hotel).length,
-          }))
-          .filter((c) => c.hotelCount > 0)
-          .sort((a, b) => b.hotelCount - a.hotelCount)
-          .slice(0, 8);
+        },
       },
-      TTL.LONG,
-    ),
-  ),
+    });
+    return cities
+      .map((c) => ({
+        id: c.id,
+        name: c.name,
+        country: c.country.name,
+        hotelCount: c.addresses.filter((a) => a.hotel).length,
+      }))
+      .filter((c) => c.hotelCount > 0)
+      .sort((a, b) => b.hotelCount - a.hotelCount)
+      .slice(0, 8);
+  }),
 
-  topAmenities: baseProcedure.query(({ ctx }) =>
-    getOrSet(
-      CACHE_KEYS.HOTELS_TOP_AMENITIES,
-      async () => {
-        const amenities = await ctx.db.amenity.findMany({
-          include: { hotels: { select: { hotelId: true } } },
-        });
-        return amenities
-          .map((a) => ({ ...a, usageCount: a.hotels.length }))
-          .sort((a, b) => b.usageCount - a.usageCount)
-          .slice(0, 12);
-      },
-      TTL.LONG,
-    ),
-  ),
+  topAmenities: baseProcedure.query(async ({ ctx }) => {
+    const amenities = await ctx.db.amenity.findMany({
+      include: { hotels: { select: { hotelId: true } } },
+    });
+    return amenities
+      .map((a) => ({ ...a, usageCount: a.hotels.length }))
+      .sort((a, b) => b.usageCount - a.usageCount)
+      .slice(0, 12);
+  }),
 
   highlightedReviews: baseProcedure.query(({ ctx }) =>
-    getOrSet(
-      CACHE_KEYS.HOTELS_HIGHLIGHTED_REVIEWS,
-      () =>
-        ctx.db.review.findMany({
-          where: { status: "APPROVED", overallRating: { gte: 4 } },
-          take: 6,
-          orderBy: { overallRating: "desc" },
-          include: {
-            user: { select: { name: true, image: true } },
-            hotel: {
-              include: { images: { where: { isPrimary: true }, take: 1 } },
-            },
-          },
-        }),
-      TTL.MEDIUM,
-    ),
+    ctx.db.review.findMany({
+      where: { status: "APPROVED", overallRating: { gte: 4 } },
+      take: 6,
+      orderBy: { overallRating: "desc" },
+      include: {
+        user: { select: { name: true, image: true } },
+        hotel: {
+          include: { images: { where: { isPrimary: true }, take: 1 } },
+        },
+      },
+    }),
   ),
 
   search: baseProcedure
@@ -301,93 +278,84 @@ export const hotelRouter = createTRPCRouter({
       }),
     )
     .query(async ({ ctx, input }) => {
-      return getOrSet(
-        CACHE_KEYS.HOTEL_DETAIL(
-          `${input.slug}:${input.checkIn?.toISOString() ?? ""}:${input.checkOut?.toISOString() ?? ""}`,
-        ),
-        async () => {
-          const hotel = await ctx.db.hotel.findUnique({
-            where: { slug: input.slug, status: "ACTIVE" },
-            include: {
-              images: {
-                orderBy: [{ isPrimary: "desc" }, { sortOrder: "asc" }],
-              },
-              address: {
-                include: { city: { include: { country: true } } },
-              },
-              policy: true,
-              amenities: { include: { amenity: true } },
-              rooms: {
-                where: {
-                  isActive: true,
-                  capacity: { gte: input.adults + input.children },
-                  availability: {
-                    every: {
-                      date: { gte: input.checkIn, lte: input.checkOut },
-                      status: "AVAILABLE",
-                    },
-                  },
+      const hotel = await ctx.db.hotel.findUnique({
+        where: { slug: input.slug, status: "ACTIVE" },
+        include: {
+          images: {
+            orderBy: [{ isPrimary: "desc" }, { sortOrder: "asc" }],
+          },
+          address: {
+            include: { city: { include: { country: true } } },
+          },
+          policy: true,
+          amenities: { include: { amenity: true } },
+          rooms: {
+            where: {
+              isActive: true,
+              capacity: { gte: input.adults + input.children },
+              availability: {
+                every: {
+                  date: { gte: input.checkIn, lte: input.checkOut },
+                  status: "AVAILABLE",
                 },
-                include: {
-                  roomType: true,
-                  images: { where: { isPrimary: true }, take: 1 },
-                  beds: { include: { bedType: true } },
-                  amenities: { include: { amenity: true } },
-                  availability:
-                    input.checkIn && input.checkOut
-                      ? {
-                          where: {
-                            date: { gte: input.checkIn, lt: input.checkOut },
-                          },
-                        }
-                      : undefined,
-                },
-              },
-              _count: {
-                select: { reviews: { where: { status: "APPROVED" } } },
               },
             },
-          });
-
-          if (!hotel)
-            throw new TRPCError({
-              code: "NOT_FOUND",
-              message: "Khách sạn không tồn tại",
-            });
-
-          const allApprovedReviews = await ctx.db.review.aggregate({
-            where: { hotelId: hotel.id, status: "APPROVED" },
-            _avg: { overallRating: true },
-            _count: true,
-          });
-
-          let availableRooms = hotel.rooms;
-          if (input.checkIn && input.checkOut) {
-            const nights = Math.round(
-              (input.checkOut.getTime() - input.checkIn.getTime()) /
-                (1000 * 60 * 60 * 24),
-            );
-            availableRooms = hotel.rooms.filter(
-              (r) =>
-                r.availability?.every((a) => a.status === "AVAILABLE") !==
-                false,
-            );
-            availableRooms = availableRooms.map((r) => ({
-              ...r,
-              totalPrice: Number(r.basePrice) * nights,
-              nights,
-            })) as typeof availableRooms;
-          }
-
-          return {
-            ...hotel,
-            rooms: availableRooms,
-            avgRating: allApprovedReviews._avg.overallRating,
-            reviewCount: allApprovedReviews._count,
-          };
+            include: {
+              roomType: true,
+              images: { where: { isPrimary: true }, take: 1 },
+              beds: { include: { bedType: true } },
+              amenities: { include: { amenity: true } },
+              availability:
+                input.checkIn && input.checkOut
+                  ? {
+                      where: {
+                        date: { gte: input.checkIn, lt: input.checkOut },
+                      },
+                    }
+                  : undefined,
+            },
+          },
+          _count: {
+            select: { reviews: { where: { status: "APPROVED" } } },
+          },
         },
-        TTL.SHORT,
-      );
+      });
+
+      if (!hotel)
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Khách sạn không tồn tại",
+        });
+
+      const allApprovedReviews = await ctx.db.review.aggregate({
+        where: { hotelId: hotel.id, status: "APPROVED" },
+        _avg: { overallRating: true },
+        _count: true,
+      });
+
+      let availableRooms = hotel.rooms;
+      if (input.checkIn && input.checkOut) {
+        const nights = Math.round(
+          (input.checkOut.getTime() - input.checkIn.getTime()) /
+            (1000 * 60 * 60 * 24),
+        );
+        availableRooms = hotel.rooms.filter(
+          (r) =>
+            r.availability?.every((a) => a.status === "AVAILABLE") !== false,
+        );
+        availableRooms = availableRooms.map((r) => ({
+          ...r,
+          totalPrice: Number(r.basePrice) * nights,
+          nights,
+        })) as typeof availableRooms;
+      }
+
+      return {
+        ...hotel,
+        rooms: availableRooms,
+        avgRating: allApprovedReviews._avg.overallRating,
+        reviewCount: allApprovedReviews._count,
+      };
     }),
 
   reviews: baseProcedure
@@ -413,22 +381,16 @@ export const hotelRouter = createTRPCRouter({
       return popNextCursor(reviews, input.limit);
     }),
 
-  filterOptions: baseProcedure.query(({ ctx }) =>
-    getOrSet(
-      CACHE_KEYS.HOTELS_FILTER_OPTIONS,
-      async () => {
-        const [amenities, bedTypes, roomTypes] = await Promise.all([
-          ctx.db.amenity.findMany({
-            select: { id: true, name: true, icon: true },
-          }),
-          ctx.db.bedType.findMany({ select: { id: true, name: true } }),
-          ctx.db.roomType.findMany({ select: { id: true, name: true } }),
-        ]);
-        return { amenities, bedTypes, roomTypes };
-      },
-      TTL.LONG,
-    ),
-  ),
+  filterOptions: baseProcedure.query(async ({ ctx }) => {
+    const [amenities, bedTypes, roomTypes] = await Promise.all([
+      ctx.db.amenity.findMany({
+        select: { id: true, name: true, icon: true },
+      }),
+      ctx.db.bedType.findMany({ select: { id: true, name: true } }),
+      ctx.db.roomType.findMany({ select: { id: true, name: true } }),
+    ]);
+    return { amenities, bedTypes, roomTypes };
+  }),
 
   roomDetail: baseProcedure
     .input(
@@ -447,34 +409,29 @@ export const hotelRouter = createTRPCRouter({
 
       await checkRateLimit(rateLimiters.search, "room-detail");
 
-      const room = await getOrSet(
-        CACHE_KEYS.ROOM_DETAIL(hotelSlug, roomSlug),
-        () =>
-          ctx.db.room.findFirst({
-            where: {
-              slug: roomSlug,
-              isActive: true,
-              hotel: { slug: hotelSlug, status: "ACTIVE" },
-            },
+      const room = await ctx.db.room.findFirst({
+        where: {
+          slug: roomSlug,
+          isActive: true,
+          hotel: { slug: hotelSlug, status: "ACTIVE" },
+        },
+        include: {
+          roomType: true,
+          beds: { include: { bedType: true } },
+          amenities: { include: { amenity: true } },
+          images: {
+            orderBy: [{ isPrimary: "desc" }, { sortOrder: "asc" }],
+          },
+          hotel: {
             include: {
-              roomType: true,
-              beds: { include: { bedType: true } },
-              amenities: { include: { amenity: true } },
-              images: {
-                orderBy: [{ isPrimary: "desc" }, { sortOrder: "asc" }],
-              },
-              hotel: {
-                include: {
-                  policy: true,
-                  address: {
-                    include: { city: { include: { country: true } } },
-                  },
-                },
+              policy: true,
+              address: {
+                include: { city: { include: { country: true } } },
               },
             },
-          }),
-        TTL.SHORT,
-      );
+          },
+        },
+      });
 
       assertFound(room);
 

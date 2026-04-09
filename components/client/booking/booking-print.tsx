@@ -260,6 +260,7 @@ const getPaymentBadgeClass = (status: string): string => {
       return "badge-green";
     case "FAILED":
     case "UNPAID":
+    case "CANCELLED":
       return "badge-red";
     case "REFUNDED":
       return "badge-gray";

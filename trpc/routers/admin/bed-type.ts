@@ -1,22 +1,14 @@
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { adminProcedure, baseProcedure, createTRPCRouter } from "@/trpc/init";
-import { getOrSet, invalidateCache, CACHE_KEYS, TTL } from "@/lib/redis";
 import { checkRateLimit, rateLimiters } from "@/lib/rate-limit";
-
-const invalidateBedTypeCache = () => invalidateCache(CACHE_KEYS.BED_TYPES_ALL);
 
 export const adminBedTypeRouter = createTRPCRouter({
   list: baseProcedure.query(({ ctx }) =>
-    getOrSet(
-      CACHE_KEYS.BED_TYPES_ALL,
-      () =>
-        ctx.db.bedType.findMany({
-          orderBy: { name: "asc" },
-          include: { _count: { select: { roomBeds: true } } },
-        }),
-      TTL.LONG,
-    ),
+    ctx.db.bedType.findMany({
+      orderBy: { name: "asc" },
+      include: { _count: { select: { roomBeds: true } } },
+    }),
   ),
 
   create: adminProcedure
@@ -34,7 +26,6 @@ export const adminBedTypeRouter = createTRPCRouter({
         });
 
       const bedType = await ctx.db.bedType.create({ data: input });
-      await invalidateBedTypeCache();
       return bedType;
     }),
 
@@ -56,7 +47,6 @@ export const adminBedTypeRouter = createTRPCRouter({
         where: { id: input.id },
         data: { name: input.name },
       });
-      await invalidateBedTypeCache();
       return bedType;
     }),
 
@@ -75,7 +65,6 @@ export const adminBedTypeRouter = createTRPCRouter({
         });
 
       await ctx.db.bedType.delete({ where: { id: input.id } });
-      await invalidateBedTypeCache();
       return { success: true };
     }),
 });

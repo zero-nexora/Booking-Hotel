@@ -27,3 +27,8 @@ export function useDashboardRecentBookings() {
   const trpc = useTRPC();
   return useQuery(trpc.admin.dashboard.recentBookings.queryOptions());
 }
+
+export function useDashboardAnalyticsReport() {
+  const trpc = useTRPC();
+  return useQuery(trpc.admin.dashboard.analyticsReport.queryOptions());
+}

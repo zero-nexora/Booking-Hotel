@@ -51,5 +51,5 @@ export const calcRefundAmount = (
   totalAmount: Prisma.Decimal,
   refundPercent: number,
 ): number => {
-  return Math.floor((Number(totalAmount) * refundPercent) / 100);
+  return Math.round(Number(totalAmount) * refundPercent) / 100;
 };

@@ -1,24 +1,14 @@
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { adminProcedure, baseProcedure, createTRPCRouter } from "@/trpc/init";
-import { getOrSet, invalidateCache, CACHE_KEYS, TTL } from "@/lib/redis";
 import { checkRateLimit, rateLimiters } from "@/lib/rate-limit";
-
-const invalidateCountryCache = () => invalidateCache(CACHE_KEYS.COUNTRY_ALL);
-
-const invalidateCityCache = () => invalidateCache(CACHE_KEYS.CITY_ALL);
 
 export const adminLocationRouter = createTRPCRouter({
   listCountries: baseProcedure.query(({ ctx }) =>
-    getOrSet(
-      CACHE_KEYS.COUNTRY_ALL,
-      () =>
-        ctx.db.country.findMany({
-          orderBy: { name: "asc" },
-          include: { _count: { select: { cities: true } } },
-        }),
-      TTL.LONG,
-    ),
+    ctx.db.country.findMany({
+      orderBy: { name: "asc" },
+      include: { _count: { select: { cities: true } } },
+    }),
   ),
 
   createCountry: adminProcedure
@@ -36,7 +26,6 @@ export const adminLocationRouter = createTRPCRouter({
         });
 
       const country = await ctx.db.country.create({ data: input });
-      await invalidateCountryCache();
       return country;
     }),
 
@@ -56,7 +45,6 @@ export const adminLocationRouter = createTRPCRouter({
 
       const { id, ...data } = input;
       const country = await ctx.db.country.update({ where: { id }, data });
-      await invalidateCountryCache();
       return country;
     }),
 
@@ -75,31 +63,21 @@ export const adminLocationRouter = createTRPCRouter({
         });
 
       await ctx.db.country.delete({ where: { id: input.id } });
-      await invalidateCountryCache();
       return { success: true };
     }),
 
   listCities: baseProcedure
     .input(z.object({ countryId: z.string().optional() }))
-    .query(({ ctx, input }) => {
-      const cacheKey = input.countryId
-        ? `${CACHE_KEYS.CITY_ALL}:${input.countryId}`
-        : CACHE_KEYS.CITY_ALL;
-
-      return getOrSet(
-        cacheKey,
-        () =>
-          ctx.db.city.findMany({
-            where: input.countryId ? { countryId: input.countryId } : undefined,
-            orderBy: { name: "asc" },
-            include: {
-              country: { select: { name: true } },
-              _count: { select: { addresses: true } },
-            },
-          }),
-        TTL.LONG,
-      );
-    }),
+    .query(({ ctx, input }) =>
+      ctx.db.city.findMany({
+        where: input.countryId ? { countryId: input.countryId } : undefined,
+        orderBy: { name: "asc" },
+        include: {
+          country: { select: { name: true } },
+          _count: { select: { addresses: true } },
+        },
+      }),
+    ),
 
   createCity: adminProcedure
     .input(
@@ -120,7 +98,6 @@ export const adminLocationRouter = createTRPCRouter({
         });
 
       const city = await ctx.db.city.create({ data: input });
-      await invalidateCityCache();
       return city;
     }),
 
@@ -164,7 +141,6 @@ export const adminLocationRouter = createTRPCRouter({
 
       const { id, ...data } = input;
       const city = await ctx.db.city.update({ where: { id }, data });
-      await invalidateCityCache();
       return city;
     }),
 
@@ -183,7 +159,6 @@ export const adminLocationRouter = createTRPCRouter({
         });
 
       await ctx.db.city.delete({ where: { id: input.id } });
-      await invalidateCityCache();
       return { success: true };
     }),
 });

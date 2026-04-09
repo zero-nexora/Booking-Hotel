@@ -1,7 +1,6 @@
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { adminProcedure, createTRPCRouter } from "@/trpc/init";
-import { invalidateCache, CACHE_KEYS } from "@/lib/redis";
 import { generateUniqueSlug } from "@/lib/slugify";
 import { checkRateLimit, rateLimiters } from "@/lib/rate-limit";
 import {
@@ -52,9 +51,6 @@ const hotelListSelect = {
   images: { where: { isPrimary: true }, take: 1, select: { url: true } },
   _count: { select: { rooms: true, bookings: true, reviews: true } },
 } as const;
-
-const invalidateHotelCaches = (...extra: string[]) =>
-  invalidateCache(CACHE_KEYS.HOTELS_FEATURED, ...extra);
 
 export const adminHotelRouter = createTRPCRouter({
   list: adminProcedure
@@ -159,7 +155,6 @@ export const adminHotelRouter = createTRPCRouter({
         });
       });
 
-      await invalidateHotelCaches();
       return hotel;
     }),
 
@@ -215,7 +210,6 @@ export const adminHotelRouter = createTRPCRouter({
           await tx.hotel.update({ where: { id }, data: hotelData });
       });
 
-      await invalidateHotelCaches(CACHE_KEYS.HOTEL_DETAIL(existing!.slug));
       return { success: true };
     }),
 
@@ -244,8 +238,6 @@ export const adminHotelRouter = createTRPCRouter({
       await ctx.db.hotelImage.createMany({
         data: input.images.map((img) => ({ ...img, hotelId: input.hotelId })),
       });
-
-      await invalidateHotelCaches(CACHE_KEYS.HOTEL_DETAIL(hotel!.slug));
     }),
 
   deleteImage: adminProcedure
@@ -260,7 +252,6 @@ export const adminHotelRouter = createTRPCRouter({
       assertFound(image);
 
       await ctx.db.hotelImage.delete({ where: { id: input.imageId } });
-      await invalidateHotelCaches(CACHE_KEYS.HOTEL_DETAIL(image!.hotel.slug));
     }),
 
   delete: adminProcedure
@@ -318,7 +309,6 @@ export const adminHotelRouter = createTRPCRouter({
         throw err;
       }
 
-      await invalidateHotelCaches(CACHE_KEYS.HOTEL_DETAIL(hotel!.slug));
       return { success: true };
     }),
 });

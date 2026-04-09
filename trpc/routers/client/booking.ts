@@ -378,40 +378,42 @@ export const bookingRouter = createTRPCRouter({
         booking!.createdAt,
         now,
       );
-      const refundPercent =
-        booking!.payments.length > 0 ? policy.refundPercent : 0;
+      const hasPaidPayments = booking!.payments.length > 0;
+      const refundPercent = hasPaidPayments ? policy.refundPercent : 0;
 
       const refunds: RefundRecord[] = [];
-      for (const payment of booking!.payments) {
-        if (!payment.stripePaymentIntentId) continue;
-        if (refundPercent === 0) break;
 
-        const refundAmount = calcRefundAmount(payment.amount, refundPercent);
-        if (refundAmount <= 0) break;
+      if (refundPercent > 0) {
+        for (const payment of booking!.payments) {
+          if (!payment.stripePaymentIntentId) continue;
 
-        try {
-          const refund = await stripe.refunds.create({
-            payment_intent: payment.stripePaymentIntentId,
-            amount: Math.round(refundAmount * 100),
-          });
-          refunds.push({
-            stripeRefundId: refund.id,
-            amount: payment.amount,
-            refundAmount,
-            currency: payment.currency,
-          });
-        } catch {
-          throw new TRPCError({
-            code: "INTERNAL_SERVER_ERROR",
-            message: "Hoàn tiền thất bại. Vui lòng liên hệ hỗ trợ.",
-          });
+          const refundAmount = calcRefundAmount(payment.amount, refundPercent);
+          if (refundAmount <= 0) continue;
+
+          try {
+            const refund = await stripe.refunds.create({
+              payment_intent: payment.stripePaymentIntentId,
+              amount: Math.round(refundAmount * 100),
+            });
+            refunds.push({
+              stripeRefundId: refund.id,
+              amount: payment.amount,
+              refundAmount,
+              currency: payment.currency,
+            });
+          } catch {
+            throw new TRPCError({
+              code: "INTERNAL_SERVER_ERROR",
+              message: "Hoàn tiền thất bại. Vui lòng liên hệ hỗ trợ.",
+            });
+          }
         }
       }
 
       const hasRefund = refunds.length > 0;
       const newPaymentStatus = hasRefund
         ? "REFUNDED"
-        : booking!.payments.length > 0
+        : hasPaidPayments
           ? "PAID"
           : "CANCELLED";
 
@@ -438,19 +440,35 @@ export const bookingRouter = createTRPCRouter({
             lockExpiresAt: null,
           },
         }),
-        ...refunds.map((r) =>
-          ctx.db.payment.create({
-            data: {
-              bookingId: booking!.id,
-              userId: ctx.user.id,
-              type: "REFUND",
-              status: "PENDING",
-              amount: new Prisma.Decimal(r.refundAmount),
-              currency: r.currency,
-              stripeRefundId: r.stripeRefundId,
-            },
-          }),
-        ),
+        ...(hasRefund
+          ? refunds.map((r) =>
+              ctx.db.payment.create({
+                data: {
+                  bookingId: booking!.id,
+                  userId: ctx.user.id,
+                  type: "REFUND",
+                  status: "PENDING",
+                  amount: new Prisma.Decimal(r.refundAmount),
+                  currency: r.currency,
+                  stripeRefundId: r.stripeRefundId,
+                },
+              }),
+            )
+          : hasPaidPayments && refundPercent === 0
+            ? booking!.payments.map((p) =>
+                ctx.db.payment.create({
+                  data: {
+                    bookingId: booking!.id,
+                    userId: ctx.user.id,
+                    type: "REFUND",
+                    status: "REFUNDED",
+                    amount: new Prisma.Decimal(0),
+                    currency: p.currency,
+                    refundedAt: now,
+                  },
+                }),
+              )
+            : []),
       ]);
 
       const item = booking!.items[0];
@@ -467,7 +485,9 @@ export const bookingRouter = createTRPCRouter({
           totalAmount: formatCurrencyUSD(Number(booking!.totalAmount)),
           currency: booking!.currency,
           refundAmount:
-            refundTotal > 0 ? formatCurrencyUSD(refundTotal) : formatCurrencyUSD(0),
+            refundTotal > 0
+              ? formatCurrencyUSD(refundTotal)
+              : formatCurrencyUSD(0),
           cancelReason: input.cancelReason,
           hotelsUrl: `${env.NEXT_PUBLIC_APP_URL}/hotels`,
         }).catch((err) =>

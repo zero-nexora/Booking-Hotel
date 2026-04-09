@@ -1,7 +1,6 @@
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { adminProcedure, createTRPCRouter } from "@/trpc/init";
-import { invalidateCache, CACHE_KEYS } from "@/lib/redis";
 import { generateUniqueSlug } from "@/lib/slugify";
 import { checkRateLimit, rateLimiters } from "@/lib/rate-limit";
 import {
@@ -51,9 +50,6 @@ const roomListSelect = {
   },
   _count: { select: { bookingItems: true } },
 } as const;
-
-const invalidateRoomCache = (hotelSlug: string) =>
-  invalidateCache(CACHE_KEYS.HOTEL_DETAIL(hotelSlug));
 
 const validateBeds = async (
   db: PrismaClient,
@@ -207,7 +203,6 @@ export const adminRoomRouter = createTRPCRouter({
         },
       });
 
-      await invalidateRoomCache(hotel.slug);
       return room;
     }),
 
@@ -276,7 +271,6 @@ export const adminRoomRouter = createTRPCRouter({
           await tx.room.update({ where: { id }, data: scalarData });
       });
 
-      await invalidateRoomCache(room!.hotel.slug);
       return { success: true };
     }),
 
@@ -301,7 +295,6 @@ export const adminRoomRouter = createTRPCRouter({
         data: input.images.map((img) => ({ ...img, roomId: input.roomId })),
       });
 
-      await invalidateRoomCache(room!.hotel.slug);
       return { success: true };
     }),
 
@@ -317,7 +310,6 @@ export const adminRoomRouter = createTRPCRouter({
       assertFound(image);
 
       await ctx.db.roomImage.delete({ where: { id: input.imageId } });
-      await invalidateRoomCache(image!.room.hotel.slug);
       return { success: true };
     }),
 
@@ -346,7 +338,6 @@ export const adminRoomRouter = createTRPCRouter({
         });
 
       await ctx.db.room.delete({ where: { id: input.id } });
-      await invalidateRoomCache(room!.hotel.slug);
       return { success: true };
     }),
 

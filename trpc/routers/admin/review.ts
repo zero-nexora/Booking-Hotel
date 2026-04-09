@@ -1,6 +1,5 @@
 import { z } from "zod";
 import { adminProcedure, createTRPCRouter } from "@/trpc/init";
-import { invalidateCache, CACHE_KEYS } from "@/lib/redis";
 import { checkRateLimit, rateLimiters } from "@/lib/rate-limit";
 import {
   assertFound,
@@ -79,7 +78,6 @@ export const adminReviewRouter = createTRPCRouter({
         data: { status: input.status },
       });
 
-      await invalidateCache(CACHE_KEYS.HOTEL_DETAIL(review!.hotel.slug));
       return { success: true };
     }),
 });

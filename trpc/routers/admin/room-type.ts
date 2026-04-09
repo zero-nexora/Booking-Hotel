@@ -1,23 +1,14 @@
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { adminProcedure, baseProcedure, createTRPCRouter } from "@/trpc/init";
-import { getOrSet, invalidateCache, CACHE_KEYS, TTL } from "@/lib/redis";
 import { checkRateLimit, rateLimiters } from "@/lib/rate-limit";
-
-const invalidateRoomTypeCache = () =>
-  invalidateCache(CACHE_KEYS.ROOM_TYPES_ALL);
 
 export const adminRoomTypeRouter = createTRPCRouter({
   list: baseProcedure.query(({ ctx }) =>
-    getOrSet(
-      CACHE_KEYS.ROOM_TYPES_ALL,
-      () =>
-        ctx.db.roomType.findMany({
-          orderBy: { name: "asc" },
-          include: { _count: { select: { rooms: true } } },
-        }),
-      TTL.LONG,
-    ),
+    ctx.db.roomType.findMany({
+      orderBy: { name: "asc" },
+      include: { _count: { select: { rooms: true } } },
+    }),
   ),
 
   create: adminProcedure
@@ -35,7 +26,6 @@ export const adminRoomTypeRouter = createTRPCRouter({
         });
 
       const roomType = await ctx.db.roomType.create({ data: input });
-      await invalidateRoomTypeCache();
       return roomType;
     }),
 
@@ -57,7 +47,6 @@ export const adminRoomTypeRouter = createTRPCRouter({
         where: { id: input.id },
         data: { name: input.name },
       });
-      await invalidateRoomTypeCache();
       return roomType;
     }),
 
@@ -76,7 +65,6 @@ export const adminRoomTypeRouter = createTRPCRouter({
         });
 
       await ctx.db.roomType.delete({ where: { id: input.id } });
-      await invalidateRoomTypeCache();
       return { success: true };
     }),
 });

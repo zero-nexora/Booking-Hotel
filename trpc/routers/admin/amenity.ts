@@ -1,22 +1,14 @@
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { adminProcedure, baseProcedure, createTRPCRouter } from "@/trpc/init";
-import { getOrSet, invalidateCache, CACHE_KEYS, TTL } from "@/lib/redis";
 import { checkRateLimit, rateLimiters } from "@/lib/rate-limit";
-
-const invalidateAmenityCache = () => invalidateCache(CACHE_KEYS.AMENITIES_ALL);
 
 export const adminAmenityRouter = createTRPCRouter({
   list: baseProcedure.query(({ ctx }) =>
-    getOrSet(
-      CACHE_KEYS.AMENITIES_ALL,
-      () =>
-        ctx.db.amenity.findMany({
-          orderBy: { name: "asc" },
-          include: { _count: { select: { hotels: true, rooms: true } } },
-        }),
-      TTL.LONG,
-    ),
+    ctx.db.amenity.findMany({
+      orderBy: { name: "asc" },
+      include: { _count: { select: { hotels: true, rooms: true } } },
+    }),
   ),
 
   create: adminProcedure
@@ -39,7 +31,6 @@ export const adminAmenityRouter = createTRPCRouter({
         });
 
       const amenity = await ctx.db.amenity.create({ data: input });
-      await invalidateAmenityCache();
       return amenity;
     }),
 
@@ -67,7 +58,6 @@ export const adminAmenityRouter = createTRPCRouter({
 
       const { id, ...data } = input;
       const amenity = await ctx.db.amenity.update({ where: { id }, data });
-      await invalidateAmenityCache();
       return amenity;
     }),
 
@@ -88,7 +78,6 @@ export const adminAmenityRouter = createTRPCRouter({
         });
 
       await ctx.db.amenity.delete({ where: { id: input.id } });
-      await invalidateAmenityCache();
       return { success: true };
     }),
 });
