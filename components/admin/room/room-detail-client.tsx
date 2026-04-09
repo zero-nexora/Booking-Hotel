@@ -76,7 +76,12 @@ const RoomHeader = ({ room, hotelId, onEdit, onDelete }: RoomHeaderProps) => {
         </div>
       </div>
       <div className="flex gap-2">
-        <Button variant="outline" size="sm" onClick={onEdit}>
+        <Button
+          variant="outline"
+          size="sm"
+          className="border-border text-foreground hover:bg-muted hover:text-foreground"
+          onClick={onEdit}
+        >
           <Pencil className="w-4 h-4 mr-2" />
           Chỉnh sửa
         </Button>

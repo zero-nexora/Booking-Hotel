@@ -63,12 +63,13 @@ const VerifyEmailContent = () => {
 
   useEffect(() => {
     if (!token) return;
+    setState("verifying");
     authClient
       .verifyEmail({ query: { token } })
       .then(() => {
         setState("success");
         toast.success("Email đã được xác thực thành công!");
-        setTimeout(() => router.push("/"), 2000);
+        setTimeout(() => router.push("/sign-in"), 3000);
       })
       .catch(() => setState("error"));
   }, [token, router]);

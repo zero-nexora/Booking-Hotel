@@ -24,10 +24,13 @@ export const auth = betterAuth({
   },
   emailVerification: {
     sendVerificationEmail: async ({ user, url }) => {
+      const token = new URL(url).searchParams.get("token");
+      const verifyUrl = `${env.BETTER_AUTH_URL}/verify-email?token=${token}`;
+
       void sendEmailVerification({
         to: user.email,
         name: user.name,
-        verifyUrl: url,
+        verifyUrl,
       });
     },
   },

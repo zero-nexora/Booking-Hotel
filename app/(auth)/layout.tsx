@@ -1,8 +1,4 @@
 import type { ReactNode } from "react";
-import Image from "next/image";
-import Link from "next/link";
-import { Logo } from "@/components/common/logo";
-import authPanelDark from "@/public/images/auth-panel-dark.svg";
 import { getSession } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { AuthPanelClient } from "@/components/client/layout/auth-panel-client";

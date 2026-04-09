@@ -506,7 +506,7 @@ export const HotelForm = ({
             )}
           />
 
-          <div className="col-span-2 grid grid-cols-2 gap-4">
+          <div className="col-span-2 grid grid-cols-2 items-start gap-3">
             <FormField
               control={form.control}
               name="countryId"

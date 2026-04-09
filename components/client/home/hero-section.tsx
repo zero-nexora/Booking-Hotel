@@ -1,4 +1,3 @@
-import React from "react";
 import { HeroSearch } from "./hero-search";
 import Image from "next/image";
 import HeroBannerDark from "@/public/images/hero-banner-dark.svg";

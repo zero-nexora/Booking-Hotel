@@ -105,7 +105,7 @@ export const HeroSearch = () => {
                 mode="single"
                 selected={checkOut}
                 onSelect={setCheckOut}
-                disabled={(d) => d < (checkIn ?? new Date())}
+                disabled={(d) => d <= (checkIn ?? new Date())}
                 initialFocus
               />
             </PopoverContent>
