@@ -286,18 +286,34 @@ export const adminBookingRouter = createTRPCRouter({
       const now = new Date();
       const bookingItemIds = booking!.items.map((i) => i.id);
       const releasesRoom = RELEASES_ROOM.has(input.status);
+      const paidPayments = booking!.payments;
+      const hasPaidPayments = paidPayments.length > 0;
 
-      let refunds: RefundRecord[] = [];
+      let stripeRefunds: RefundRecord[] = [];
       let newPaymentStatus: PaymentStatus | undefined;
 
       if (input.status === "CANCELLED") {
-        refunds = await processStripeRefunds(booking!.payments);
-        if (refunds.length > 0) {
+        if (hasPaidPayments) {
+          stripeRefunds = await processStripeRefunds(paidPayments);
           newPaymentStatus = "REFUNDED";
-        } else if (booking!.paymentStatus === "UNPAID") {
+        } else {
           newPaymentStatus = "CANCELLED";
         }
       }
+
+      // NO_SHOW: không hoàn tiền, không gọi stripe, tạo refund record 0 USD để ghi nhận
+      const noShowZeroRefunds =
+        input.status === "NO_SHOW" && hasPaidPayments
+          ? paidPayments.map((p) => ({
+              bookingId: booking!.id,
+              userId: ctx.user.id,
+              type: "REFUND" as const,
+              status: "REFUNDED" as const,
+              amount: new Prisma.Decimal(0),
+              currency: p.currency,
+              refundedAt: now,
+            }))
+          : [];
 
       await ctx.db.$transaction([
         ctx.db.booking.update({
@@ -305,19 +321,14 @@ export const adminBookingRouter = createTRPCRouter({
           data: {
             status: input.status,
             ...(input.status === "CANCELLED" || input.status === "NO_SHOW"
-              ? {
-                  cancelledAt: now,
-                  cancelReason: input.cancelReason ?? null,
-                }
+              ? { cancelledAt: now, cancelReason: input.cancelReason ?? null }
               : {}),
             ...(newPaymentStatus ? { paymentStatus: newPaymentStatus } : {}),
           },
         }),
         ctx.db.bookingItem.updateMany({
           where: { bookingId: input.id },
-          data: {
-            status: BOOKING_ITEM_STATUS_MAP[input.status] as never,
-          },
+          data: { status: BOOKING_ITEM_STATUS_MAP[input.status] as never },
         }),
         ...(releasesRoom
           ? [
@@ -332,7 +343,7 @@ export const adminBookingRouter = createTRPCRouter({
               }),
             ]
           : []),
-        ...refunds.map((r) =>
+        ...stripeRefunds.map((r) =>
           ctx.db.payment.create({
             data: {
               bookingId: booking!.id,
@@ -345,6 +356,7 @@ export const adminBookingRouter = createTRPCRouter({
             },
           }),
         ),
+        ...noShowZeroRefunds.map((data) => ctx.db.payment.create({ data })),
       ]);
 
       const firstItem = booking!.items[0];
@@ -393,13 +405,10 @@ export const adminBookingRouter = createTRPCRouter({
       }
 
       if (input.status === "CANCELLED") {
-        const refundAmount =
-          refunds.length > 0
-            ? formatCurrencyUSD(
-                refunds.reduce((sum, r) => sum + Number(r.amount), 0),
-              )
-            : undefined;
-
+        const refundTotal = stripeRefunds.reduce(
+          (sum, r) => sum + Number(r.amount),
+          0,
+        );
         sendBookingCancellation({
           to: booking!.guestEmail,
           name: booking!.guestName,
@@ -410,7 +419,8 @@ export const adminBookingRouter = createTRPCRouter({
           checkOut,
           totalAmount,
           currency,
-          refundAmount,
+          refundAmount:
+            refundTotal > 0 ? formatCurrencyUSD(refundTotal) : undefined,
           cancelReason: input.cancelReason,
           hotelsUrl: `${BASE_URL}/hotels`,
         }).catch((err) =>

@@ -8,7 +8,6 @@ import {
   sendRefundFailed,
   sendRefundSuccess,
 } from "@/lib/email";
-import { format } from "date-fns";
 import Stripe from "stripe";
 import { generateQRBase64 } from "@/lib/qr-code";
 import { formatCurrencyUSD, formatDateShort } from "@/lib/utils";
@@ -40,14 +39,8 @@ export async function POST(req: NextRequest) {
       case "payment_intent.payment_failed":
         await onPaymentFailed(event.data.object as Stripe.PaymentIntent);
         break;
-      case "refund.created":
-        await onRefundCreated(event.data.object as Stripe.Refund);
-        break;
       case "refund.updated":
         await onRefundUpdated(event.data.object as Stripe.Refund);
-        break;
-      case "refund.failed":
-        await onRefundFailed(event.data.object as Stripe.Refund);
         break;
     }
   } catch (err) {
@@ -101,6 +94,7 @@ async function onPaymentSucceeded(pi: Stripe.PaymentIntent) {
       },
     },
   });
+
   if (!payment) return;
 
   const { booking } = payment;
@@ -242,7 +236,15 @@ async function onPaymentFailed(pi: Stripe.PaymentIntent) {
   }).catch((err) => console.error("[email] payment-failed failed", err));
 }
 
-async function onRefundCreated(refund: Stripe.Refund) {
+async function onRefundUpdated(refund: Stripe.Refund) {
+  if (refund.status === "succeeded") {
+    await handleRefundSucceeded(refund);
+  } else if (refund.status === "failed") {
+    await handleRefundFailed(refund);
+  }
+}
+
+async function handleRefundSucceeded(refund: Stripe.Refund) {
   const payment = await prisma.payment.findUnique({
     where: { stripeRefundId: refund.id },
     select: {
@@ -250,8 +252,10 @@ async function onRefundCreated(refund: Stripe.Refund) {
       status: true,
       amount: true,
       currency: true,
+      bookingId: true,
       booking: {
         select: {
+          id: true,
           bookingRef: true,
           checkIn: true,
           checkOut: true,
@@ -265,17 +269,22 @@ async function onRefundCreated(refund: Stripe.Refund) {
     },
   });
 
-  console.log("Refounded 1")
-
-  if (!payment) return;
+  if (!payment) {
+    console.warn(`[refund.succeeded] No payment found for refund ${refund.id}`);
+    return;
+  }
   if (payment.status === "REFUNDED") return;
 
-  await prisma.payment.update({
-    where: { id: payment.id },
-    data: { status: "REFUNDED", refundedAt: new Date() },
-  });
-
-  console.log("Refounded 2")
+  await prisma.$transaction([
+    prisma.payment.update({
+      where: { id: payment.id },
+      data: { status: "REFUNDED", refundedAt: new Date() },
+    }),
+    prisma.booking.update({
+      where: { id: payment.bookingId },
+      data: { paymentStatus: "REFUNDED" },
+    }),
+  ]);
 
   const { booking } = payment;
   const item = booking.items[0];
@@ -296,7 +305,7 @@ async function onRefundCreated(refund: Stripe.Refund) {
   }).catch((err) => console.error("[email] refund-success failed", err));
 }
 
-async function onRefundFailed(refund: Stripe.Refund) {
+async function handleRefundFailed(refund: Stripe.Refund) {
   const payment = await prisma.payment.findUnique({
     where: { stripeRefundId: refund.id },
     select: {
@@ -319,67 +328,10 @@ async function onRefundFailed(refund: Stripe.Refund) {
     },
   });
 
-  if (!payment) return;
-  if (payment.status === "FAILED") return;
-
-  await prisma.$transaction([
-    prisma.payment.update({
-      where: { id: payment.id },
-      data: {
-        status: "FAILED",
-        failureMessage: refund.failure_reason ?? "Hoàn tiền thất bại",
-      },
-    }),
-    prisma.booking.update({
-      where: { id: payment.bookingId },
-      data: { paymentStatus: "FAILED" },
-    }),
-  ]);
-
-  const { booking } = payment;
-  const item = booking.items[0];
-  if (!booking.guestEmail || !item) return;
-
-  await sendRefundFailed({
-    to: booking.guestEmail,
-    name: booking.guestName,
-    bookingRef: booking.bookingRef,
-    hotelName: booking.hotel.name,
-    roomName: item.room.name,
-    checkIn: formatDateShort(booking.checkIn),
-    checkOut: formatDateShort(booking.checkOut),
-    totalAmount: formatCurrencyUSD(Number(booking.totalAmount)),
-    currency: booking.currency,
-    supportUrl: `${env.NEXT_PUBLIC_APP_URL}/support`,
-  }).catch((err) => console.error("[email] refund-failed failed", err));
-}
-
-async function onRefundUpdated(refund: Stripe.Refund) {
-  if (refund.status !== "failed") return;
-
-  const payment = await prisma.payment.findUnique({
-    where: { stripeRefundId: refund.id },
-    select: {
-      id: true,
-      status: true,
-      bookingId: true,
-      booking: {
-        select: {
-          bookingRef: true,
-          checkIn: true,
-          checkOut: true,
-          totalAmount: true,
-          currency: true,
-          guestName: true,
-          guestEmail: true,
-          items: { select: { room: { select: { name: true } } } },
-          hotel: { select: { name: true } },
-        },
-      },
-    },
-  });
-
-  if (!payment) return;
+  if (!payment) {
+    console.warn(`[refund.failed] No payment found for refund ${refund.id}`);
+    return;
+  }
   if (payment.status === "FAILED") return;
 
   await prisma.$transaction([
