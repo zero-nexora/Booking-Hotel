@@ -45,16 +45,8 @@ async function handler(_req: NextRequest) {
       },
       data: { status: "CANCELLED" },
     }),
-    prisma.roomAvailability.updateMany({
-      where: {
-        bookingItemId: { in: itemIds },
-      },
-      data: {
-        status: "AVAILABLE",
-        bookingItemId: null,
-        lockToken: null,
-        lockExpiresAt: null,
-      },
+    prisma.roomAvailability.deleteMany({
+      where: { bookingItemId: { in: itemIds } },
     }),
   ]);
 

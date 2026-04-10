@@ -32,6 +32,7 @@ const HotelsPage = async ({ searchParams }: HotelsPageProps) => {
             (params.sort as "price_asc" | "price_desc" | "rating" | "stars") ??
             "price_asc",
           limit: params.limit,
+          view: params.view,
         },
         {
           getNextPageParam: (last: { nextCursor: any }) =>

@@ -210,14 +210,8 @@ async function onPaymentFailed(pi: Stripe.PaymentIntent) {
       where: { bookingId: booking.id, status: "PENDING" },
       data: { status: "CANCELLED" },
     }),
-    prisma.roomAvailability.updateMany({
+    prisma.roomAvailability.deleteMany({
       where: { bookingItemId: { in: itemIds } },
-      data: {
-        status: "AVAILABLE",
-        bookingItemId: null,
-        lockToken: null,
-        lockExpiresAt: null,
-      },
     }),
   ]);
 
@@ -247,29 +241,7 @@ async function onRefundUpdated(refund: Stripe.Refund) {
 }
 
 async function handleRefundSucceeded(refund: Stripe.Refund) {
-  const payment = await prisma.payment.findUnique({
-    where: { stripeRefundId: refund.id },
-    select: {
-      id: true,
-      status: true,
-      amount: true,
-      currency: true,
-      bookingId: true,
-      booking: {
-        select: {
-          id: true,
-          bookingRef: true,
-          checkIn: true,
-          checkOut: true,
-          cancelReason: true,
-          guestName: true,
-          guestEmail: true,
-          items: { select: { room: { select: { name: true } } } },
-          hotel: { select: { name: true } },
-        },
-      },
-    },
-  });
+  const payment = await findPaymentWithRetry(refund.id);
 
   if (!payment) {
     console.warn(`[refund.succeeded] No payment found for refund ${refund.id}`);
@@ -308,27 +280,7 @@ async function handleRefundSucceeded(refund: Stripe.Refund) {
 }
 
 async function handleRefundFailed(refund: Stripe.Refund) {
-  const payment = await prisma.payment.findUnique({
-    where: { stripeRefundId: refund.id },
-    select: {
-      id: true,
-      status: true,
-      bookingId: true,
-      booking: {
-        select: {
-          bookingRef: true,
-          checkIn: true,
-          checkOut: true,
-          totalAmount: true,
-          currency: true,
-          guestName: true,
-          guestEmail: true,
-          items: { select: { room: { select: { name: true } } } },
-          hotel: { select: { name: true } },
-        },
-      },
-    },
-  });
+  const payment = await findPaymentWithRetry(refund.id);
 
   if (!payment) {
     console.warn(`[refund.failed] No payment found for refund ${refund.id}`);
@@ -366,4 +318,49 @@ async function handleRefundFailed(refund: Stripe.Refund) {
     currency: booking.currency,
     supportUrl: `${env.NEXT_PUBLIC_APP_URL}/support`,
   }).catch((err) => console.error("[email] refund-failed failed", err));
+}
+
+const sleep = (ms: number) => new Promise((res) => setTimeout(res, ms));
+
+async function findPaymentWithRetry(
+  stripeRefundId: string,
+  retries = 5,
+  delayMs = 1000,
+) {
+  for (let i = 0; i < retries; i++) {
+    const payment = await prisma.payment.findUnique({
+      where: { stripeRefundId },
+      select: {
+        id: true,
+        status: true,
+        amount: true,
+        currency: true,
+        bookingId: true,
+        booking: {
+          select: {
+            id: true,
+            bookingRef: true,
+            checkIn: true,
+            checkOut: true,
+            cancelReason: true,
+            guestName: true,
+            guestEmail: true,
+            totalAmount: true,
+            currency: true,
+            items: { select: { room: { select: { name: true } } } },
+            hotel: { select: { name: true } },
+          },
+        },
+      },
+    });
+
+    if (payment) return payment;
+
+    console.warn(
+      `[refund] Payment not found for ${stripeRefundId}, retry ${i + 1}/${retries} in ${delayMs}ms`,
+    );
+    await sleep(delayMs);
+  }
+
+  return null;
 }

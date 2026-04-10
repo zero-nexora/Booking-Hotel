@@ -220,14 +220,8 @@ export const bookingRouter = createTRPCRouter({
             where: { id: paymentId },
             data: { status: "CANCELLED" },
           }),
-          ctx.db.roomAvailability.updateMany({
+          ctx.db.roomAvailability.deleteMany({
             where: { lockToken: booking.id },
-            data: {
-              status: "AVAILABLE",
-              lockToken: null,
-              lockExpiresAt: null,
-              bookingItemId: null,
-            },
           }),
         ]);
         throw new TRPCError({
@@ -431,14 +425,8 @@ export const bookingRouter = createTRPCRouter({
           where: { bookingId: booking!.id },
           data: { status: "CANCELLED" },
         }),
-        ctx.db.roomAvailability.updateMany({
+        ctx.db.roomAvailability.deleteMany({
           where: { bookingItemId: { in: bookingItemIds } },
-          data: {
-            status: "AVAILABLE",
-            bookingItemId: null,
-            lockToken: null,
-            lockExpiresAt: null,
-          },
         }),
         ...(hasRefund
           ? refunds.map((r) =>

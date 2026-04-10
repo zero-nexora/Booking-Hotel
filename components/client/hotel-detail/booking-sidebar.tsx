@@ -49,14 +49,14 @@ export const BookingSidebar = ({
   const totalPrice = minPrice && nights ? minPrice * nights : null;
 
   const updateUrlDates = useCallback(
-    (cin?: Date, cout?: Date) => {
+    (cin?: Date, cout?: Date, a = adults, c = children) => {
       const params = new URLSearchParams(window.location.search);
       if (cin) params.set("checkIn", toDateParam(cin));
       else params.delete("checkIn");
       if (cout) params.set("checkOut", toDateParam(cout));
       else params.delete("checkOut");
-      params.set("adults", String(adults));
-      params.set("children", String(children));
+      params.set("adults", String(a));
+      params.set("children", String(c));
       router.replace(`${pathname}?${params.toString()}`, { scroll: false });
     },
     [adults, children, pathname, router],
@@ -189,14 +189,20 @@ export const BookingSidebar = ({
                   min: 1,
                   max: 10,
                   value: adults,
-                  set: setAdults,
+                  set: (v: number) => {
+                    setAdults(v);
+                    updateUrlDates(checkIn, checkOut, v, children);
+                  },
                 },
                 {
                   label: "Trẻ em",
                   min: 0,
                   max: 6,
                   value: children,
-                  set: setChildren,
+                  set: (v: number) => {
+                    setChildren(v);
+                    updateUrlDates(checkIn, checkOut, adults, v);
+                  },
                 },
               ].map(({ label, min, max, value, set }) => (
                 <div key={label} className="flex items-center justify-between">

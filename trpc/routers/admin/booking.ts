@@ -301,7 +301,6 @@ export const adminBookingRouter = createTRPCRouter({
         }
       }
 
-      // NO_SHOW: không hoàn tiền, không gọi stripe, tạo refund record 0 USD để ghi nhận
       const noShowZeroRefunds =
         input.status === "NO_SHOW" && hasPaidPayments
           ? paidPayments.map((p) => ({
@@ -332,14 +331,8 @@ export const adminBookingRouter = createTRPCRouter({
         }),
         ...(releasesRoom
           ? [
-              ctx.db.roomAvailability.updateMany({
+              ctx.db.roomAvailability.deleteMany({
                 where: { bookingItemId: { in: bookingItemIds } },
-                data: {
-                  status: "AVAILABLE",
-                  bookingItemId: null,
-                  lockToken: null,
-                  lockExpiresAt: null,
-                },
               }),
             ]
           : []),

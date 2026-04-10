@@ -26,7 +26,6 @@ import {
   formatDatetime,
   formatCurrencyUSD,
 } from "@/lib/utils";
-import { useConfirmDialogStore } from "@/store/confirm-dialog-store";
 
 type BookingDetail = RouterOutput["admin"]["booking"]["detail"];
 type BookingStatus =
@@ -117,7 +116,7 @@ const ConfirmStatusDialog = ({
           )}
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={onClose} disabled={isPending}>
+          <Button variant="outline" onClick={onClose} disabled={isPending} className="hover:text-foreground">
             Huỷ
           </Button>
           <Button

@@ -29,6 +29,7 @@ const hotelSearchInput = z.object({
   sort: z
     .enum(["price_asc", "price_desc", "rating", "stars"])
     .default("price_asc"),
+  view: z.enum(["list", "grid", "map"]).optional(),
   cursor: cursorInput,
   limit: z.number().int().min(1).max(50).default(DEFAULT_PAGE_SIZE),
 });
@@ -140,6 +141,7 @@ export const hotelRouter = createTRPCRouter({
         limit,
         adults,
         children,
+        view,
       } = input;
 
       const roomWhere: Prisma.RoomWhereInput = {
@@ -221,7 +223,8 @@ export const hotelRouter = createTRPCRouter({
 
       const rows = await ctx.db.hotel.findMany({
         where: hotelWhere,
-        take: isPriceSort || isRatingSort ? 500 : limit + 1,
+        take:
+          isPriceSort || isRatingSort || view === "map" ? undefined : limit + 1,
         orderBy,
         include: {
           ...hotelPublicInclude,
