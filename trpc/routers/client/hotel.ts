@@ -164,7 +164,10 @@ export const hotelRouter = createTRPCRouter({
           cur.setDate(cur.getDate() + 1);
         }
         roomWhere.availability = {
-          every: { date: { in: dates }, status: "AVAILABLE" },
+          none: {
+            date: { in: dates },
+            status: { not: "AVAILABLE" },
+          },
         };
       }
 
@@ -294,9 +297,9 @@ export const hotelRouter = createTRPCRouter({
               isActive: true,
               capacity: { gte: input.adults + input.children },
               availability: {
-                every: {
+                none: {
                   date: { gte: input.checkIn, lte: input.checkOut },
-                  status: "AVAILABLE",
+                  status: { not: "AVAILABLE" },
                 },
               },
             },

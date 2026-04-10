@@ -265,6 +265,8 @@ async function onRefundCreated(refund: Stripe.Refund) {
     },
   });
 
+  console.log("Refounded 1")
+
   if (!payment) return;
   if (payment.status === "REFUNDED") return;
 
@@ -272,6 +274,8 @@ async function onRefundCreated(refund: Stripe.Refund) {
     where: { id: payment.id },
     data: { status: "REFUNDED", refundedAt: new Date() },
   });
+
+  console.log("Refounded 2")
 
   const { booking } = payment;
   const item = booking.items[0];

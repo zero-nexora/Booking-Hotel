@@ -24,7 +24,7 @@ export const AdminShell = ({
       />
       {mobileOpen && (
         <div
-          className="fixed inset-0 z-20 bg-foreground/40 box-hidden"
+          className="fixed inset-0 z-20 bg-foreground/40 box-block"
           onClick={() => setMobileOpen(false)}
         />
       )}
