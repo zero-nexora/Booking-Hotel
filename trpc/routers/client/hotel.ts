@@ -471,4 +471,87 @@ export const hotelRouter = createTRPCRouter({
 
       return { ...room!, isAvailable, nights, totalPrice };
     }),
+
+  bookingContext: baseProcedure
+    .input(
+      z.object({
+        hotelSlug: z.string(),
+        roomSlug: z.string(),
+        checkIn: z.date().optional(),
+        checkOut: z.date().optional(),
+        adults: z.number().int().min(1).default(1),
+        children: z.number().int().min(0).default(0),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const { hotelSlug, roomSlug, checkIn, checkOut, adults, children } =
+        input;
+
+      const hotel = await ctx.db.hotel.findUnique({
+        where: { slug: hotelSlug, status: "ACTIVE" },
+        include: {
+          images: { orderBy: [{ isPrimary: "desc" }, { sortOrder: "asc" }] },
+          address: { include: { city: { include: { country: true } } } },
+          policy: true,
+          amenities: { include: { amenity: true } },
+          rooms: {
+            where: {
+              slug: roomSlug,
+              isActive: true,
+              capacity: { gte: adults + children },
+            },
+            include: {
+              roomType: true,
+              images: { where: { isPrimary: true }, take: 1 },
+              beds: { include: { bedType: true } },
+              amenities: { include: { amenity: true } },
+              availability:
+                checkIn && checkOut
+                  ? { where: { date: { gte: checkIn, lt: checkOut } } }
+                  : undefined,
+            },
+          },
+          _count: {
+            select: { reviews: { where: { status: "APPROVED" } } },
+          },
+        },
+      });
+
+      if (!hotel)
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Khách sạn không tồn tại",
+        });
+
+      const room = hotel.rooms[0];
+      if (!room)
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Phòng không tồn tại",
+        });
+
+      const allApprovedReviews = await ctx.db.review.aggregate({
+        where: { hotelId: hotel.id, status: "APPROVED" },
+        _avg: { overallRating: true },
+        _count: true,
+      });
+
+      const nights =
+        checkIn && checkOut
+          ? Math.round(
+              (checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24),
+            )
+          : null;
+
+      const roomWithPrice = nights
+        ? { ...room, totalPrice: Number(room.basePrice) * nights, nights }
+        : room;
+
+      return {
+        ...hotel,
+        rooms: [roomWithPrice],
+        avgRating: allApprovedReviews._avg.overallRating,
+        reviewCount: allApprovedReviews._count,
+      };
+    }),
 });

@@ -15,7 +15,7 @@ import { ArrowLeft, ChevronRight, User, CreditCard } from "lucide-react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 
-import { useHotelDetail } from "@/hooks/client/use-hotels";
+import { useBookingContext } from "@/hooks/client/use-hotels";
 import { useCreateBookingIntent } from "@/hooks/client/use-booking";
 import { useMe } from "@/hooks/client/use-user";
 
@@ -51,15 +51,13 @@ export const BookingClient = ({ hotelSlug, roomSlug }: BookingClientProps) => {
   const adults = params.adults || 1;
   const children = params.children || 0;
 
-  
-  const { data: hotel, isLoading } = useHotelDetail(
-    hotelSlug,
+  const { data: ctx, isLoading } = useBookingContext(hotelSlug, roomSlug, {
     checkIn,
     checkOut,
     adults,
     children,
-  );
-  
+  });
+
   const { data: me } = useMe();
 
   const [step, setStep] = useState<Step>("guest");
@@ -98,7 +96,7 @@ export const BookingClient = ({ hotelSlug, roomSlug }: BookingClientProps) => {
 
   if (isLoading) return <BookingPageSkeleton />;
 
-  if (!hotel || !checkIn || !checkOut) {
+  if (!ctx || !checkIn || !checkOut) {
     return (
       <div className="max-w-4xl mx-auto px-4 py-16 text-center">
         <p className="text-muted-foreground">
@@ -116,7 +114,7 @@ export const BookingClient = ({ hotelSlug, roomSlug }: BookingClientProps) => {
     );
   }
 
-  const room = hotel.rooms.find((r) => r.slug === roomSlug);
+  const room = ctx.rooms.find((r) => r.slug === roomSlug);
   if (!room) {
     return (
       <div className="max-w-4xl mx-auto px-4 py-16 text-center">
@@ -137,7 +135,7 @@ export const BookingClient = ({ hotelSlug, roomSlug }: BookingClientProps) => {
   const pricePerNight = Number(room.basePrice.toString());
   const nights = differenceInDays(checkOut, checkIn);
   const total = pricePerNight * nights;
-  const hotelImage = hotel.images[0]?.url;
+  const hotelImage = ctx.images[0]?.url;
 
   const goToStep = (next: Step) => {
     setPrevStep(step);
@@ -196,7 +194,7 @@ export const BookingClient = ({ hotelSlug, roomSlug }: BookingClientProps) => {
           </Link>
         </Button>
         <ChevronRight className="w-3.5 h-3.5" />
-        <span>{hotel.name}</span>
+        <span>{ctx.name}</span>
         <ChevronRight className="w-3.5 h-3.5" />
         <span className="text-foreground font-medium">Đặt phòng</span>
       </div>
@@ -276,7 +274,7 @@ export const BookingClient = ({ hotelSlug, roomSlug }: BookingClientProps) => {
 
         <div className="md:hidden w-full">
           <BookingSummary
-            hotelName={hotel.name}
+            hotelName={ctx.name}
             hotelImage={hotelImage}
             roomName={room.name}
             roomType={room.roomType.name}
@@ -286,8 +284,8 @@ export const BookingClient = ({ hotelSlug, roomSlug }: BookingClientProps) => {
             childCount={children}
             pricePerNight={pricePerNight}
             currency="USD"
-            checkInTime={hotel.policy?.checkInTime}
-            checkOutTime={hotel.policy?.checkOutTime}
+            checkInTime={ctx.policy?.checkInTime}
+            checkOutTime={ctx.policy?.checkOutTime}
             expiresAt={intentData?.expiresAt}
           />
         </div>
@@ -295,7 +293,7 @@ export const BookingClient = ({ hotelSlug, roomSlug }: BookingClientProps) => {
         <div className="box-block md:w-80 shrink-0 w-full">
           <div className="sticky top-24">
             <BookingSummary
-              hotelName={hotel.name}
+              hotelName={ctx.name}
               hotelImage={hotelImage}
               roomName={room.name}
               roomType={room.roomType.name}
@@ -305,8 +303,8 @@ export const BookingClient = ({ hotelSlug, roomSlug }: BookingClientProps) => {
               childCount={children}
               pricePerNight={pricePerNight}
               currency="USD"
-              checkInTime={hotel.policy?.checkInTime}
-              checkOutTime={hotel.policy?.checkOutTime}
+              checkInTime={ctx.policy?.checkInTime}
+              checkOutTime={ctx.policy?.checkOutTime}
               expiresAt={intentData?.expiresAt}
             />
           </div>

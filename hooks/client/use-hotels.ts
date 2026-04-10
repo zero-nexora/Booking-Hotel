@@ -89,3 +89,21 @@ export function useRoomDetail(
     }),
   );
 }
+
+export function useBookingContext(
+  hotelSlug: string,
+  roomSlug: string,
+  params: { checkIn?: Date; checkOut?: Date; adults: number; children: number },
+) {
+  const trpc = useTRPC();
+  return useQuery(
+    trpc.client.hotel.bookingContext.queryOptions({
+      hotelSlug,
+      roomSlug,
+      checkIn: params.checkIn,
+      checkOut: params.checkOut,
+      adults: params.adults,
+      children: params.children,
+    }),
+  );
+}
