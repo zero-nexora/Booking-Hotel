@@ -19,12 +19,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import {
-  calcNights,
-  formatDateShort,
-  formatCurrencyUSD,
-  toDateParam,
-} from "@/lib/utils";
+import { calcNights, formatDateShort, formatCurrencyUSD, toDateParam } from "@/lib/utils";
 import { motion, Variants } from "framer-motion";
 
 type Room = {
@@ -111,7 +106,7 @@ export const AvailableRooms = ({
   return (
     <TooltipProvider>
       <motion.div
-        className="grid grid-cols-1 gap-4 md:grid-cols-1 md:space-y-0"
+        className="space-y-4"
         variants={containerVariants}
         initial="hidden"
         animate="visible"
@@ -126,8 +121,8 @@ export const AvailableRooms = ({
               variants={roomCardVariants}
               className="rounded-2xl border border-border bg-card overflow-hidden"
             >
-              <div className="flex flex-col md:flex-row">
-                <div className="relative w-full h-48 shrink-0 bg-muted md:w-52 md:h-auto">
+              <div className="flex">
+                <div className="relative w-52 shrink-0 bg-muted">
                   {image ? (
                     <Image
                       src={image.url}
@@ -136,7 +131,7 @@ export const AvailableRooms = ({
                       className="object-cover"
                       priority={index === 0}
                       loading={index === 0 ? "eager" : "lazy"}
-                      sizes="(max-width: 768px) 100vw, 208px"
+                      sizes="208px"
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">

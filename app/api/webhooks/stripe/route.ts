@@ -39,7 +39,9 @@ export async function POST(req: NextRequest) {
       case "payment_intent.payment_failed":
         await onPaymentFailed(event.data.object as Stripe.PaymentIntent);
         break;
+      case "refund.created":
       case "refund.updated":
+      case "refund.failed":
         await onRefundUpdated(event.data.object as Stripe.Refund);
         break;
     }
