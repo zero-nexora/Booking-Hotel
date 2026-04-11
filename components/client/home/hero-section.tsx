@@ -5,13 +5,13 @@ import HeroBannerLight from "@/public/images/hero-banner-light.svg";
 import { useTheme } from "next-themes";
 import { CountUp } from "@/components/common/count-up";
 import { motion, Variants } from "framer-motion";
-import { Star } from "lucide-react";
+import { BookOpen, Globe, Smartphone, Star } from "lucide-react";
 
 const STATS = [
-  { value: 80, suffix: "%", label: "Đặt phòng trực tuyến" },
-  { value: 70, suffix: "%", label: "Khách tìm phòng trên di động" },
-  { value: 5, suffix: "⭐", label: "Đánh giá trung bình" },
-  { value: 95, suffix: "%", label: "Đọc review trước khi đặt" },
+  { value: 80, suffix: "%", label: "Đặt phòng trực tuyến", icon: Globe },
+  { value: 70, suffix: "%", label: "Khách dùng di động", icon: Smartphone },
+  { value: 5, suffix: "/5", label: "Đánh giá trung bình", icon: Star },
+  { value: 95, suffix: "%", label: "Đọc review trước khi đặt", icon: BookOpen },
 ];
 
 const fadeUpVariants: Variants = {
@@ -55,20 +55,24 @@ export const HeroSection = () => {
         quality={90}
       />
 
-      <div className="relative z-10 max-w-7xl mx-auto px-4 py-24 sm:py-36 text-center space-y-6">
+      <div className="relative z-10 max-w-7xl mx-auto px-4 pt-10 py-36 text-center space-y-6">
         <motion.div
-          className="space-y-3"
+          className="space-y-4"
           variants={fadeUpVariants}
           initial="hidden"
           animate="visible"
         >
-          <h1 className="text-5xl font-bold tracking-tight text-foreground">
-            Tìm khách sạn hoàn hảo
+          <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-medium tracking-wide uppercase">
+            <Star size={11} className="fill-primary" />
+            Nền tảng đặt phòng hàng đầu
+          </span>
+          <h1 className="text-5xl sm:text-6xl font-bold tracking-tight text-foreground leading-[1.1]">
+            Tìm khách sạn
             <br />
-            <span className="text-primary">cho chuyến đi của bạn</span>
+            <span className="text-primary">hoàn hảo cho bạn</span>
           </h1>
-          <p className="text-lg text-secondary-foreground max-w-xl mx-auto">
-            Hàng nghìn khách sạn cao cấp, giá tốt nhất, đặt phòng trong vài
+          <p className="text-base text-muted-foreground max-w-md mx-auto leading-relaxed">
+            Hàng nghìn khách sạn cao cấp — giá tốt nhất, đặt phòng trong vài
             giây.
           </p>
         </motion.div>
@@ -83,24 +87,27 @@ export const HeroSection = () => {
         </motion.div>
 
         <motion.div
-          className="flex justify-center gap-8 sm:gap-12 mt-10 flex-wrap"
+          className="flex justify-center gap-6 sm:gap-10 mt-10 flex-wrap"
           variants={statsContainerVariants}
           initial="hidden"
           animate="visible"
         >
-          {STATS.map(({ value, label, suffix }) => (
-            <motion.div key={label} variants={statItemVariants}>
-              <p className="text-3xl font-bold text-primary">
-                <div className="flex items-center gap-1">
+          {STATS.map(({ value, label, suffix, icon: Icon }) => (
+            <motion.div
+              key={label}
+              variants={statItemVariants}
+              className="flex items-center gap-3 bg-background/60 backdrop-blur-sm border border-border/50 rounded-xl px-4 py-3"
+            >
+              <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-primary/10 text-primary shrink-0">
+                <Icon size={18} />
+              </div>
+              <div className="text-left">
+                <p className="text-xl font-bold text-foreground leading-none">
                   <CountUp to={value} triggerOnView />
-                  {suffix === "star" ? (
-                    <Star className="fill-primary text-primary" size={28} />
-                  ) : (
-                    suffix
-                  )}
-                </div>
-              </p>
-              <p className="text-xs text-muted-foreground mt-0.5">{label}</p>
+                  {suffix}
+                </p>
+                <p className="text-xs text-muted-foreground mt-0.5">{label}</p>
+              </div>
             </motion.div>
           ))}
         </motion.div>

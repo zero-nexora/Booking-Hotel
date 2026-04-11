@@ -17,6 +17,11 @@ export const env = createEnv({
 
     // Email
     RESEND_API_KEY: z.string().startsWith("re_"),
+
+    EMAIL_HOST: z.string(),
+    EMAIL_PORT: z.string().regex(/^\d+$/),
+    EMAIL_USER: z.string(),
+    EMAIL_PASS: z.string(),
     EMAIL_FROM: z.string(),
 
     // Upstash
@@ -47,27 +52,41 @@ export const env = createEnv({
 
   runtimeEnv: {
     DATABASE_URL: process.env.DATABASE_URL,
+
     BETTER_AUTH_SECRET: process.env.BETTER_AUTH_SECRET,
+    BETTER_AUTH_URL: process.env.BETTER_AUTH_URL,
+
     GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
     GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
+
     STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY,
     STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET,
+
     RESEND_API_KEY: process.env.RESEND_API_KEY,
+
+    EMAIL_HOST: process.env.EMAIL_HOST,
+    EMAIL_PORT: process.env.EMAIL_PORT,
+    EMAIL_USER: process.env.EMAIL_USER,
+    EMAIL_PASS: process.env.EMAIL_PASS,
     EMAIL_FROM: process.env.EMAIL_FROM,
+
     UPSTASH_REDIS_REST_URL: process.env.UPSTASH_REDIS_REST_URL,
     UPSTASH_REDIS_REST_TOKEN: process.env.UPSTASH_REDIS_REST_TOKEN,
     QSTASH_TOKEN: process.env.QSTASH_TOKEN,
     QSTASH_CURRENT_SIGNING_KEY: process.env.QSTASH_CURRENT_SIGNING_KEY,
     QSTASH_NEXT_SIGNING_KEY: process.env.QSTASH_NEXT_SIGNING_KEY,
     CRON_SECRET: process.env.CRON_SECRET,
+
     // UPLOADTHING_SECRET: process.env.UPLOADTHING_SECRET,
     // UPLOADTHING_APP_ID: process.env.UPLOADTHING_APP_ID,
     UPLOADTHING_TOKEN: process.env.UPLOADTHING_TOKEN,
     NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
+
     NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY:
       process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY,
-    BETTER_AUTH_URL: process.env.BETTER_AUTH_URL,
-    NODE_ENV: process.env.NODE_ENV,
+
     GEMINI_API_KEY: process.env.GEMINI_API_KEY,
+    
+    NODE_ENV: process.env.NODE_ENV,
   },
 });

@@ -1,8 +1,20 @@
-import { Resend } from "resend";
+import nodemailer from "nodemailer";
+import { render } from "@react-email/render";
 import { env } from "./env";
 
-export const resend = new Resend(env.RESEND_API_KEY);
+const transporter = nodemailer.createTransport({
+  host: env.EMAIL_HOST,
+  port: Number(env.EMAIL_PORT),
+  secure: false, // STARTTLS
+  auth: {
+    user: env.EMAIL_USER,
+    pass: env.EMAIL_PASS,
+  },
+});
+
 const FROM = env.EMAIL_FROM;
+
+// "hien_dth235651@student.agu.edu.vn"
 
 const sendEmail = async ({
   to,
@@ -21,21 +33,20 @@ const sendEmail = async ({
     inline: boolean;
   }[];
 }) => {
-  const { data, error } = await resend.emails.send({
+  const html = await render(react);
+
+  await transporter.sendMail({
     from: FROM,
-    // to,
-    to: "hien_dth235651@student.agu.edu.vn",
+    to,
     subject,
-    react,
-    attachments,
+    html,
+    attachments: attachments?.map((a) => ({
+      filename: a.filename,
+      content: Buffer.from(a.content, "base64"),
+      contentType: a.content_type,
+      cid: a.content_id,
+    })),
   });
-
-  if (error) {
-    console.error("[email] Send failed:", error);
-    throw new Error(error.message);
-  }
-
-  return data;
 };
 
 export const sendEmailVerification = async (opts: {

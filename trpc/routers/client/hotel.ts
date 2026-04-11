@@ -258,6 +258,8 @@ export const hotelRouter = createTRPCRouter({
           const cursorIndex = results.findIndex((r) => r.id === cursor.id);
           if (cursorIndex !== -1) results = results.slice(cursorIndex + 1);
         }
+
+        results = results.slice(0, limit + 1);
       }
 
       if (isRatingSort) {
@@ -267,6 +269,8 @@ export const hotelRouter = createTRPCRouter({
           const cursorIndex = results.findIndex((r) => r.id === cursor.id);
           if (cursorIndex !== -1) results = results.slice(cursorIndex + 1);
         }
+
+        results = results.slice(0, limit + 1);
       }
 
       const { items, nextCursor } = popNextCursor(results, limit);
