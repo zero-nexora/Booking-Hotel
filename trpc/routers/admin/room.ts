@@ -337,6 +337,16 @@ export const adminRoomRouter = createTRPCRouter({
           message: `Không thể xóa: phòng đang có ${activeBookings} đặt phòng hoạt động`,
         });
 
+      const totalBookings = await ctx.db.bookingItem.count({
+        where: { roomId: input.id },
+      });
+
+      if (totalBookings)
+        throw new TRPCError({
+          code: "PRECONDITION_FAILED",
+          message: `Không thể xóa: phòng đã có ${totalBookings} đặt phòng trong quá khứ`,
+        });
+
       await ctx.db.room.delete({ where: { id: input.id } });
       return { success: true };
     }),

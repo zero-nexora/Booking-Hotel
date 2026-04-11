@@ -193,6 +193,14 @@ export const hotelRouter = createTRPCRouter({
         andConditions.push({
           OR: [
             {
+              name: { contains: search, mode: "insensitive" },
+            },
+            {
+              address: {
+                street: { contains: search, mode: "insensitive" },
+              },
+            },
+            {
               address: {
                 city: { name: { contains: search, mode: "insensitive" } },
               },

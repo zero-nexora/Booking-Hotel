@@ -17,6 +17,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { authClient } from "@/lib/auth-client";
+import { toast } from "sonner";
 
 const schema = z.object({ email: z.string().email("Email không hợp lệ") });
 type Values = z.infer<typeof schema>;
@@ -31,16 +32,16 @@ const ForgotPasswordPage = () => {
   const isLoading = form.formState.isSubmitting;
 
   const onSubmit = async (values: Values) => {
-    try {
-      await authClient.requestPasswordReset({
-        email: values.email,
-        redirectTo: "/reset-password",
-      });
-    } catch {
-    } finally {
-      setSubmittedEmail(values.email);
-      setIsSuccess(true);
+    const { error } = await authClient.requestPasswordReset({
+      email: values.email,
+      redirectTo: "/reset-password",
+    });
+    if (error?.status === 429) {
+      toast.error(error.message || "Quá nhiều yêu cầu, vui lòng thử lại sau");
+      return;
     }
+    setSubmittedEmail(values.email);
+    setIsSuccess(true);
   };
 
   if (isSuccess)

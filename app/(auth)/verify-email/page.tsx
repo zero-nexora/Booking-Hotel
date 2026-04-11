@@ -71,7 +71,11 @@ const VerifyEmailContent = () => {
         toast.success("Email đã được xác thực thành công!");
         setTimeout(() => router.push("/sign-in"), 3000);
       })
-      .catch(() => setState("error"));
+      .catch((e) => {
+        if (e?.status === 429)
+          toast.error(e.message || "Quá nhiều yêu cầu, vui lòng thử lại sau");
+        else setState("error");
+      });
   }, [token, router]);
 
   useEffect(() => {
@@ -83,12 +87,16 @@ const VerifyEmailContent = () => {
   const handleResend = async () => {
     setIsResending(true);
     try {
-      await authClient.sendVerificationEmail({
+      const { error } = await authClient.sendVerificationEmail({
         email: searchParams.get("email") ?? "",
         callbackURL: "/verify-email",
       });
-      toast.success("Email xác thực đã được gửi lại!");
-      setCooldown(60);
+      if (error?.status === 429)
+        toast.error(error.message || "Quá nhiều yêu cầu, vui lòng thử lại sau");
+      else {
+        toast.success("Email xác thực đã được gửi lại!");
+        setCooldown(60);
+      }
     } catch {
       toast.error("Không thể gửi email. Vui lòng thử lại sau.");
     } finally {

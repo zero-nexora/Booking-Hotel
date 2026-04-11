@@ -45,27 +45,27 @@ const SignInPage = () => {
   const isLoading = form.formState.isSubmitting;
 
   const onSubmit = async (values: Values) => {
-    try {
-      const response = await authClient.signIn.email(
-        {
-          email: values.email,
-          password: values.password,
-          rememberMe: values.rememberMe,
-          callbackURL: "/",
+    await authClient.signIn.email(
+      {
+        email: values.email,
+        password: values.password,
+        rememberMe: values.rememberMe,
+        callbackURL: "/",
+      },
+      {
+        onSuccess: () => {
+          router.push("/");
+          router.refresh();
         },
-        {
-          onError: () => {
+        onError: (e) => {
+          if (e.error.status === 429) {
+            toast.error(e.error.message || "Quá nhiều yêu cầu, vui lòng thử lại sau.");
+          } else {
             toast.error("Email hoặc mật khẩu không đúng. Vui lòng thử lại.");
-          },
+          }
         },
-      );
-      if (response && response.data) {
-        router.push("/");
-        router.refresh();
-      }
-    } catch {
-      toast.error("Email hoặc mật khẩu không đúng. Vui lòng thử lại.");
-    }
+      },
+    );
   };
 
   return (

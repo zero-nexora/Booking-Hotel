@@ -70,17 +70,22 @@ const ResetPasswordContent = () => {
 
   const onSubmit = async (values: Values) => {
     if (!token) return;
-    try {
-      await authClient.resetPassword({ newPassword: values.password, token });
+    const { error } = await authClient.resetPassword({
+      newPassword: values.password,
+      token,
+    });
+    if (!error) {
       setState("success");
-    } catch (error: any) {
-      if (
-        error?.message?.includes("expired") ||
-        error?.message?.includes("invalid")
-      )
-        setState("invalid");
-      else toast.error("Đặt lại mật khẩu thất bại. Vui lòng thử lại.");
+      return;
     }
+    if (error.status === 429)
+      toast.error(error.message || "Quá nhiều yêu cầu, vui lòng thử lại sau");
+    else if (
+      error.message?.includes("expired") ||
+      error.message?.includes("invalid")
+    )
+      setState("invalid");
+    else toast.error("Đặt lại mật khẩu thất bại. Vui lòng thử lại.");
   };
 
   if (state === "invalid")

@@ -279,7 +279,6 @@ export const adminHotelRouter = createTRPCRouter({
           message: `Không thể xóa: khách sạn đang có ${activeBookings} đặt phòng hoạt động`,
         });
 
-      // Check toàn bộ booking (bao gồm đã hủy/hoàn thành)
       const totalBookings = await ctx.db.booking.count({
         where: { hotelId: input.id },
       });

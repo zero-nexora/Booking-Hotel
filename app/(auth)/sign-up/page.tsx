@@ -24,6 +24,7 @@ import { authClient } from "@/lib/auth-client";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
+import { error } from "console";
 
 const schema = z
   .object({
@@ -71,24 +72,25 @@ const SignUpPage = () => {
   const watchedPassword = form.watch("password");
 
   const onSubmit = async (values: Values) => {
-    try {
-      await authClient.signUp.email(
-        {
-          name: values.fullName,
-          email: values.email,
-          password: values.password,
-          phone: values.phone,
-          callbackURL: "/verify-email",
+    await authClient.signUp.email(
+      {
+        name: values.fullName,
+        email: values.email,
+        password: values.password,
+        phone: values.phone,
+        callbackURL: "/verify-email",
+      },
+      {
+        onSuccess: () => router.push("/verify-email"),
+        onError: (e) => {
+          if (e.error.status === 429)
+            toast.error(
+              e.error.message || "Quá nhiều yêu cầu, vui lòng thử lại sau.",
+            );
+          else toast.error("Đăng ký thất bại. Email có thể đã được sử dụng.");
         },
-        {
-          onSuccess: () => router.push("/verify-email"),
-          onError: () =>
-            void toast.error("Đăng ký thất bại. Email có thể đã được sử dụng."),
-        },
-      );
-    } catch {
-      toast.error("Đăng ký thất bại. Email có thể đã được sử dụng.");
-    }
+      },
+    );
   };
 
   return (
