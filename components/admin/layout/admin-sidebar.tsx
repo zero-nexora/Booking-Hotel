@@ -35,6 +35,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useTRPC } from "@/trpc/client";
 import { motion, Variants } from "framer-motion";
 import { User } from "better-auth";
+import { toast } from "sonner";
 
 const navItems = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
@@ -82,7 +83,13 @@ export const AdminSidebar = ({
     exact ? pathname === href : pathname.startsWith(href);
 
   const handleSignOut = async () => {
-    await authClient.signOut();
+    const { error } = await authClient.signOut();
+    if (error) {
+      if (error.status === 429)
+        toast.error(error.message || "Quá nhiều yêu cầu, vui lòng thử lại sau");
+      else toast.error("Đăng xuất thất bại, vui lòng thử lại");
+      return;
+    }
     queryClient.removeQueries({ queryKey: trpc.client.user.me.queryKey() });
     router.push("/");
   };

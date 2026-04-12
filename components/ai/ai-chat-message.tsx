@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { Bot, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -26,6 +27,51 @@ const renderMarkdown = (text: string): string =>
     .replace(/(<li.*<\/li>)/g, '<ul class="space-y-0.5 my-1">$1</ul>')
     .replace(/\n\n/g, '<div class="h-2"></div>')
     .replace(/\n/g, "<br />");
+
+const StreamingText = ({
+  content,
+  streaming,
+}: {
+  content: string;
+  streaming?: boolean;
+}) => {
+  const [committed, setCommitted] = useState("");
+  const [prevLength, setPrevLength] = useState(0);
+
+  const newChunk = content.slice(prevLength);
+
+  useEffect(() => {
+    setCommitted(content);
+    setPrevLength(content.length);
+  }, [content]);
+
+  return (
+    <div>
+      <span dangerouslySetInnerHTML={{ __html: renderMarkdown(committed) }} />
+      {newChunk && (
+        <span
+          key={prevLength}
+          className="animate-token-in"
+          dangerouslySetInnerHTML={{ __html: renderMarkdown(newChunk) }}
+        />
+      )}
+      {streaming &&
+        (content.length === 0 ? (
+          <span className="inline-flex gap-0.5 ml-0.5 align-middle">
+            {[0, 1, 2].map((i) => (
+              <span
+                key={i}
+                className="w-1 h-1 rounded-full bg-current opacity-60 animate-bounce"
+                style={{ animationDelay: `${i * 150}ms` }}
+              />
+            ))}
+          </span>
+        ) : (
+          <span className="inline-block w-0.5 h-3.25 bg-current align-middle ml-px animate-caret" />
+        ))}
+    </div>
+  );
+};
 
 export const AIChatMessage = ({ message }: AIChatMessageProps) => {
   const isUser = message.role === "user";
@@ -56,26 +102,10 @@ export const AIChatMessage = ({ message }: AIChatMessageProps) => {
         {isUser ? (
           <p className="whitespace-pre-wrap">{message.content}</p>
         ) : (
-          <>
-            {message.content ? (
-              <div
-                dangerouslySetInnerHTML={{
-                  __html: renderMarkdown(message.content),
-                }}
-              />
-            ) : null}
-            {message.streaming && (
-              <span className="inline-flex gap-0.5 ml-0.5 align-middle">
-                {[0, 1, 2].map((i) => (
-                  <span
-                    key={i}
-                    className="w-1 h-1 rounded-full bg-current opacity-60 animate-bounce"
-                    style={{ animationDelay: `${i * 150}ms` }}
-                  />
-                ))}
-              </span>
-            )}
-          </>
+          <StreamingText
+            content={message.content}
+            streaming={message.streaming}
+          />
         )}
       </div>
     </div>

@@ -11,6 +11,7 @@ import { authClient } from "@/lib/auth-client";
 import { useConfirmDialogStore } from "@/store/confirm-dialog-store";
 import { useTRPC } from "@/trpc/client";
 import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 const navLinks = [
   { href: "/account", label: "Tổng quan", icon: LayoutDashboard },
@@ -29,7 +30,13 @@ export const AccountSidebar = () => {
   const { data: user } = useMe();
 
   const handleSignOut = async () => {
-    await authClient.signOut();
+    const { error } = await authClient.signOut();
+    if (error) {
+      if (error.status === 429)
+        toast.error(error.message || "Quá nhiều yêu cầu, vui lòng thử lại sau");
+      else toast.error("Đăng xuất thất bại, vui lòng thử lại");
+      return;
+    }
     queryClient.removeQueries({ queryKey: trpc.client.user.me.queryKey() });
     router.push("/");
   };

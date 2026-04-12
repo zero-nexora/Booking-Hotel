@@ -93,7 +93,7 @@ export const WriteReviewClient = ({ bookingRef }: WriteReviewClientProps) => {
             className="rounded-xl mt-1 border-border text-foreground hover:bg-muted"
             asChild
           >
-            <Link href="/account/reviews">Xem đánh giá của tôi</Link>
+            <Link href="/account/reviews" className="hover:text-foreground">Xem đánh giá của tôi</Link>
           </Button>
         </div>
       </div>

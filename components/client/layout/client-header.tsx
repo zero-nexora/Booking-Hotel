@@ -30,6 +30,7 @@ import { Logo } from "@/components/common/logo";
 import { useConfirmDialogStore } from "@/store/confirm-dialog-store";
 import { useQueryClient } from "@tanstack/react-query";
 import { useTRPC } from "@/trpc/client";
+import { toast } from "sonner";
 
 const navLinks = [
   { label: "Khách sạn", href: "/hotels" },
@@ -52,7 +53,13 @@ export const ClientHeader = () => {
   const currentUrl = viewParam ? `${pathname}?view=${viewParam}` : pathname;
 
   const handleSignOut = async () => {
-    await authClient.signOut();
+    const { error } = await authClient.signOut();
+    if (error) {
+      if (error.status === 429)
+        toast.error(error.message || "Quá nhiều yêu cầu, vui lòng thử lại sau");
+      else toast.error("Đăng xuất thất bại, vui lòng thử lại");
+      return;
+    }
     queryClient.removeQueries({ queryKey: trpc.client.user.me.queryKey() });
     router.push("/");
   };

@@ -24,7 +24,6 @@ import { authClient } from "@/lib/auth-client";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { error } from "console";
 
 const schema = z
   .object({

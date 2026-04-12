@@ -186,7 +186,7 @@ CREATE TABLE "room" (
     "roomTypeId" TEXT NOT NULL,
     "description" TEXT NOT NULL,
     "capacity" INTEGER NOT NULL,
-    "sizeM2" DOUBLE PRECISION,
+    "sizeM2" DOUBLE PRECISION NOT NULL,
     "floor" INTEGER,
     "basePrice" DECIMAL(10,2) NOT NULL,
     "isActive" BOOLEAN NOT NULL DEFAULT true,
