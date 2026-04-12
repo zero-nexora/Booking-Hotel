@@ -52,7 +52,6 @@ export const HeroSection = () => {
         fill
         priority
         className="object-cover object-center"
-        quality={90}
       />
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 pt-10 py-36 text-center space-y-6">

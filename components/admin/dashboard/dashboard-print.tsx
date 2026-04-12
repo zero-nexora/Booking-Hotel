@@ -6,6 +6,7 @@ import { vi } from "date-fns/locale";
 import { FileBarChart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useDashboardAnalyticsReport } from "@/hooks/admin/use-admin-dashboard";
+import { formatDateCompact } from "@/lib/utils";
 
 export const DashboardPrint = () => {
   const { data, isLoading } = useDashboardAnalyticsReport();
@@ -15,9 +16,7 @@ export const DashboardPrint = () => {
     if (!data) return;
 
     const now = new Date();
-    const monthLabel = format(new Date(data.month + "-01"), "MMMM yyyy", {
-      locale: vi,
-    });
+    const monthLabel = formatDateCompact(data.month + "-01");
 
     // Build booking status rows
     const statusRows = data.bookingsByStatus

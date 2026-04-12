@@ -445,7 +445,6 @@ export const BookingDetailClient = ({
         title: `Xác nhận ${TRANSITION_LABEL[status].toLowerCase()}`,
         description: TRANSITION_DESCRIPTION[status] ?? "",
         confirmLabel: TRANSITION_LABEL[status],
-        variant: "default",
         onConfirm: async () => {
           await updateStatus.mutateAsync({ id: bookingId, status });
         },
